@@ -1,0 +1,22 @@
+{
+  "schema": "git-change-evidence.sd7.compatibility/v1",
+  "policy": {
+    "version": "v1",
+    "artifacts": ["openspec/changes/**"],
+    "tests": ["tests/**"],
+    "mechanical_bases": ["generated"]
+  },
+  "entries": [
+    {"status": "added", "old": null, "new": {"raw_path_b64": "b3BlbnNwZWMvY2hhbmdlcy92ZWN0b3IubWQ=", "mode": "100644", "object_id": "a", "kind": "regular", "loc": 5}, "added": 5, "deleted": 0},
+    {"status": "added", "old": null, "new": {"raw_path_b64": "dGVzdHMvdmVjdG9yLnB5", "mode": "100644", "object_id": "b", "kind": "regular", "loc": 3}, "added": 3, "deleted": 0},
+    {"status": "added", "old": null, "new": {"raw_path_b64": "Z2VuZXJhdGVkLmpzb24=", "mode": "100644", "object_id": "c", "kind": "regular", "loc": 2}, "added": 2, "deleted": 0},
+    {"status": "added", "old": null, "new": {"raw_path_b64": "c3JjL2NvcmUucHk=", "mode": "100644", "object_id": "d", "kind": "regular", "loc": 4}, "added": 4, "deleted": 0},
+    {"status": "added", "old": null, "new": {"raw_path_b64": "YmluYXJ5LmJpbg==", "mode": "100644", "object_id": "e", "kind": "binary", "loc": null}, "added": null, "deleted": null}
+  ],
+  "annotations": [{"path": "generated.json", "added": 2, "deleted": 0, "basis": "generated", "evidence": "portable vector"}],
+  "expected": {
+    "categories": ["artifacts", "tests", "mechanical", "production", "production"],
+    "totals": {"artifacts": 5, "tests": 3, "mechanical": 2, "production": 4},
+    "non_gating_over_400": false
+  }
+}

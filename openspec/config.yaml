@@ -9,8 +9,8 @@ context: |
   No Go source, tests, or go.mod module identity exist in this planning slice.
   Evidence-only boundary: never approve, reject, gate, block, merge, deploy, release,
   or assign delivery authority.
-  Deferred: module/publication identity, packaging, CI, license, release, distribution,
-  and concrete configuration-file syntax.
+  Module identity: github.com/kozz36/git-change-evidence (owner-approved). Deferred: publication identity,
+  packaging, CI, license, release, distribution, and concrete configuration-file syntax.
 
 strict_tdd: true
 testing:
