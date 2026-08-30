@@ -1,14 +1,14 @@
 # Product Charter: git-change-evidence
 
-`git-change-evidence` will be a generic multi-project Git evidence CLI and Python library. It will create reproducible, machine-readable evidence about a change without deciding whether that change may be delivered.
+`git-change-evidence` is a generic multi-project Git evidence CLI and Go package. It creates reproducible, machine-readable evidence about a change without deciding whether that change may be delivered.
 
-**Status:** pre-bootstrap planning. This charter is the authoritative product boundary until superseded by a versioned governance decision.
+**Status:** the Bootstrap Decision is complete. This charter is the authoritative product boundary until superseded by a versioned governance decision.
 
 ## Product intent
 
 Manual reconstruction of changed-file inventories, line accounting, thresholds, forecasts, and review evidence is slow and can produce inconsistent or stale records. `git-change-evidence` will derive those observations from immutable Git snapshots, explicit policy, and versioned contracts so that authors, reviewers, and automation can inspect the same evidence.
 
-The product is **evidence-only**. It MUST NOT approve, reject, gate, block, merge, deploy, assign delivery authority, or substitute for a project's review process. A threshold crossing is an observation or warning, never a product verdict.
+The product is **evidence-only**. It MUST NOT approve, reject, gate, block, merge, deploy, release, assign delivery authority, or substitute for a project's review process. A threshold crossing is an observation or warning, never a product verdict.
 
 ## Users and use cases
 
@@ -17,7 +17,7 @@ The product is **evidence-only**. It MUST NOT approve, reject, gate, block, merg
 | Change author | Generate a local evidence packet for a base/head revision pair. | Deterministic inventory, accounting, thresholds, and projections. |
 | Reviewer | Independently regenerate or inspect evidence cited by a change. | Comparable canonical data without reconstructing Git behavior manually. |
 | Project maintainer | Define a project profile with categories, thresholds, and vocabulary. | Project policy remains explicit, versioned, and outside the generic core. |
-| Automation integrator | Consume stable machine-readable contracts from a CLI or Python library. | Neutral, versioned data that can be adapted to a project workflow. |
+| Automation integrator | Consume stable machine-readable contracts from a CLI or versioned Go package API. | Neutral, versioned data that can be adapted to a project workflow. |
 
 ## Value proposition
 
@@ -33,43 +33,49 @@ The product is **evidence-only**. It MUST NOT approve, reject, gate, block, merg
 - Immutable Git snapshot acquisition, including commit identity, change entries, file kinds, and byte-preserving paths.
 - Separate untracked-file inventory where a profile requests it; index and working-tree state do not alter committed-change accounting.
 - Policy-driven, exclusive change accounting.
-- Neutral, versioned contracts and canonical JSON serialization.
-- Deterministic report assembly, projections, local publication, CLI behavior, and Python library APIs.
-- Project/profile adapters that translate project configuration and compatibility requirements into the core's neutral boundary.
+- Neutral, versioned canonical JSON documents and a versioned Go package API.
+- Deterministic report assembly, projections, local publication, and CLI behavior.
+- Project/profile adapters that translate project configuration and compatibility requirements into immutable typed core inputs.
 
 ### Non-goals
 
-- Approval, rejection, gating, blocking, merge, deployment, or release authority.
+- Approval, rejection, gating, blocking, merge, deployment, release, or delivery authority.
 - A universal changed-lines limit, review rubric, forecast vocabulary, or governance model.
 - Remote delivery orchestration, pull-request management, CI administration, UI, database, or RBAC features.
 - Replacing project review protocols, policy owners, or release processes.
-- Selecting or implementing packaging, release automation, licenses, CI, or source layout during this pre-bootstrap stage.
+- Selecting or implementing a module/publication identity, packaging, release automation, licenses, CI, distribution, or a concrete configuration-file syntax during this bootstrap stage.
 
 ## Authority model
 
-The CLI and library may emit factual statuses such as an unavailable measurement, an incomplete input, or a policy attention condition. Their meaning is limited to evidence production.
+The CLI and Go package may emit factual statuses such as an unavailable measurement, an incomplete input, or a policy attention condition. Their meaning is limited to evidence production.
 
 Every project retains responsibility for interpreting that evidence. Consumer integrations MUST preserve this separation: they may display or transport an observation, but they must not represent a core output as approval, denial, or a delivery gate.
 
 ## Architecture
 
-The product will use **Functional Core / Imperative Shell** with **Hexagonal Architecture** project-profile adapters.
+The product uses **Functional Core / Imperative Shell** with **Hexagonal Architecture** project-profile adapters.
 
 | Boundary | Responsibility | Must not own |
 |---|---|---|
-| Functional core | Normalization, validation, exclusive policy accounting, contract construction, canonical serialization, report assembly, projections, and comparisons. | Process execution, filesystem effects, project-specific policy, or delivery authority. |
+| Functional core | Normalization, validation, exclusive policy accounting, contract construction, canonical serialization, report assembly, projections, and comparisons over immutable typed Go inputs. | Process execution, filesystem effects, configuration parsing, project-specific policy, or delivery authority. |
 | Imperative shell | Git invocation, filesystem access, input/output, retry orchestration, local publication, and CLI adaptation. | Policy decisions or non-deterministic business rules. |
-| Project-profile adapter | Project globs, category names, threshold values, framework integration, compatibility schemas, and review integration. | Generic Git semantics, core contract semantics, or delivery authority. |
+| Project-profile adapter | Project globs, category names, threshold values, configuration decoding, framework integration, compatibility schemas, and review integration. | Generic Git semantics, core contract semantics, or delivery authority. |
 
-The generic core owns Git snapshot, inventory, policy-driven accounting, neutral versioned contracts, canonical JSON, report assembly/publication, and the CLI. A profile supplies configuration and compatible vocabulary; it cannot make a core evidence result authoritative.
+The public neutral Go API belongs at the repository/module root; the CLI belongs at `cmd/git-change-evidence/`; non-public shell and adapters belong under `internal/`. Tests are co-located as `*_test.go`. The repository deliberately has no `go.mod` in this planning slice because module/publication identity remains deferred.
+
+The core accepts immutable typed Go structs and interfaces. TOML, YAML, JSON, and any other external configuration decoding belong only in adapters. No concrete configuration-file syntax is selected.
+
+The generic product owns Git snapshot, inventory, policy-driven accounting, neutral versioned contracts, canonical JSON, report assembly/publication, and the CLI. A profile supplies configuration and compatible vocabulary; it cannot make a core evidence result authoritative.
 
 ### First consumer example
 
 CNSIC is the named first consumer/profile. Its OpenSpec and CHANGELOG conventions, forecast vocabulary, compatibility schemas, review integration, legacy carveout compatibility, and current `400` changed-lines default remain CNSIC concerns. They are not generic-core policy.
 
+CNSIC W1/W2 at merge `a0fc7b26ff8a0e0a61baa586b32c46841611c806` is the immutable Branch by Abstraction predecessor oracle. It supplies compatibility evidence only; CNSIC code and vocabulary are not a source layout or semantic dependency for the neutral core.
+
 ## Contract principles
 
-1. **Neutral and versioned:** public documents and APIs declare a schema/contract version and avoid consumer-specific governance terms.
+1. **Neutral and versioned:** public documents and Go APIs declare a schema or contract version and avoid consumer-specific governance terms.
 2. **Canonical:** equivalent valid inputs serialize to stable canonical JSON bytes; parsers reject non-canonical representations where byte identity is part of the contract.
 3. **Strict:** contracts validate exact types, closed shapes, discriminated variants, and immutable revision identity without silently normalizing inputs.
 4. **Exclusive accounting:** a changed entry belongs to exactly one profile-defined category according to explicit precedence. Unknown paths default conservatively to the profile's production-equivalent category unless that profile specifies otherwise.
@@ -97,8 +103,8 @@ Project maintainers own their profiles, policy vocabulary, thresholds, and downs
 
 | Milestone | Exit outcome |
 |---|---|
-| 0. Freeze extraction inputs | The existing CNSIC candidate closes all 11 TS-8 mutation receipts and freezes/version-controls W1/W2 compatibility vectors. No extraction starts before this gate. |
-| 1. Bootstrap design | Decide the source layout, public module boundaries, profile configuration form, and test strategy without selecting packaging or release automation. |
+| 0. Freeze extraction inputs | CNSIC W1/W2 at merge `a0fc7b26ff8a0e0a61baa586b32c46841611c806` remains the immutable predecessor oracle and compatibility evidence boundary. |
+| 1. Bootstrap design | Complete: Go 1.25.10, public/internal layout, typed configuration boundary, and test strategy are recorded without selecting module/publication identity or release automation. |
 | 2. Neutral core extraction | Establish the Git snapshot, inventory, policy accounting, contracts, canonical JSON, and report-assembly boundaries behind real-Git verification. |
 | 3. CLI and publication | Add deterministic CLI projections and safe local publication, with evidence-only statuses and bounded race behavior. |
 | 4. First consumer profile | Introduce the CNSIC adapter/profile and compatibility vectors without importing CNSIC policy into the generic core. |
@@ -116,15 +122,21 @@ The product is ready for initial consumer adoption only when it can demonstrate 
 - Publication never overwrites an existing artifact and leaves no partial artifact when it fails.
 - CNSIC can consume a frozen compatibility vector through its profile while another project can define different vocabulary and limits without forking the core.
 
-## Open decisions
+## Bootstrap decisions and deferred decisions
 
-The following are intentionally unresolved and MUST NOT be selected or implemented during pre-bootstrap documentation work:
+The following decisions are authoritative for the first implementation work units:
 
-- Packaging and distribution model, including whether initial consumption is only a pinned Git dependency or evolves to a package registry.
-- Public versioning policy and compatibility/deprecation process beyond the owner role defined above.
+- Go 1.25.10 is the target baseline. `go test ./...` is the primary reproducible gate; concurrency-bearing surfaces also require `go test -race ./...`; formatting is check-only.
+- Public neutral APIs are at the repository/module root, the CLI is at `cmd/git-change-evidence/`, non-public shell/adapters are under `internal/`, and tests are co-located as `*_test.go`.
+- Core configuration is immutable typed Go structs/interfaces. External format parsing is adapter-only, and TOML/YAML/JSON selection remains deferred.
+
+The following are intentionally unresolved and MUST NOT be selected or implemented in this planning slice:
+
+- Module/publication identity, packaging and distribution model, including whether initial consumption is only a pinned Git dependency or evolves to a package registry.
+- Public versioning and compatibility/deprecation policy beyond the owner role defined above.
 - Release automation, CI, publication channels, and signing/provenance mechanism.
-- License, supported Python/runtime matrix, configuration-file format, and source-directory layout.
+- License and concrete configuration-file format.
 
 ## Immediate next step
 
-Complete the CNSIC extraction gate: close the 11 TS-8 mutation receipts and freeze/version W1/W2 compatibility vectors. Then use this charter to create a narrowly scoped bootstrap design; do not begin implementation merely because this repository exists.
+Implement the neutral W1/W2 semantic boundary in its separately scoped chained PR. Preserve the CNSIC predecessor oracle, begin with RED tests, establish a module identity only when the owning work unit is authorized to do so, and do not begin CNSIC consumer cutover.

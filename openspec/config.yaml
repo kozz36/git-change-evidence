@@ -2,15 +2,23 @@ schema: spec-driven
 
 context: |
   Product: git-change-evidence.
-  Status: pre-bootstrap planning; authoritative boundary: docs/product-charter.md.
-  Stack: no implementation project discovered; repository currently contains documentation only.
-  Architecture: charter specifies Functional Core / Imperative Shell with Hexagonal profile adapters.
-  Open decisions: packaging, source layout, license, runtime matrix, CI, release automation, and configuration format.
-  Evidence-only boundary: never approve, reject, gate, block, merge, deploy, or assign delivery authority.
+  Status: Bootstrap decision complete; this PR contains planning artifacts only.
+  Architecture: Functional Core / Imperative Shell with Hexagonal profile adapters.
+  Runtime baseline: Go 1.25.10. The public neutral API will be at the module root,
+  the CLI at cmd/git-change-evidence/, and non-public shell/adapters under internal/.
+  No Go source, tests, or go.mod module identity exist in this planning slice.
+  Evidence-only boundary: never approve, reject, gate, block, merge, deploy, release,
+  or assign delivery authority.
+  Deferred: module/publication identity, packaging, CI, license, release, distribution,
+  and concrete configuration-file syntax.
 
-strict_tdd: false
+strict_tdd: true
 testing:
   policy: rubric
+  commands:
+    primary: go test ./...
+    concurrency: go test -race ./...
+    format_check: test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"
   rubric:
     active: true
     authoritative: true
@@ -19,55 +27,65 @@ testing:
       matching: all-rows
       mode: strictest-wins
       evidence: union
-    bindings: []
     rows:
+      - signature: go-source-or-test
+        paths: ['**/*.go']
+        mode: strict-tdd
+        disciplines:
+          - red-green-triangulate-refactor
+          - focused-test-before-production-change
+          - rerun-focused-tests-after-refactor
+        evidence_methods:
+          - focused-go-test
+          - go-test-all
+          - check-only-gofmt
+        source: bootstrap-decision
+      - signature: concurrency-bearing-go
+        applies_when: The changed Go behavior creates, synchronizes, or otherwise depends on concurrent execution.
+        mode: strict-tdd
+        disciplines:
+          - race-detection
+        evidence_methods:
+          - go-test-race-all
+        source: bootstrap-decision
       - signature: default
         mode: skip
         disciplines: []
         evidence_methods: []
-        source: generated
-  detected_but_unsatisfied:
-    - method: unit
-      scope: workspace
-      reason: no project marker, test command, or reproducible test-tool provider detected
-    - method: integration
-      scope: workspace
-      reason: no project marker, test command, or reproducible integration-tool provider detected
-    - method: e2e
-      scope: workspace
-      reason: no project marker, test command, or reproducible e2e-tool provider detected
-    - method: coverage
-      scope: workspace
-      reason: no project marker, coverage command, or reproducible coverage-tool provider detected
-    - method: lint
-      scope: workspace
-      reason: no project marker, lint command, or reproducible linter provider detected
-    - method: typecheck
-      scope: workspace
-      reason: no project marker, typecheck command, or reproducible type-tool provider detected
-    - method: format
-      scope: workspace
-      reason: no project marker, formatter command, or reproducible formatter provider detected
-    - method: build
-      scope: workspace
-      reason: no project marker, build command, or reproducible build-tool provider detected
-  projects: []
+        source: bootstrap-decision
+
+layout:
+  scope: repository-development guidance only; never a generic-core policy or evidence threshold
+  public_api: {directory: ., allowed: public neutral Go API files and their co-located tests}
+  cli: {directory: cmd/git-change-evidence, allowed: CLI adaptation only}
+  non_public: {directory: internal, allowed: shell implementations and adapters only}
+  tests: {placement: co-located *_test.go files}
+  prohibited: [pkg, Python-style src plus tests split, package-level AGENTS.md files]
+  thresholds: {public_root_go_files: 12, cli_go_files: 6, internal_leaf_package_go_files: 15, changed_lines_per_go_file: 160, changed_go_files_per_package: 8}
+  crossing_policy: Record each first threshold crossing in apply-progress.md and require an explicit package-boundary review before adding files beyond that threshold.
+  initial_file_crossing_baseline: {phase: PR 1 / Bootstrap Decision, public_root_go_files: 0, cli_go_files: 0, internal_leaf_package_go_files: 0, go_test_files: 0, changed_lines_per_go_file: 0, changed_go_files_per_package: 0}
 
 rules:
   proposal:
-    - Preserve the product charter boundary and explicitly record unresolved bootstrap decisions.
+    - Preserve the evidence-only charter boundary and record only owner-approved bootstrap decisions.
   specs:
     - Use Given/When/Then scenarios and RFC 2119 keywords.
+    - Public APIs and documents are neutral, versioned Go package and canonical-document contracts.
   design:
-    - Document architecture decisions with rationale; do not silently resolve charter open decisions.
+    - Document architecture decisions with rationale and preserve deferred owner decisions.
   tasks:
     - Group tasks by phase and keep each task completable in one session.
+    - Keep work within its declared chained-PR boundary.
   apply:
-    tdd: false
-    test_command: ""
+    tdd: true
+    test_command: go test ./...
+    race_test_command: go test -race ./...
+    format_command: test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"
   verify:
-    test_command: ""
-    build_command: ""
+    test_command: go test ./...
+    race_test_command: go test -race ./...
+    format_command: test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"
+    build_command: go test ./...
     coverage_threshold: 0
   archive:
     - Preserve the complete audit trail and warn before destructive deltas.

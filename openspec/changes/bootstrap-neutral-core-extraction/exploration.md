@@ -1,8 +1,10 @@
 ## Exploration: bootstrap-neutral-core-extraction
 
-### Current State
+> **Historical discovery with PR 1 supersession.** This exploration records the pre-bootstrap repository state. PR 1 has since selected the Go 1.25.10 target, root public API/`cmd/git-change-evidence/`/`internal/` layout, co-located Go tests, strict TDD gates, and typed configuration boundary. Historical CNSIC Python filenames below identify the immutable predecessor only; they are not requirements for the successor.
 
-The product charter defines an evidence-only `git-change-evidence` product using Functional Core / Imperative Shell and Hexagonal Architecture. The repository is pre-bootstrap and contains no implementation; packaging, source layout, license, runtime matrix, CI, release automation, and configuration-file syntax are explicitly open decisions.
+### Current State at Exploration
+
+The product charter defines an evidence-only `git-change-evidence` product using Functional Core / Imperative Shell and Hexagonal Architecture. At exploration time, the repository contained no implementation and source layout/runtime were unresolved. Module/publication identity, packaging, license, CI, release automation, distribution, and configuration-file syntax remain open decisions.
 
 CNSIC W1/W2 is the immutable extraction baseline, not a new implementation target. The baseline is preserved in the CNSIC `origin/main` Git objects at merge commit `a0fc7b26ff8a0e0a61baa586b32c46841611c806` and contains:
 
@@ -34,7 +36,7 @@ The archived W1/W2 artifacts record 152 focused tests, 4/4 requirements, 13/13 s
 - CNSIC `tests/fixtures/sd7/compatibility/v1/*` at the immutable baseline — W1/W2 compatibility vectors and manifest boundary.
 - Archived CNSIC W1/W2 proposal, design, tasks, specs, review, Judgment Day, and verification artifacts — historical evidence for what shipped, what was corrected, and which W3/W4/W5 assumptions are stale.
 - CNSIC `scripts/sd7_move_carveout.py` — legacy compatibility surface requiring an adapter strategy in a later implementation phase.
-- Future standalone core/profile/CLI modules — ownership to be decided by bootstrap design; no source layout is selected here.
+- Future standalone core/profile/CLI modules — PR 1 selects the Go root public API, `cmd/git-change-evidence/`, and `internal/` layout; no source files or module identity are created in this planning slice.
 
 ### Approaches
 
@@ -55,12 +57,12 @@ The archived W1/W2 artifacts record 152 focused tests, 4/4 requirements, 13/13 s
 
 ### Recommendation
 
-Use **Branch by Abstraction**, implemented as a package-first neutral boundary with the CNSIC profile and compatibility edge outside the Functional Core. Do not mechanically copy the CNSIC package or treat its filenames as the standalone layout.
+Use **Branch by Abstraction**, implemented as a Go-first neutral boundary with the CNSIC profile and compatibility edge outside the Functional Core. Do not mechanically copy the CNSIC package or treat its filenames as the standalone layout.
 
 The smallest safe route is:
 
 1. Freeze the W1/W2 vector set and its manifest as the extraction gate; this is already the charter's Milestone 0 prerequisite.
-2. In bootstrap design, decide only the neutral module boundaries, profile boundary, contract ownership, test strategy, and compatibility-vector execution model. Leave packaging, source layout, license, runtime matrix, CI, release automation, and config syntax open.
+2. PR 1 bootstrap design has selected the Go target, public/internal boundaries, typed configuration boundary, and test strategy. It leaves module/publication identity, packaging, license, CI, release automation, distribution, and concrete configuration-file syntax open.
 3. Establish the neutral W1/W2 semantic boundary from the immutable baseline: contracts/canonical bytes, Git snapshot inputs, inventory separation, policy injection, and accounting.
 4. Add W3 as a pure bounded carveout core plus a legacy adapter. The adapter preserves positional arguments and one-line output but cannot read the working tree as the source of immutable evidence.
 5. Add W4 as report assembly, projections, CLI adaptation, publication, exit mapping, and moving-head retry. Keep all Git and filesystem effects in the shell.
@@ -86,7 +88,7 @@ The historical W2 work is the extraction input, not a new milestone: it satisfie
 - **Moving-reference publication race:** a symbolic head can move between measurement and publication. Mitigation: bounded re-resolution and retry, then a technical repository/race failure without publishing a mismatched identity.
 - **God-module growth:** combining Git, policy, accounting, report formatting, and publication would cross ownership boundaries. Mitigation: enforce core/shell/profile/compatibility interfaces and deliver W3, W4, and W5 as separate work units.
 - **False authority:** threshold attention, pilot observations, or CLI statuses could be interpreted as approval or blocking. Mitigation: keep evidence-only field vocabulary and explicitly test absence of delivery-authority semantics.
-- **Premature packaging decisions:** selecting package format, source layout, license, runtime matrix, CI, release automation, or config syntax now would exceed the charter. Mitigation: record these as open decisions for later design or Milestone 5.
+- **Premature packaging decisions:** selecting module/publication identity, package format, license, CI, release automation, distribution, or concrete configuration-file syntax before a later owner decision would exceed the charter. Mitigation: retain them as deferred decisions.
 
 ### Ready for Proposal
 
@@ -95,8 +97,8 @@ The historical W2 work is the extraction input, not a new milestone: it satisfie
 ### Result Contract
 
 - **status:** success
-- **executive_summary:** The immutable CNSIC W1/W2 baseline supplies frozen contract/accounting compatibility evidence, while the standalone product remains documentation-only. Branch by Abstraction with a package-first neutral boundary, an edge compatibility adapter, and a later CNSIC profile cutover is the smallest safe route; historical W3/W4/W5 map to neutral extraction, CLI/publication, and profile milestones.
-- **detailed_report:** Current-state/module ownership map, three migration approaches, recommendation, milestone mapping, risks, and proposal readiness are recorded above. Packaging, source layout, license, runtime matrix, CI, release automation, and configuration syntax remain explicitly undecided.
+- **executive_summary:** The immutable CNSIC W1/W2 baseline supplies frozen contract/accounting compatibility evidence, while the standalone product remains implementation-free. Branch by Abstraction with a Go-first neutral boundary, an edge compatibility adapter, and a later CNSIC profile cutover is the smallest safe route; historical W3/W4/W5 map to neutral extraction, CLI/publication, and profile milestones.
+- **detailed_report:** Current-state/module ownership map, three migration approaches, recommendation, milestone mapping, risks, and proposal readiness are recorded above. PR 1 subsequently resolved the Go target/layout/test/configuration boundary; module/publication identity, packaging, license, CI, release automation, distribution, and configuration-file syntax remain deferred.
 - **artifacts:** `openspec/changes/bootstrap-neutral-core-extraction/exploration.md`
 - **next_recommended:** `sdd-propose`
 - **risks:** Compatibility drift, policy contamination, unsafe mutable-state acquisition, path/process races, moving-reference publication races, god-module growth, false delivery authority, and premature resolution of charter-open decisions.
