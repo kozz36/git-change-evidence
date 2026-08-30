@@ -2,28 +2,29 @@
 
 ## Intent
 
-Extract a neutral, evidence-only core without mechanically copying CNSIC. The CNSIC W1/W2 merge `a0fc7b26ff8a0e0a61baa586b32c46841611c806` and frozen vectors are immutable semantic/parity inputs; the charter governs product boundaries.
+Extract a neutral, evidence-only Go core without mechanically copying CNSIC. CNSIC W1/W2 at merge `a0fc7b26ff8a0e0a61baa586b32c46841611c806` and its frozen vectors are immutable semantic/parity inputs; the charter governs product boundaries.
 
 ## Scope
 
 ### In Scope
 
-- Bootstrap design for boundaries, contract ownership, vector execution, and test strategy.
+- Bootstrap the Go 1.25.10 runtime baseline, public/internal layout, typed configuration boundary, and reproducible test strategy.
+- A public, neutral versioned Go package API at the repository/module root; a future CLI at `cmd/git-change-evidence/`; non-public shell/adapters under `internal/`; co-located `*_test.go` tests.
 - Neutral W1/W2 semantics: immutable Git evidence, separate inventory, canonical contracts, policy injection, and exclusive accounting.
 - Re-derived historical W3 bounded carveout, W4 CLI/publication, and W5 forecast comparison.
 - Later CNSIC profile/cutover after parity; distribution evaluation after stabilization.
 
 ### Out of Scope
 
-- Selecting packaging, concrete source layout, license, runtime matrix, CI, release automation, or configuration syntax.
-- Giving core outputs approval, rejection, blocking, merge, deployment, or release authority.
+- Selecting a Go module/publication identity, packaging, license, CI, release automation, distribution, or a concrete configuration-file syntax.
+- Giving core outputs approval, rejection, blocking, merge, deployment, release, or delivery authority.
 
 ## Capabilities
 
 ### New Capabilities
 
 - `git-snapshot-inventory`: Derive immutable changes and separate untracked inventory.
-- `neutral-evidence-contracts`: Validate versioned documents and canonical bytes.
+- `neutral-evidence-contracts`: Validate versioned documents and canonical bytes through a neutral Go package API.
 - `exclusive-policy-accounting`: Apply injected categories and evidence-only threshold observations.
 - `bounded-carveout-analysis`: Compare immutable content through a pure bounded matcher.
 - `evidence-cli-publication`: Provide deterministic projections and conflict-safe publication.
@@ -36,15 +37,15 @@ None.
 
 ## Approach
 
-Use **Branch by Abstraction** with a package-first neutral boundary. Frozen W1/W2 inputs remain the predecessor oracle until the successor passes vector and real-Git parity. Neutral specs/contracts then become the core source of truth; CNSIC policy stays profile-owned. Advance W3/W4/W5 serially, then parity-gate CNSIC cutover. Distribution remains an owner decision. Extraction gates are external, never core verdicts.
+Use **Branch by Abstraction** with a Go-first neutral boundary. Frozen W1/W2 inputs remain the predecessor oracle until the successor passes vector and real-Git parity. Neutral specs/contracts then become the core source of truth; CNSIC policy stays profile-owned. The Functional Core accepts immutable typed Go structs/interfaces, while TOML, YAML, JSON, or other configuration decoding remains in adapters. Advance W3/W4/W5 serially, then parity-gate CNSIC cutover. Distribution remains an owner decision. Extraction gates are external, never core verdicts.
 
 ## Affected Areas
 
 | Area | Impact | Description |
 |---|---|---|
-| Neutral core | New | Contracts, accounting, carveout, reports, comparisons |
-| Imperative shell | New | Git/filesystem effects, CLI, retries, publication |
-| Profile edge | New | CNSIC translation and compatibility |
+| Neutral Go package API | New | Public root contracts, accounting, carveout, reports, and comparisons |
+| Imperative shell | New | Git/filesystem effects, CLI, retries, and publication under `internal/` |
+| Profile edge | New | CNSIC translation and compatibility outside the core |
 
 ## Risks
 
@@ -53,6 +54,7 @@ Use **Branch by Abstraction** with a package-first neutral boundary. Frozen W1/W
 | Semantic or profile contamination | Medium | Require vector parity and one-way profile-to-core dependency |
 | Mutable input or publication races | Medium | Use immutable objects, bounded revalidation, atomic exclusive writes |
 | False delivery authority | Medium | Use neutral evidence vocabulary and negative contract tests |
+| Toolchain mismatch before module bootstrap | Medium | Target Go 1.25.10; do not treat the executor's different local toolchain as proof of the selected baseline |
 
 ## Rollback Plan
 
@@ -61,11 +63,13 @@ Keep both paths behind the abstraction. Parity failure stops source-of-truth tra
 ## Dependencies
 
 - Immutable CNSIC merge, frozen W1/W2 vectors/manifest, and owner-approved compatibility decisions.
+- A later owner-approved module/publication identity before Go implementation can establish `go.mod` and execute the primary Go test gate.
 
 ## Success Criteria
 
 - [ ] Frozen vectors and real-Git cases produce equivalent canonical evidence.
 - [ ] Core, shell, profile, and compatibility responsibilities remain separate.
+- [ ] The public Go package API, canonical documents, and typed configuration boundary remain neutral and versioned.
 - [ ] W3/W4/W5 behavior is re-derived and evidence-only.
 - [ ] CNSIC cutover is parity-gated and reversible.
-- [ ] All charter-open decisions remain unresolved.
+- [ ] Module/publication identity, CI, license, release, distribution, and concrete configuration-file syntax remain unresolved.

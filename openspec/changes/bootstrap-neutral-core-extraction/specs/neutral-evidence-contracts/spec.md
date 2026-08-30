@@ -48,14 +48,14 @@ Every report MUST retain immutable revision identity plus input-policy, inventor
 - WHEN each assembles a report
 - THEN both canonical report bytes match and each report retains all required provenance
 
-### Requirement: Neutral library API
+### Requirement: Neutral Go package API
 
-The system MUST provide a neutral, versioned Python library API alongside document contracts for validation, canonical evidence construction, and report use. It MUST NOT select packaging, source layout, or runtime support as part of that API behavior.
+The system MUST provide a neutral, versioned public Go package API at the module root alongside document contracts for validation, canonical evidence construction, and report use. The API MUST accept immutable typed Go values at its core boundary. It MUST NOT select a module/publication identity or concrete configuration-file syntax as part of that API behavior.
 
-#### Scenario: Versioned library use
-- GIVEN a caller uses a declared library API version with valid neutral inputs
+#### Scenario: Versioned Go package use
+- GIVEN a caller uses a declared Go package API version with valid immutable neutral inputs
 - WHEN it constructs and validates evidence
-- THEN it receives the corresponding versioned neutral contract behavior without a packaging, layout, or runtime selection
+- THEN it receives the corresponding versioned neutral contract behavior without a module/publication identity or configuration-file syntax selection
 
 ### Requirement: Product-surface neutrality
 

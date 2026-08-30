@@ -14,25 +14,25 @@ Chained PRs recommended: Yes
 Chain strategy: stacked-to-main
 400-line budget risk: High
 
-Per-file crossings: unavailable until PR 1 selects layout/thresholds; later slices record post-PR counts and new crossings.
+Layout thresholds and the initial file-crossing baseline are authoritative in `openspec/config.yaml`: PR 1 begins at zero Go files/tests and zero Go-file change crossings. Later slices must record first crossings in `apply-progress.md` before exceeding the selected repository-development thresholds. Those thresholds are not generic-core evidence or governance policy.
 
 | PR | Test; harness | Rollback | P/T/M/A |
 |---|---|---|---|
-| 1 Decision | pending bootstrap decision; pending bootstrap decision | decision files | 0/0/30/20 |
-| 2 W1/W2 | pending bootstrap decision; pending bootstrap decision | contracts/vectors | 190/190/10/10 |
-| 3 Git/inventory | pending bootstrap decision; real temporary Git | shell | 200/210/0/0 |
-| 4 Accounting | pending bootstrap decision; policy fixtures | accounting core | 150/160/0/0 |
-| 5 W3 | pending bootstrap decision; blob/dirty-tree | core/edge | 180/180/0/0 |
-| 6 W4 assembly | pending bootstrap decision; repeat | report core | 150/140/0/0 |
-| 7 W4 shell | pending bootstrap decision; conflict/race | CLI/shell | 180/190/0/0 |
-| 8 W5 | pending bootstrap decision; supplied/missing | comparison | 120/120/0/0 |
-| 9 CNSIC profile | pending bootstrap decision; parity corpus | standalone profile | 140/140/0/20 |
-| 10 Handoff/distribution | N/A—decision artifacts; N/A | decision records | 0/0/50/90 |
+| 1 Decision | check-only Go format gate; N/A — planning-only with no module/runtime boundary | `AGENTS.md`, OpenSpec/configuration, and decision docs | 0/0/197/202 |
+| 2 W1/W2 | `go test ./...`; compatibility-vector harness | contracts/vectors | 190/190/10/10 |
+| 3 Git/inventory | `go test ./...`; real temporary Git | shell | 200/210/0/0 |
+| 4 Accounting | `go test ./...`; policy fixtures | accounting core | 150/160/0/0 |
+| 5 W3 | `go test ./...`; blob/dirty-tree | core/edge | 180/180/0/0 |
+| 6 W4 assembly | `go test ./...`; repeat | report core | 150/140/0/0 |
+| 7 W4 shell | `go test ./...`; conflict/race | CLI/shell | 180/190/0/0 |
+| 8 W5 | `go test ./...`; supplied/missing | comparison | 120/120/0/0 |
+| 9 CNSIC profile | `go test ./...`; parity corpus | standalone profile | 140/140/0/20 |
+| 10 Handoff/distribution | N/A — decision artifacts; N/A | decision records | 0/0/50/90 |
 
 ## Phase 1: Bootstrap Decision (planning; PR 1)
 
-- [ ] 1.1 Decide minimal `AGENTS` boundary, source/test layout, runtime, reproducible test provider/command, and due configuration representation; defer packaging, CI, release, license, distribution.
-- [ ] 1.2 Refresh `openspec/config.yaml` testing rubric; record layout thresholds and crossing baseline.
+- [x] 1.1 Record the minimal root `AGENTS.md`, Go 1.25.10 target, public root API/`cmd/git-change-evidence/`/`internal/` layout, co-located `*_test.go` tests, primary `go test ./...` gate, concurrency `go test -race ./...` gate, check-only formatting gate, and immutable typed Go configuration boundary. Defer module/publication identity, packaging, CI, release, license, distribution, and concrete configuration-file syntax.
+- [x] 1.2 Refresh `openspec/config.yaml` as the authoritative Go strict-TDD/testing rubric; record exact commands, layout thresholds, and the zero-file initial crossing baseline without fabricating Go source or tests.
 
 ## Phase 2: Neutral W1/W2 (implementation; PRs 2–4)
 
