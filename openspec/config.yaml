@@ -1,0 +1,73 @@
+schema: spec-driven
+
+context: |
+  Product: git-change-evidence.
+  Status: pre-bootstrap planning; authoritative boundary: docs/product-charter.md.
+  Stack: no implementation project discovered; repository currently contains documentation only.
+  Architecture: charter specifies Functional Core / Imperative Shell with Hexagonal profile adapters.
+  Open decisions: packaging, source layout, license, runtime matrix, CI, release automation, and configuration format.
+  Evidence-only boundary: never approve, reject, gate, block, merge, deploy, or assign delivery authority.
+
+strict_tdd: false
+testing:
+  policy: rubric
+  rubric:
+    active: true
+    authoritative: true
+    mode_order: [skip, standard, strict-tdd]
+    resolution:
+      matching: all-rows
+      mode: strictest-wins
+      evidence: union
+    bindings: []
+    rows:
+      - signature: default
+        mode: skip
+        disciplines: []
+        evidence_methods: []
+        source: generated
+  detected_but_unsatisfied:
+    - method: unit
+      scope: workspace
+      reason: no project marker, test command, or reproducible test-tool provider detected
+    - method: integration
+      scope: workspace
+      reason: no project marker, test command, or reproducible integration-tool provider detected
+    - method: e2e
+      scope: workspace
+      reason: no project marker, test command, or reproducible e2e-tool provider detected
+    - method: coverage
+      scope: workspace
+      reason: no project marker, coverage command, or reproducible coverage-tool provider detected
+    - method: lint
+      scope: workspace
+      reason: no project marker, lint command, or reproducible linter provider detected
+    - method: typecheck
+      scope: workspace
+      reason: no project marker, typecheck command, or reproducible type-tool provider detected
+    - method: format
+      scope: workspace
+      reason: no project marker, formatter command, or reproducible formatter provider detected
+    - method: build
+      scope: workspace
+      reason: no project marker, build command, or reproducible build-tool provider detected
+  projects: []
+
+rules:
+  proposal:
+    - Preserve the product charter boundary and explicitly record unresolved bootstrap decisions.
+  specs:
+    - Use Given/When/Then scenarios and RFC 2119 keywords.
+  design:
+    - Document architecture decisions with rationale; do not silently resolve charter open decisions.
+  tasks:
+    - Group tasks by phase and keep each task completable in one session.
+  apply:
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Preserve the complete audit trail and warn before destructive deltas.
