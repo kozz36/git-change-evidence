@@ -1,6 +1,6 @@
 # Apply Progress: Bootstrap Neutral Core Extraction
 
-## Current Slice
+## PR 1 Historical Slice
 **Completed:** PR 1 / Phase 1 — Bootstrap Decision (`auto-chain`, `stacked-to-main`).
 
 This planning/configuration slice establishes Go-first boundaries only. It adds no Go source, tests, `go.mod`, compatibility vectors, CNSIC changes, commits, pushes, or pull requests.
@@ -78,3 +78,23 @@ main
 - Module/publication identity, packaging, CI, license, release, distribution, and concrete configuration-file syntax remain unresolved by design.
 - The executor's installed Go toolchain is not Go 1.25.10.
 - `.pi/gentle-ai/support/strict-tdd.md` is absent. This did not affect planning-only work, but it is a strict-TDD risk for the first Go implementation slice.
+
+## PR 2 / Task 2.1 — Neutral W1/W2 contracts
+- [x] **2.1** Closed/versioned contracts, canonical bytes/SHA-256/provenance, authority rejection, and the corrected predecessor corpus pass all acceptance criteria.
+- **Initial record (corrected):** the prior “frozen W1/W2 vectors” claim was overbroad: both vectors were successor-authored, not predecessor bytes.
+- **Independent rejection / correction:** replaced them with exact predecessor `contracts-v1.json`, `accounting-v1.json`, and `manifest.sha256`; deleted both misleading vectors.
+- **Files:** `go.mod`, `contract.go`, `decode.go`, `contract_test.go`, `decode_test.go`, `compatibility_test.go`, the four corpus/manifest files, `openspec/config.yaml`, `tasks.md`, and this record.
+- **Verification:** focused corpus RED/GREEN and decoder characterization, `go test .`, `go test ./...`, `go vet ./...`, and `git diff --check origin/main` → PASS.
+- **Format:** check-only `gofmt -l` → PASS; **Race:** N/A (no concurrency).
+### TDD Cycle Evidence
+| Task | RED | GREEN | TRIANGULATE | REFACTOR |
+|---|---|---|---|---|
+| 2.1 initial | Public-symbol compile failure | Constructor/canonical pass | Earlier rejection proof, now narrowed | Decoder simplification pass |
+| 2.1 correction | Corpus test failed on false manifest | Exact predecessor imports pass | Negative decoder cases already passed (characterization) | `slices.Contains` pass |
+### Design Conformance and Deviations
+- Functional Core only; the standalone manifest is successor-authored metadata binding predecessor identities, not a predecessor artifact.
+### Workload / PR Boundary
+- **Budget:** 393 additions + 4 deletions = 397 changed lines relative to `origin/main` (hard cap: 400).
+- **Boundary:** stacked-to-main PR 2 task 2.1 only; rollback removes PR 2 contracts, tests, and corpus without affecting PR 1 planning.
+### Remaining Tasks / Risks
+- [ ] 2.2 onward remain outside this slice; strict-TDD support was read from the predecessor checkout because it is absent here.
