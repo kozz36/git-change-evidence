@@ -1,0 +1,69 @@
+name: Work unit
+description: Request an approved implementation or planning work unit.
+title: "[Work Unit]: "
+body:
+  - type: dropdown
+    id: work-unit-kind
+    attributes:
+      label: Work-unit kind
+      description: Select the kind of approved work this issue represents.
+      multiple: false
+      options:
+        - Implementation
+        - Planning
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: State the outcome this work unit must deliver.
+      placeholder: Describe the intended outcome.
+    validations:
+      required: true
+  - type: textarea
+    id: current-evidence
+    attributes:
+      label: Current evidence or problem
+      description: Record the observed evidence, problem, or decision that justifies this work.
+      placeholder: Include relevant facts, reproduction details, or decision context.
+    validations:
+      required: true
+  - type: textarea
+    id: scope-boundary
+    attributes:
+      label: In-scope and out-of-scope boundary
+      description: Define what this work unit may change and what it must not change.
+      placeholder: |
+        In scope:
+        -
+
+        Out of scope:
+        -
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: List the observable conditions required for completion.
+      placeholder: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: verification-plan
+    attributes:
+      label: Verification plan
+      description: Specify the checks, commands, or review evidence that will validate the work.
+      placeholder: Describe focused validation and expected results.
+    validations:
+      required: true
+  - type: textarea
+    id: rollback-boundary
+    attributes:
+      label: Rollback boundary
+      description: Identify the exact files or behavior that can be safely reverted without affecting unrelated work.
+      placeholder: Describe the reversible boundary and any rollback constraints.
+    validations:
+      required: true
