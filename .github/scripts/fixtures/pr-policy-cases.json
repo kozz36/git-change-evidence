@@ -1,0 +1,96 @@
+[
+  {
+    "name": "accepts an approved linked issue, one type label, and a valid branch",
+    "input": {
+      "body": "Closes #7",
+      "labels": ["type:chore"],
+      "branch": "ci/7-go-pr-checks",
+      "issue": {"state": "open", "labels": ["status:approved"]}
+    },
+    "want": []
+  },
+  {
+    "name": "requires a closing issue reference",
+    "input": {
+      "body": "References #7",
+      "labels": ["type:chore"],
+      "branch": "ci/7-go-pr-checks",
+      "issue": {"state": "open", "labels": ["status:approved"]}
+    },
+    "want": ["issue_linkage"]
+  },
+  {
+    "name": "rejects multiple linked issues",
+    "input": {
+      "body": "Closes #7 and fixes #8",
+      "labels": ["type:chore"],
+      "branch": "ci/7-go-pr-checks",
+      "issue": {"state": "open", "labels": ["status:approved"]}
+    },
+    "want": ["issue_linkage"]
+  },
+  {
+    "name": "requires exactly one type label",
+    "input": {
+      "body": "Closes #7",
+      "labels": ["type:chore", "type:docs"],
+      "branch": "ci/7-go-pr-checks",
+      "issue": {"state": "open", "labels": ["status:approved"]}
+    },
+    "want": ["type_label_count"]
+  },
+  {
+    "name": "rejects an empty type label",
+    "input": {
+      "body": "Closes #7",
+      "labels": ["type:"],
+      "branch": "ci/7-go-pr-checks",
+      "issue": {"state": "open", "labels": ["status:approved"]}
+    },
+    "want": ["type_label_invalid"]
+  },
+  {
+    "name": "rejects an unrecognized type label",
+    "input": {
+      "body": "Closes #7",
+      "labels": ["type:unknown"],
+      "branch": "ci/7-go-pr-checks",
+      "issue": {"state": "open", "labels": ["status:approved"]}
+    },
+    "want": ["type_label_invalid"]
+  },
+  {
+    "name": "rejects an invalid branch name",
+    "input": {
+      "body": "Closes #7",
+      "labels": ["type:chore"],
+      "branch": "CI/Go-PR-Checks",
+      "issue": {"state": "open", "labels": ["status:approved"]}
+    },
+    "want": ["branch_name"]
+  },
+  {
+    "name": "requires an open approved issue",
+    "input": {
+      "body": "Closes #7",
+      "labels": ["type:chore"],
+      "branch": "ci/7-go-pr-checks",
+      "issue": {"state": "closed", "labels": ["status:approved"]}
+    },
+    "want": ["issue_approved"]
+  },
+  {
+    "name": "rejects a linked pull request instead of an issue",
+    "input": {
+      "body": "Closes #7",
+      "labels": ["type:chore"],
+      "branch": "ci/7-go-pr-checks",
+      "issue": {
+        "isPullRequest": true,
+        "state": "open",
+        "labels": ["status:approved"]
+      }
+    },
+    "want": ["issue_kind"]
+  }
+]

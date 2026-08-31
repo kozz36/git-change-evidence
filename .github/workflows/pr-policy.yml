@@ -1,0 +1,37 @@
+name: PR policy
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [edited, labeled, opened, reopened, synchronize, unlabeled]
+
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: pr-policy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate PR policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out trusted policy code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # The trigger is limited to main; never check out the pull-request head.
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Test trusted policy code
+        run: node --test .github/scripts/validate-pr-policy.test.mjs
+      - name: Validate policy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: node .github/scripts/validate-pr-policy.mjs
