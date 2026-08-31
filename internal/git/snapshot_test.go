@@ -20,10 +20,12 @@ func TestAcquirePreservesCommittedEvidence(t *testing.T) {
 	old, renamed := "old-\xff", "new-\xff\npath"
 	write(t, repo, old, "rename")
 	write(t, repo, "binary", "before\x00")
+	write(t, repo, "text", "before\n")
 	write(t, repo, "executable", "run")
 	base := commit(t, repo)
 	git(t, repo, "mv", old, renamed)
 	write(t, repo, "binary", "after\x00")
+	write(t, repo, "text", "after\nmore\n")
 	if err := os.Chmod(filepath.Join(repo, "executable"), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -56,9 +58,16 @@ func TestAcquirePreservesCommittedEvidence(t *testing.T) {
 	}
 	assertChange(t, entries[renamed], "R", old, "100644", evidence.GitFile, false)
 	assertChange(t, entries["binary"], "M", "", "100644", evidence.GitFile, true)
+	assertChange(t, entries["text"], "M", "", "100644", evidence.GitFile, false)
 	assertChange(t, entries["executable"], "M", "", "100755", evidence.GitFile, false)
 	assertChange(t, entries["link"], "A", "", "120000", evidence.GitSymlink, false)
 	assertChange(t, entries["module"], "A", "", "160000", evidence.GitGitlink, false)
+	assertLineCounts(t, entries[renamed], 0, 0, true)
+	assertLineCounts(t, entries["binary"], 0, 0, false)
+	assertLineCounts(t, entries["text"], 2, 1, true)
+	assertLineCounts(t, entries["executable"], 0, 0, true)
+	assertLineCounts(t, entries["link"], 1, 0, true)
+	assertLineCounts(t, entries["module"], 1, 0, true)
 
 	write(t, repo, "binary", "dirty")
 	git(t, repo, "add", "binary")
@@ -99,6 +108,13 @@ func TestAcquireReportsTypedFailuresWithoutSnapshot(t *testing.T) {
 	assertFailure(t, snapshot, err, evidence.SnapshotRacing)
 }
 
+func TestParseNumstatKeepsBinaryAndOverflowExplicitlyNonCountable(t *testing.T) {
+	got, ok := parseNumstat([]byte("18446744073709551616\t0\toverflow\x00-\t-\tbinary\x00"))
+	if !ok || got["overflow"].Lines.Countable || got["overflow"].Binary || got["binary"].Lines.Countable || !got["binary"].Binary {
+		t.Fatalf("measurements = %#v, %v", got, ok)
+	}
+}
+
 func TestAcquirePreservesSHA256Identity(t *testing.T) {
 	if testing.Short() {
 		t.Skip("uses a real Git repository")
@@ -118,6 +134,12 @@ func assertChange(t *testing.T, entry evidence.CommittedChange, status, previous
 	t.Helper()
 	if entry.Status != status || entry.PreviousPath != previous || entry.NewMode != mode || entry.NewKind != kind || entry.Binary != binary || len(entry.NewObject) != 40 {
 		t.Fatalf("entry = %#v", entry)
+	}
+}
+func assertLineCounts(t *testing.T, entry evidence.CommittedChange, additions, deletions uint64, countable bool) {
+	t.Helper()
+	if lines := entry.Lines; lines.Additions != additions || lines.Deletions != deletions || lines.Countable != countable {
+		t.Fatalf("lines = %#v", lines)
 	}
 }
 func assertFailure(t *testing.T, snapshot evidence.CommittedSnapshot, err error, want evidence.SnapshotErrorCode) {

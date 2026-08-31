@@ -3,6 +3,7 @@ package gitadapter
 import (
 	"bytes"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	evidence "github.com/kozz36/git-change-evidence"
@@ -38,12 +39,16 @@ func acquire(request Request, afterRead func()) (evidence.CommittedSnapshot, err
 		return evidence.CommittedSnapshot{}, racing()
 	}
 	entries, ok := parseRaw(raw)
-	binary, binaryOK := parseNumstat(numstat)
-	if !ok || !binaryOK {
+	measurements, measurementsOK := parseNumstat(numstat)
+	if !ok || !measurementsOK {
 		return evidence.CommittedSnapshot{}, racing()
 	}
 	for index := range entries {
-		entries[index].Binary = binary[entryKey(entries[index])]
+		measurement, found := measurements[entryKey(entries[index])]
+		if !found {
+			return evidence.CommittedSnapshot{}, racing()
+		}
+		entries[index].Binary, entries[index].Lines = measurement.Binary, measurement.Lines
 	}
 	if afterRead != nil {
 		afterRead()
@@ -111,8 +116,13 @@ func parseRaw(raw []byte) ([]evidence.CommittedChange, bool) {
 	return entries, true
 }
 
-func parseNumstat(raw []byte) (map[string]bool, bool) {
-	binary, records := map[string]bool{}, bytes.Split(raw, []byte{0})
+type numstatMeasurement struct {
+	Binary bool
+	Lines  evidence.CommittedLineCounts
+}
+
+func parseNumstat(raw []byte) (map[string]numstatMeasurement, bool) {
+	measurements, records := map[string]numstatMeasurement{}, bytes.Split(raw, []byte{0})
 	for index := 0; index+1 < len(records) && len(records[index]) != 0; index++ {
 		fields := strings.SplitN(string(records[index]), "\t", 3)
 		if len(fields) != 3 {
@@ -125,11 +135,44 @@ func parseNumstat(raw []byte) (map[string]bool, bool) {
 			}
 			key, index = string(records[index+1])+"\x00"+string(records[index+2]), index+2
 		}
-		if fields[0] == "-" && fields[1] == "-" {
-			binary[key] = true
+		measurement, ok := parseLineCounts(fields[0], fields[1])
+		if !ok {
+			return nil, false
+		}
+		measurements[key] = measurement
+	}
+	return measurements, true
+}
+
+func parseLineCounts(added, deleted string) (numstatMeasurement, bool) {
+	if added == "-" || deleted == "-" {
+		return numstatMeasurement{Binary: added == "-" && deleted == "-"}, added == "-" && deleted == "-"
+	}
+	additions, valid, fits := parseCount(added)
+	if !valid {
+		return numstatMeasurement{}, false
+	}
+	deletions, valid, deletedFits := parseCount(deleted)
+	if !valid {
+		return numstatMeasurement{}, false
+	}
+	if !fits || !deletedFits {
+		return numstatMeasurement{}, true
+	}
+	return numstatMeasurement{Lines: evidence.CommittedLineCounts{Additions: additions, Deletions: deletions, Countable: true}}, true
+}
+
+func parseCount(value string) (uint64, bool, bool) {
+	if value == "" {
+		return 0, false, false
+	}
+	for i := 0; i < len(value); i++ {
+		if value[i] < '0' || value[i] > '9' {
+			return 0, false, false
 		}
 	}
-	return binary, true
+	count, err := strconv.ParseUint(value, 10, 64)
+	return count, true, err == nil
 }
 
 func entryKey(entry evidence.CommittedChange) string {
