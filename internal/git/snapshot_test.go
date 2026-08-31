@@ -1,0 +1,177 @@
+package gitadapter
+
+import (
+	"errors"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"testing"
+
+	evidence "github.com/kozz36/git-change-evidence"
+)
+
+func TestAcquirePreservesCommittedEvidence(t *testing.T) {
+	if testing.Short() {
+		t.Skip("uses a real Git repository")
+	}
+	repo := repository(t, false)
+	old, renamed := "old-\xff", "new-\xff\npath"
+	write(t, repo, old, "rename")
+	write(t, repo, "binary", "before\x00")
+	write(t, repo, "executable", "run")
+	base := commit(t, repo)
+	git(t, repo, "mv", old, renamed)
+	write(t, repo, "binary", "after\x00")
+	if err := os.Chmod(filepath.Join(repo, "executable"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("binary", filepath.Join(repo, "link")); err != nil {
+		t.Fatal(err)
+	}
+	sub := repository(t, false)
+	write(t, sub, "file", "submodule")
+	subhead := commit(t, sub)
+	git(t, repo, "add", "-A")
+	git(t, repo, "update-index", "--add", "--cacheinfo", "160000,"+subhead+",module")
+	git(t, repo, "commit", "-qm", "snapshot")
+	head := git(t, repo, "rev-parse", "HEAD")
+
+	got, err := Acquire(Request{Repository: repo, Base: base, Head: head})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Base != evidence.GitObjectID(base) || got.Head != evidence.GitObjectID(head) {
+		t.Fatalf("revisions = %#v", got)
+	}
+	entries := map[string]evidence.CommittedChange{}
+	for _, entry := range got.Entries() {
+		entries[entry.Path] = entry
+	}
+	copy := got.Entries()
+	copy[0].Path = "mutated"
+	if got.Entries()[0].Path == "mutated" {
+		t.Fatal("snapshot entries are mutable")
+	}
+	assertChange(t, entries[renamed], "R", old, "100644", evidence.GitFile, false)
+	assertChange(t, entries["binary"], "M", "", "100644", evidence.GitFile, true)
+	assertChange(t, entries["executable"], "M", "", "100755", evidence.GitFile, false)
+	assertChange(t, entries["link"], "A", "", "120000", evidence.GitSymlink, false)
+	assertChange(t, entries["module"], "A", "", "160000", evidence.GitGitlink, false)
+
+	write(t, repo, "binary", "dirty")
+	git(t, repo, "add", "binary")
+	write(t, repo, "untracked", "ignored")
+	git(t, repo, "replace", head, base)
+	t.Setenv("GIT_DIR", "/missing")
+	t.Setenv("GIT_CONFIG_COUNT", "1")
+	t.Setenv("GIT_CONFIG_KEY_0", "diff.external")
+	t.Setenv("GIT_CONFIG_VALUE_0", "/bin/false")
+	isolated, err := Acquire(Request{Repository: repo, Base: base, Head: head})
+	if err != nil || !reflect.DeepEqual(got, isolated) {
+		t.Fatalf("isolated acquisition = (%#v, %v), want %#v", isolated, err, got)
+	}
+}
+
+func TestAcquireReportsTypedFailuresWithoutSnapshot(t *testing.T) {
+	if testing.Short() {
+		t.Skip("uses a real Git repository")
+	}
+	repo := repository(t, false)
+	write(t, repo, "file", "base")
+	base := commit(t, repo)
+	write(t, repo, "file", "head")
+	head := commit(t, repo)
+	for _, test := range []struct {
+		revision string
+		code     evidence.SnapshotErrorCode
+	}{
+		{"unknown", evidence.SnapshotUnresolved}, {strings.Repeat("0", 40), evidence.SnapshotMissing},
+	} {
+		snapshot, err := Acquire(Request{Repository: repo, Base: base, Head: test.revision})
+		assertFailure(t, snapshot, err, test.code)
+	}
+	snapshot, err := Acquire(Request{Repository: t.TempDir(), Base: base, Head: head})
+	assertFailure(t, snapshot, err, evidence.SnapshotForeign)
+	git(t, repo, "update-ref", "HEAD", base)
+	snapshot, err = mustRace(t, repo, base, head)
+	assertFailure(t, snapshot, err, evidence.SnapshotRacing)
+}
+
+func TestAcquirePreservesSHA256Identity(t *testing.T) {
+	if testing.Short() {
+		t.Skip("uses a real Git repository")
+	}
+	repo := repository(t, true)
+	write(t, repo, "file", "base")
+	base := commit(t, repo)
+	write(t, repo, "file", "head")
+	head := commit(t, repo)
+	snapshot, err := Acquire(Request{Repository: repo, Base: base, Head: head})
+	if err != nil || len(snapshot.Base) != 64 || len(snapshot.Head) != 64 {
+		t.Fatalf("snapshot = %#v, %v", snapshot, err)
+	}
+}
+
+func assertChange(t *testing.T, entry evidence.CommittedChange, status, previous, mode string, kind evidence.GitEntryKind, binary bool) {
+	t.Helper()
+	if entry.Status != status || entry.PreviousPath != previous || entry.NewMode != mode || entry.NewKind != kind || entry.Binary != binary || len(entry.NewObject) != 40 {
+		t.Fatalf("entry = %#v", entry)
+	}
+}
+func assertFailure(t *testing.T, snapshot evidence.CommittedSnapshot, err error, want evidence.SnapshotErrorCode) {
+	t.Helper()
+	var failure *evidence.SnapshotError
+	if snapshot.Base != "" || snapshot.Head != "" || len(snapshot.Entries()) != 0 || !errors.As(err, &failure) || failure.Code != want {
+		t.Fatalf("snapshot, error = %#v, %v; want %s", snapshot, err, want)
+	}
+}
+func mustRace(t *testing.T, repo, base, head string) (evidence.CommittedSnapshot, error) {
+	t.Helper()
+	return acquire(Request{Repository: repo, Base: base, Head: head}, func() {
+		git(t, repo, "reflog", "expire", "--expire=now", "--all")
+		git(t, repo, "prune", "--expire=now")
+	})
+}
+func repository(t *testing.T, sha256 bool) string {
+	t.Helper()
+	repo := t.TempDir()
+	args := []string{"init", "-q"}
+	if sha256 {
+		args = append(args, "--object-format=sha256")
+	}
+	cmd := exec.Command("git", args...)
+	cmd.Dir = repo
+	if output, err := cmd.CombinedOutput(); err != nil {
+		if sha256 {
+			t.Skipf("SHA-256 Git unavailable: %s", output)
+		}
+		t.Fatal(string(output))
+	}
+	git(t, repo, "config", "user.email", "test@example.com")
+	git(t, repo, "config", "user.name", "Test")
+	return repo
+}
+func write(t *testing.T, repo, name, content string) {
+	t.Helper()
+	if err := os.WriteFile(filepath.Join(repo, name), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+func commit(t *testing.T, repo string) string {
+	t.Helper()
+	git(t, repo, "add", "-A")
+	git(t, repo, "commit", "-qm", "snapshot")
+	return git(t, repo, "rev-parse", "HEAD")
+}
+func git(t *testing.T, repo string, args ...string) string {
+	t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir = repo
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("git %v: %s", args, output)
+	}
+	return strings.TrimSpace(string(output))
+}
