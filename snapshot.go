@@ -18,6 +18,12 @@ type CommittedChange struct {
 	OldMode, NewMode     string
 	OldKind, NewKind     GitEntryKind
 	Binary               bool
+	Lines                CommittedLineCounts
+}
+
+type CommittedLineCounts struct {
+	Additions, Deletions uint64
+	Countable            bool
 }
 
 type CommittedSnapshot struct {
