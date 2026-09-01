@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -13,33 +14,137 @@ import (
 
 	evidence "github.com/kozz36/git-change-evidence"
 	gitadapter "github.com/kozz36/git-change-evidence/internal/git"
+	publicationadapter "github.com/kozz36/git-change-evidence/internal/publication"
 )
 
 func TestRunCLIDispatchesExactProjectArity(t *testing.T) {
 	input := projectInput(t)
 	var stdout, stderr bytes.Buffer
-	if code := runCLI(context.Background(), "repository", []string{"project", "canonical-json"}, bytes.NewReader(input), &stdout, &stderr, nil, limits{}); code != 0 || !bytes.Equal(stdout.Bytes(), input) || stderr.Len() != 0 {
+	if code := runCLI(context.Background(), "repository", []string{"project", "canonical-json"}, bytes.NewReader(input), &stdout, &stderr, nil, limits{}, nil); code != 0 || !bytes.Equal(stdout.Bytes(), input) || stderr.Len() != 0 {
 		t.Fatalf("two-argument project exit, stdout, stderr = %d, %q, %q", code, stdout.String(), stderr.String())
 	}
 	for _, args := range [][]string{{"project"}, {"project", "canonical-json", "extra", "extra"}} {
 		stdout.Reset()
 		stderr.Reset()
-		if code := runCLI(context.Background(), "repository", args, bytes.NewReader(input), &stdout, &stderr, nil, limits{}); code != exitInvalid || stdout.Len() != 0 || stderr.String() != "invalid input\n" {
+		if code := runCLI(context.Background(), "repository", args, bytes.NewReader(input), &stdout, &stderr, nil, limits{}, nil); code != exitInvalid || stdout.Len() != 0 || stderr.String() != "invalid input\n" {
 			t.Fatalf("args %q: exit, stdout, stderr = %d, %q, %q", args, code, stdout.String(), stderr.String())
 		}
 	}
 }
 
-func TestRunCLIPreservesThreeArgumentProjectBaseReference(t *testing.T) {
-	fixture := newFixture(map[string]string{"base/source": "keep\nmove", "head/source": "keep", "head/new": "move\nfresh"})
-	fixture.baseAlias = "project"
-	var stdout, stderr bytes.Buffer
+func TestRunCLIPreservesThreeArgumentSpecialBaseReferences(t *testing.T) {
+	for _, reference := range []string{"project", "publish"} {
+		t.Run(reference, func(t *testing.T) {
+			fixture := newFixture(map[string]string{"base/source": "keep\nmove", "head/source": "keep", "head/new": "move\nfresh"})
+			fixture.baseAlias = reference
+			calls := 0
+			publisher := func(context.Context, string, evidence.Evidence) (publicationadapter.Result, error) {
+				calls++
+				return publicationadapter.Result{}, nil
+			}
+			var stdout, stderr bytes.Buffer
 
-	if code := runCLI(context.Background(), "repository", []string{"project", "source", "new"}, bytes.NewReader(nil), &stdout, &stderr, fixture.runner, standardLimits); code != 0 {
-		t.Fatalf("exit = %d, stderr = %q", code, stderr.String())
+			if code := runCLI(context.Background(), "repository", []string{reference, "source", "new"}, bytes.NewReader(nil), &stdout, &stderr, fixture.runner, standardLimits(), publisher); code != 0 {
+				t.Fatalf("exit = %d, stderr = %q", code, stderr.String())
+			}
+			if got, want := stdout.String(), "moved=1 new=1 additions=2\n"; got != want || stderr.Len() != 0 || calls != 0 {
+				t.Fatalf("stdout, stderr, calls = %q, %q, %d; want %q, empty, zero", got, stderr.String(), calls, want)
+			}
+		})
 	}
-	if got, want := stdout.String(), "moved=1 new=1 additions=2\n"; got != want || stderr.Len() != 0 {
-		t.Fatalf("stdout, stderr = %q, %q; want %q, empty", got, stderr.String(), want)
+}
+
+func TestRunPublishSuccess(t *testing.T) {
+	root := "/publication-root/../unchanged"
+	input := projectInput(t)
+	want := publicationadapter.Result{Identity: "sha256/identity.json"}
+	calls := 0
+	publisher := func(_ context.Context, gotRoot string, document evidence.Evidence) (publicationadapter.Result, error) {
+		calls++
+		if gotRoot != root {
+			t.Errorf("root = %q, want %q", gotRoot, root)
+		}
+		if got := document.CanonicalBytes(); !bytes.Equal(got, input) {
+			t.Errorf("canonical bytes = %q, want %q", got, input)
+		}
+		return want, nil
+	}
+	var stdout, stderr bytes.Buffer
+	if code := runPublish(context.Background(), []string{root}, bytes.NewReader(input), &stdout, &stderr, publisher); code != 0 || stdout.String() != want.Identity+"\n" || stderr.Len() != 0 || calls != 1 {
+		t.Fatalf("exit, stdout, stderr, calls = %d, %q, %q, %d", code, stdout.String(), stderr.String(), calls)
+	}
+}
+
+func TestRunPublishMapsFailuresAndInput(t *testing.T) {
+	input := projectInput(t)
+	for _, test := range []struct {
+		name       string
+		input      io.Reader
+		failure    error
+		wantCode   int
+		wantStderr string
+	}{
+		{"invalid", bytes.NewReader(input), &publicationadapter.Error{Code: publicationadapter.Invalid}, exitInvalid, "invalid input\n"},
+		{"unavailable", bytes.NewReader(input), &publicationadapter.Error{Code: publicationadapter.Unavailable}, exitAbsent, "content unavailable\n"},
+		{"interrupted", bytes.NewReader(input), &publicationadapter.Error{Code: publicationadapter.Interrupted}, exitStopped, "operation interrupted\n"},
+		{"conflict", bytes.NewReader(input), &publicationadapter.Error{Code: publicationadapter.Conflict}, exitConflict, "publication conflict\n"},
+		{"unknown", bytes.NewReader(input), errors.New("unknown publisher failure"), exitAbsent, "content unavailable\n"},
+		{"noncanonical", bytes.NewReader(append(input, ' ')), nil, exitInvalid, "invalid input\n"},
+		{"read failure", failingReader{errors.New("read failure")}, nil, exitAbsent, "content unavailable\n"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			calls := 0
+			publisher := func(context.Context, string, evidence.Evidence) (publicationadapter.Result, error) {
+				calls++
+				return publicationadapter.Result{}, test.failure
+			}
+			var stdout, stderr bytes.Buffer
+			if code := runPublish(context.Background(), []string{"/root"}, test.input, &stdout, &stderr, publisher); code != test.wantCode || stdout.Len() != 0 || stderr.String() != test.wantStderr {
+				t.Fatalf("exit, stdout, stderr = %d, %q, %q", code, stdout.String(), stderr.String())
+			}
+			wantCalls := 1
+			if test.failure == nil {
+				wantCalls = 0
+			}
+			if calls != wantCalls {
+				t.Fatalf("publisher calls = %d, want %d", calls, wantCalls)
+			}
+		})
+	}
+	oversized := &countingReader{reader: bytes.NewReader(bytes.Repeat([]byte("x"), int(projectInputCap)+2))}
+	var stdout, stderr bytes.Buffer
+	if code := runPublish(context.Background(), []string{"/root"}, oversized, &stdout, &stderr, func(context.Context, string, evidence.Evidence) (publicationadapter.Result, error) {
+		t.Fatal("publisher called")
+		return publicationadapter.Result{}, nil
+	}); code != exitBound || stdout.Len() != 0 || stderr.String() != "resource bound exceeded\n" {
+		t.Fatalf("oversized exit, stdout, stderr = %d, %q, %q", code, stdout.String(), stderr.String())
+	}
+	if got, want := oversized.read, int(projectInputCap+1); got != want {
+		t.Fatalf("oversized bytes read = %d, want %d", got, want)
+	}
+}
+
+func TestRunCommandDispatchesPublishBeforeCWD(t *testing.T) {
+	input := projectInput(t)
+	cwdCalls, publisherCalls := 0, 0
+	publisher := func(context.Context, string, evidence.Evidence) (publicationadapter.Result, error) {
+		publisherCalls++
+		return publicationadapter.Result{Identity: "sha256/identity.json"}, nil
+	}
+	unavailableCWD := func() (string, error) {
+		cwdCalls++
+		return "", errors.New("cwd unavailable")
+	}
+	var stdout, stderr bytes.Buffer
+	if code := runCommand(context.Background(), []string{"publish", "/root"}, bytes.NewReader(input), &stdout, &stderr, unavailableCWD, nil, limits{}, publisher); code != 0 || stdout.String() != "sha256/identity.json\n" || stderr.Len() != 0 || cwdCalls != 0 || publisherCalls != 1 {
+		t.Fatalf("exit, stdout, stderr, cwd, publisher = %d, %q, %q, %d, %d", code, stdout.String(), stderr.String(), cwdCalls, publisherCalls)
+	}
+	for _, args := range [][]string{{"publish"}, {"publish", "/root", "extra", "extra"}} {
+		stdout.Reset()
+		stderr.Reset()
+		if code := runCommand(context.Background(), args, bytes.NewReader(input), &stdout, &stderr, unavailableCWD, nil, limits{}, publisher); code != exitInvalid || stdout.Len() != 0 || stderr.String() != "invalid input\n" || cwdCalls != 0 || publisherCalls != 1 {
+			t.Fatalf("args %q: exit, stdout, stderr, cwd, publisher = %d, %q, %q, %d, %d", args, code, stdout.String(), stderr.String(), cwdCalls, publisherCalls)
+		}
 	}
 }
 
@@ -172,7 +277,7 @@ func TestRunUsesCommittedBlobsAndFormatsExactly(t *testing.T) {
 	write(t, repository, "source", "dirty\n")
 	write(t, repository, "new", "dirty\n")
 	var stdout, stderr bytes.Buffer
-	if code := run(context.Background(), repository, []string{"HEAD~1", "source", "new"}, &stdout, &stderr, gitRunner, standardLimits); code != 0 {
+	if code := run(context.Background(), repository, []string{"HEAD~1", "source", "new"}, &stdout, &stderr, gitRunner, standardLimits()); code != 0 {
 		t.Fatalf("exit = %d, stderr = %q", code, stderr.String())
 	}
 	if got, want := stdout.String(), "moved=1 new=1 additions=2\n"; got != want || stderr.Len() != 0 {
@@ -225,7 +330,7 @@ func TestRunClassifiesInputAndContentFailures(t *testing.T) {
 	nonBlob.nonBlob = "tree"
 	assert := func(args []string, runner gitadapter.Runner, want int) {
 		var stdout, stderr bytes.Buffer
-		got := run(context.Background(), "repository", args, &stdout, &stderr, runner, standardLimits)
+		got := run(context.Background(), "repository", args, &stdout, &stderr, runner, standardLimits())
 		if got != want || (got == 0 && stdout.String() != "moved=2 new=1 additions=3\n") || (got != 0 && stdout.Len() != 0) || (got != 0 && strings.Count(stderr.String(), "\n") != 1) {
 			t.Fatalf("exit, stdout, stderr = %d, %q, %q", got, stdout.String(), stderr.String())
 		}
@@ -240,7 +345,7 @@ func TestRunClassifiesInputAndContentFailures(t *testing.T) {
 	}
 	canceled, cancel := context.WithCancel(context.Background())
 	cancel()
-	if got := run(canceled, "repository", []string{"base", "source", "new"}, &bytes.Buffer{}, &bytes.Buffer{}, valid.runner, standardLimits); got != exitStopped {
+	if got := run(canceled, "repository", []string{"base", "source", "new"}, &bytes.Buffer{}, &bytes.Buffer{}, valid.runner, standardLimits()); got != exitStopped {
 		t.Fatalf("canceled exit = %d", got)
 	}
 }
