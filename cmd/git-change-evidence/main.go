@@ -18,6 +18,8 @@ import (
 
 const exitInvalid, exitAbsent, exitBound, exitUTF8, exitStopped, exitRace = 2, 3, 4, 5, 6, 7
 
+const projectInputCap int64 = 16 << 20
+
 type limits struct{ perBlob, aggregate, lines, lineBytes, pairs int }
 
 var standardLimits = limits{gitadapter.MaxAcquiredBlobBytes, gitadapter.MaxAcquiredBlobBytes, evidence.CarveoutSafeMaxLines, evidence.CarveoutSafeMaxLineBytes, 1 << 20}
@@ -45,12 +47,61 @@ func matcherDeadline(ctx context.Context, now time.Time) time.Time {
 	return now.Add(time.Second)
 }
 func main() {
+	args := os.Args[1:]
+	if isProjectShaped(args) {
+		os.Exit(runCLI(context.Background(), "", args, os.Stdin, os.Stdout, os.Stderr, nil, limits{}))
+	}
 	repository, err := os.Getwd()
 	if err != nil {
 		fmt.Fprint(os.Stderr, "invalid input\n")
 		os.Exit(exitInvalid)
 	}
-	os.Exit(run(context.Background(), repository, os.Args[1:], os.Stdout, os.Stderr, gitRunner, standardLimits))
+	os.Exit(runCLI(context.Background(), repository, args, os.Stdin, os.Stdout, os.Stderr, gitRunner, standardLimits))
+}
+func isProjectShaped(args []string) bool {
+	return len(args) > 0 && args[0] == "project" && len(args) != 3
+}
+func runCLI(ctx context.Context, repository string, args []string, input io.Reader, stdout, stderr io.Writer, runner gitadapter.Runner, bound limits) int {
+	if isProjectShaped(args) {
+		if len(args) == 2 {
+			return runProject(args[1:], input, stdout, stderr)
+		}
+		return projectExit(stderr, exitInvalid)
+	}
+	return run(ctx, repository, args, stdout, stderr, runner, bound)
+}
+func runProject(args []string, input io.Reader, stdout, stderr io.Writer) int {
+	if len(args) != 1 || input == nil {
+		return projectExit(stderr, exitInvalid)
+	}
+	format, ok := map[string]evidence.ProjectionFormat{
+		"canonical-json": evidence.ProjectionCanonicalJSON,
+		"human-text":     evidence.ProjectionHumanText,
+	}[args[0]]
+	if !ok {
+		return projectExit(stderr, exitInvalid)
+	}
+	inputBytes, err := io.ReadAll(io.LimitReader(input, projectInputCap+1))
+	if err != nil {
+		return projectExit(stderr, exitAbsent)
+	}
+	if int64(len(inputBytes)) > projectInputCap {
+		return projectExit(stderr, exitBound)
+	}
+	document, err := evidence.DecodeCanonical(inputBytes)
+	if err != nil {
+		return projectExit(stderr, exitInvalid)
+	}
+	output, err := evidence.ProjectEvidence(document, format)
+	if err != nil {
+		return projectExit(stderr, exitInvalid)
+	}
+	_, _ = stdout.Write(output)
+	return 0
+}
+func projectExit(stderr io.Writer, code int) int {
+	fmt.Fprint(stderr, diagnostic(code))
+	return code
 }
 func run(ctx context.Context, repository string, args []string, stdout, stderr io.Writer, runner gitadapter.Runner, bound limits) int {
 	if len(args) != 3 {

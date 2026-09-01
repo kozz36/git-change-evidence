@@ -11,8 +11,148 @@ import (
 	"testing"
 	"time"
 
+	evidence "github.com/kozz36/git-change-evidence"
 	gitadapter "github.com/kozz36/git-change-evidence/internal/git"
 )
+
+func TestRunCLIDispatchesExactProjectArity(t *testing.T) {
+	input := projectInput(t)
+	var stdout, stderr bytes.Buffer
+	if code := runCLI(context.Background(), "repository", []string{"project", "canonical-json"}, bytes.NewReader(input), &stdout, &stderr, nil, limits{}); code != 0 || !bytes.Equal(stdout.Bytes(), input) || stderr.Len() != 0 {
+		t.Fatalf("two-argument project exit, stdout, stderr = %d, %q, %q", code, stdout.String(), stderr.String())
+	}
+	for _, args := range [][]string{{"project"}, {"project", "canonical-json", "extra", "extra"}} {
+		stdout.Reset()
+		stderr.Reset()
+		if code := runCLI(context.Background(), "repository", args, bytes.NewReader(input), &stdout, &stderr, nil, limits{}); code != exitInvalid || stdout.Len() != 0 || stderr.String() != "invalid input\n" {
+			t.Fatalf("args %q: exit, stdout, stderr = %d, %q, %q", args, code, stdout.String(), stderr.String())
+		}
+	}
+}
+
+func TestRunCLIPreservesThreeArgumentProjectBaseReference(t *testing.T) {
+	fixture := newFixture(map[string]string{"base/source": "keep\nmove", "head/source": "keep", "head/new": "move\nfresh"})
+	fixture.baseAlias = "project"
+	var stdout, stderr bytes.Buffer
+
+	if code := runCLI(context.Background(), "repository", []string{"project", "source", "new"}, bytes.NewReader(nil), &stdout, &stderr, fixture.runner, standardLimits); code != 0 {
+		t.Fatalf("exit = %d, stderr = %q", code, stderr.String())
+	}
+	if got, want := stdout.String(), "moved=1 new=1 additions=2\n"; got != want || stderr.Len() != 0 {
+		t.Fatalf("stdout, stderr = %q, %q; want %q, empty", got, stderr.String(), want)
+	}
+}
+
+func TestRunProjectCanonicalJSON(t *testing.T) {
+	input := projectInput(t)
+	var stdout, stderr bytes.Buffer
+
+	if code := runProject([]string{"canonical-json"}, bytes.NewReader(input), &stdout, &stderr); code != 0 {
+		t.Fatalf("exit = %d, stderr = %q", code, stderr.String())
+	}
+	if got := stdout.Bytes(); !bytes.Equal(got, input) || stderr.Len() != 0 {
+		t.Fatalf("stdout, stderr = %q, %q; want supplied bytes, empty", got, stderr.String())
+	}
+}
+
+func projectInput(t *testing.T) []byte {
+	t.Helper()
+	document, err := evidence.NewReportV1(evidence.ReportInput{
+		Subject: "projection fixture",
+		Provenance: evidence.Provenance{
+			AccountingDigest:  evidence.Digest(strings.Repeat("a", 64)),
+			InputPolicyDigest: evidence.Digest(strings.Repeat("b", 64)),
+			InventoryDigest:   evidence.Digest(strings.Repeat("c", 64)),
+			Revisions: evidence.RevisionIdentity{
+				Base: strings.Repeat("d", 40),
+				Head: strings.Repeat("e", 40),
+			},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return document.CanonicalBytes()
+}
+
+func TestRunProjectHumanTextAndRepeatedInput(t *testing.T) {
+	input := projectInput(t)
+	document, err := evidence.DecodeCanonical(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := evidence.ProjectEvidence(document, evidence.ProjectionHumanText)
+	if err != nil {
+		t.Fatal(err)
+	}
+	project := func() []byte {
+		var stdout, stderr bytes.Buffer
+		if code := runProject([]string{"human-text"}, bytes.NewReader(input), &stdout, &stderr); code != 0 || stderr.Len() != 0 {
+			t.Fatalf("exit, stderr = %d, %q", code, stderr.String())
+		}
+		return stdout.Bytes()
+	}
+	first, second := project(), project()
+	if !bytes.Equal(first, want) || !bytes.Equal(second, first) {
+		t.Fatalf("outputs = %q, %q; want byte-identical core output %q", first, second, want)
+	}
+	if bytes.Contains(first, []byte("projection fixture")) {
+		t.Fatalf("human output includes subject: %q", first)
+	}
+}
+
+func TestRunProjectRejectsInvalidInputWithoutWritingStdout(t *testing.T) {
+	input := projectInput(t)
+	for _, test := range []struct {
+		name  string
+		args  []string
+		input []byte
+	}{
+		{"missing format", nil, input},
+		{"extra argument", []string{"canonical-json", "extra"}, input},
+		{"unknown format", []string{"other"}, input},
+		{"noncanonical document", []string{"canonical-json"}, append(input, ' ')},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			if code := runProject(test.args, bytes.NewReader(test.input), &stdout, &stderr); code != exitInvalid || stdout.Len() != 0 || stderr.String() != "invalid input\n" {
+				t.Fatalf("exit, stdout, stderr = %d, %q, %q", code, stdout.String(), stderr.String())
+			}
+		})
+	}
+}
+
+func TestRunProjectBoundsAndReadFailures(t *testing.T) {
+	oversized := &countingReader{reader: bytes.NewReader(bytes.Repeat([]byte("x"), int(projectInputCap)+2))}
+	var stdout, stderr bytes.Buffer
+	if code := runProject([]string{"canonical-json"}, oversized, &stdout, &stderr); code != exitBound || stdout.Len() != 0 || stderr.String() != "resource bound exceeded\n" {
+		t.Fatalf("oversized exit, stdout, stderr = %d, %q, %q", code, stdout.String(), stderr.String())
+	}
+	if got, want := oversized.read, int(projectInputCap+1); got != want {
+		t.Fatalf("oversized bytes read = %d, want %d", got, want)
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	if code := runProject([]string{"canonical-json"}, failingReader{errors.New("read failure")}, &stdout, &stderr); code != exitAbsent || stdout.Len() != 0 || stderr.String() != "content unavailable\n" {
+		t.Fatalf("read error exit, stdout, stderr = %d, %q, %q", code, stdout.String(), stderr.String())
+	}
+}
+
+type countingReader struct {
+	reader *bytes.Reader
+	read   int
+}
+
+func (r *countingReader) Read(value []byte) (int, error) {
+	count, err := r.reader.Read(value)
+	r.read += count
+	return count, err
+}
+
+type failingReader struct{ err error }
+
+func (r failingReader) Read([]byte) (int, error) { return 0, r.err }
 
 func TestRunUsesCommittedBlobsAndFormatsExactly(t *testing.T) {
 	repository := t.TempDir()
@@ -106,9 +246,9 @@ func TestRunClassifiesInputAndContentFailures(t *testing.T) {
 }
 
 type fixture struct {
-	blobs, objects      map[string]string
-	base, head, nonBlob string
-	headResolves        int
+	blobs, objects                 map[string]string
+	base, head, baseAlias, nonBlob string
+	headResolves                   int
 }
 
 func newFixture(blobs map[string]string) *fixture {
@@ -129,7 +269,7 @@ func (f *fixture) runner(_ context.Context, _ string, _ int, args ...string) ([]
 			f.headResolves++
 			return []byte(f.head + "\n"), nil
 		}
-		if revision == "base" || revision == f.base {
+		if revision == "base" || revision == f.baseAlias || revision == f.base {
 			return []byte(f.base + "\n"), nil
 		}
 		if revision == f.head {
