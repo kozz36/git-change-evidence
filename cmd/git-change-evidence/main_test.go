@@ -64,7 +64,8 @@ func (c *testClock) Now() time.Time {
 func TestMatchedSharesAbsoluteDeadline(t *testing.T) {
 	bound, now := limits{16, 32, 8, 16, 64}, time.Unix(0, 0)
 	limit := now.Add(time.Millisecond)
-	ctx, _ := context.WithDeadline(context.Background(), limit)
+	ctx, cancel := context.WithDeadline(context.Background(), limit)
+	defer cancel()
 	deadline := matcherDeadline(ctx, now)
 	clock, pairs := &testClock{limit.Add(-time.Millisecond)}, bound.pairs
 	source, _ := prepared("move", "move", &bound.lines, bound)
