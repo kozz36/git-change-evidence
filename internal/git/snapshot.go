@@ -2,6 +2,8 @@ package gitadapter
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -86,11 +88,57 @@ func exists(repository string, id evidence.GitObjectID) bool {
 func racing() error                                 { return failure(evidence.SnapshotRacing) }
 func failure(code evidence.SnapshotErrorCode) error { return &evidence.SnapshotError{Code: code} }
 
+type Runner func(context.Context, string, int, ...string) ([]byte, error)
+
+const maxGitOutputBytes = 16 << 20
+
 func gitOutput(repository string, args ...string) ([]byte, error) {
+	return gitOutputBounded(context.Background(), repository, -1, args...)
+}
+
+func gitOutputBounded(ctx context.Context, repository string, byteCap int, args ...string) ([]byte, error) {
 	arguments := append([]string{"--no-replace-objects", "-C", repository}, args...)
-	command := exec.Command("git", arguments...)
-	command.Env = []string{"GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL=/dev/null", "GIT_ATTR_NOSYSTEM=1", "GIT_CONFIG_COUNT=0", "GIT_NO_REPLACE_OBJECTS=1", "LC_ALL=C", "LANG=C", "PATH=/usr/bin:/bin"}
-	return command.Output()
+	environment := []string{"GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL=/dev/null", "GIT_ATTR_NOSYSTEM=1", "GIT_CONFIG_COUNT=0", "GIT_NO_REPLACE_OBJECTS=1", "LC_ALL=C", "LANG=C", "PATH=/usr/bin:/bin"}
+	return controlledOutput(ctx, "git", arguments, environment, byteCap, nil)
+}
+
+func controlledOutput(ctx context.Context, name string, args, environment []string, byteCap int, configure func(*exec.Cmd)) ([]byte, error) {
+	if ctx == nil {
+		return nil, errors.New("invalid controlled command input")
+	}
+	command := exec.CommandContext(ctx, name, args...)
+	command.Env = environment
+	if configure != nil {
+		configure(command)
+	}
+	if byteCap < 0 {
+		return command.Output()
+	}
+	output := boundedOutput{cap: byteCap}
+	command.Stdout = &output
+	if err := command.Run(); err != nil {
+		return nil, err
+	}
+	if output.exceeded {
+		return nil, errors.New("controlled command output exceeded cap")
+	}
+	return output.Bytes(), nil
+}
+
+type boundedOutput struct {
+	bytes.Buffer
+	cap      int
+	exceeded bool
+}
+
+func (output *boundedOutput) Write(value []byte) (int, error) {
+	remaining := output.cap - output.Len()
+	if len(value) > remaining {
+		output.Buffer.Write(value[:remaining])
+		output.exceeded = true
+		return len(value), nil
+	}
+	return output.Buffer.Write(value)
 }
 
 func parseRaw(raw []byte) ([]evidence.CommittedChange, bool) {

@@ -2,12 +2,14 @@ package gitadapter
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	evidence "github.com/kozz36/git-change-evidence"
 )
@@ -25,7 +27,7 @@ func TestAcquireBlobUsesCommittedObjectIdentity(t *testing.T) {
 	object := git(t, repo, "rev-parse", head+":file")
 	git(t, repo, "replace", head, base)
 
-	got, err := acquireBlob(BlobRequest{Repository: repo, Revision: "HEAD", Path: "file"}, func() {
+	got, err := acquireBlob(context.Background(), gitOutputBounded, BlobRequest{Repository: repo, Revision: "HEAD", Path: "file"}, BlobBounds{ByteCap: MaxAcquiredBlobBytes}, func() {
 		git(t, repo, "update-ref", "HEAD", base)
 	})
 	if err != nil {
@@ -43,7 +45,7 @@ func TestAcquireBlobIgnoresIndexAndWorktree(t *testing.T) {
 	head, object := commit(t, repo), ""
 	object = git(t, repo, "rev-parse", head+":file")
 	assertCommitted := func() {
-		got, err := AcquireBlob(BlobRequest{Repository: repo, Revision: head, Path: "file"})
+		got, err := AcquireBlob(context.Background(), gitOutputBounded, BlobRequest{Repository: repo, Revision: head, Path: "file"}, BlobBounds{ByteCap: MaxAcquiredBlobBytes})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -99,7 +101,7 @@ func TestAcquireBlobPreservesLiteralPathsAndSymlinks(t *testing.T) {
 		kind                     evidence.GitEntryKind
 	}{{name, "100644", "blob", content, evidence.GitFile}, {"-leading-dash", "100644", "blob", "dash", evidence.GitFile}, {"link", "120000", "blob", name, evidence.GitSymlink}} {
 		t.Run(test.path, func(t *testing.T) {
-			got, err := AcquireBlob(BlobRequest{Repository: repo, Revision: head, Path: test.path})
+			got, err := AcquireBlob(context.Background(), gitOutputBounded, BlobRequest{Repository: repo, Revision: head, Path: test.path}, BlobBounds{ByteCap: MaxAcquiredBlobBytes})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -138,17 +140,17 @@ func TestAcquireBlobReportsTypedFailuresWithoutContent(t *testing.T) {
 		{"gitlink", BlobRequest{repo, head, "module"}, BlobNotBlob},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			got, err := AcquireBlob(test.in)
+			got, err := AcquireBlob(context.Background(), gitOutputBounded, test.in, BlobBounds{ByteCap: MaxAcquiredBlobBytes})
 			assertBlobFailure(t, got, err, test.want)
 		})
 	}
 	for _, path := range []string{"", "/absolute", "../file", "dir/../file", "dir/./file", "dir//file", "nul\x00path"} {
 		t.Run("invalid path "+path, func(t *testing.T) {
-			got, err := AcquireBlob(BlobRequest{repo, head, path})
+			got, err := AcquireBlob(context.Background(), gitOutputBounded, BlobRequest{repo, head, path}, BlobBounds{ByteCap: MaxAcquiredBlobBytes})
 			assertBlobFailure(t, got, err, BlobInvalidPath)
 		})
 	}
-	got, err := acquireBlob(BlobRequest{repo, head, "file"}, func() {
+	got, err := acquireBlob(context.Background(), gitOutputBounded, BlobRequest{repo, head, "file"}, BlobBounds{ByteCap: MaxAcquiredBlobBytes}, func() {
 		git(t, repo, "update-ref", "HEAD", base)
 		git(t, repo, "reflog", "expire", "--expire=now", "--all")
 		git(t, repo, "prune", "--expire=now")
@@ -170,12 +172,91 @@ func TestAcquireBlobPreservesSHA256Identity(t *testing.T) {
 		t.Fatalf("SHA-256 commit, content object, committed object = %q, %q, %q", head, object, committedObject)
 	}
 
-	got, err := AcquireBlob(BlobRequest{Repository: repo, Revision: head, Path: "file"})
+	got, err := AcquireBlob(context.Background(), gitOutputBounded, BlobRequest{Repository: repo, Revision: head, Path: "file"}, BlobBounds{ByteCap: MaxAcquiredBlobBytes})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got.Commit != evidence.GitObjectID(head) || got.Object != evidence.GitObjectID(object) || got.Mode != "100644" || got.Type != "blob" || got.Kind != evidence.GitFile || !bytes.Equal([]byte(got.Content), content) {
 		t.Fatalf("blob = %#v; want commit %q, object %q, mode 100644, type blob, kind %q, content %x", got, head, object, evidence.GitFile, content)
+	}
+}
+
+func TestAcquireBlobRejectsObjectOverByteCapBeforeContentRead(t *testing.T) {
+	commit, object := strings.Repeat("a", 40), strings.Repeat("b", 40)
+	contentReads, contentCap, contentUnavailable := 0, 0, false
+	declared := []byte("4\n")
+	runner := Runner(func(_ context.Context, _ string, byteCap int, args ...string) ([]byte, error) {
+		switch {
+		case strings.Join(args, " ") == "rev-parse --show-object-format":
+			return []byte("sha1\n"), nil
+		case args[0] == "rev-parse":
+			return []byte(commit + "\n"), nil
+		case args[0] == "ls-tree":
+			return []byte("100644 blob " + object + "\tfile\x00"), nil
+		case len(args) > 1 && args[0] == "cat-file" && args[1] == "-s":
+			return declared, nil
+		case len(args) > 1 && args[0] == "cat-file" && args[1] == "blob":
+			contentReads++
+			contentCap = byteCap
+			if contentUnavailable {
+				return nil, errors.New("object disappeared")
+			}
+			return []byte("four"), nil
+		case len(args) > 1 && args[0] == "cat-file" && args[1] == "-e":
+			return nil, nil
+		default:
+			return nil, errors.New("unexpected Git command")
+		}
+	})
+	request := BlobRequest{Repository: "repo", Revision: "revision", Path: "file"}
+
+	got, err := AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 4})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertBlob(t, got, commit, object, "100644", evidence.GitFile, "blob", "four")
+	got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 3})
+	assertBlobFailure(t, got, err, BlobOversized)
+	for _, declared = range [][]byte{[]byte("+4\n"), []byte("-4\n"), []byte(" 4\n"), []byte("4 \n"), []byte("4\n4\n"), []byte("04\n"), []byte("4"), []byte("18446744073709551616\n")} {
+		got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 4})
+		assertBlobFailure(t, got, err, BlobRacing)
+	}
+	declared = []byte("4\n")
+	contentUnavailable = true
+	got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 4})
+	assertBlobFailure(t, got, err, BlobRacing)
+	if contentReads != 2 || contentCap != 4 {
+		t.Fatalf("content reads, cap = %d, %d; want 2, 4", contentReads, contentCap)
+	}
+}
+
+func TestAcquireBlobRejectsInvalidInputBeforeGit(t *testing.T) {
+	calls := 0
+	runner := Runner(func(context.Context, string, int, ...string) ([]byte, error) {
+		calls++
+		return nil, nil
+	})
+	canceled, cancel := context.WithCancelCause(context.Background())
+	cancel(errors.New("custom cancellation"))
+	deadline, endDeadline := context.WithDeadlineCause(context.Background(), time.Now(), errors.New("custom deadline"))
+	defer endDeadline()
+	for _, test := range []struct {
+		name string
+		ctx  context.Context
+		cap  int
+		want BlobErrorCode
+	}{
+		{"nil context", nil, 1, BlobInvalidInput}, {"zero cap", context.Background(), 0, BlobInvalidInput},
+		{"large cap", context.Background(), MaxAcquiredBlobBytes + 1, BlobInvalidInput}, {"canceled", canceled, 1, BlobCanceled},
+		{"deadline", deadline, 1, BlobDeadline},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := AcquireBlob(test.ctx, runner, BlobRequest{}, BlobBounds{ByteCap: test.cap})
+			assertBlobFailure(t, got, err, test.want)
+		})
+	}
+	if calls != 0 {
+		t.Fatalf("Git calls = %d, want 0", calls)
 	}
 }
 
