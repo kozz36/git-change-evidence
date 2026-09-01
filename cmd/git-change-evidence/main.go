@@ -14,15 +14,18 @@ import (
 
 	evidence "github.com/kozz36/git-change-evidence"
 	gitadapter "github.com/kozz36/git-change-evidence/internal/git"
+	publicationadapter "github.com/kozz36/git-change-evidence/internal/publication"
 )
 
-const exitInvalid, exitAbsent, exitBound, exitUTF8, exitStopped, exitRace = 2, 3, 4, 5, 6, 7
+const exitInvalid, exitAbsent, exitBound, exitUTF8, exitStopped, exitRace, exitConflict = 2, 3, 4, 5, 6, 7, 8
 
 const projectInputCap int64 = 16 << 20
 
 type limits struct{ perBlob, aggregate, lines, lineBytes, pairs int }
 
-var standardLimits = limits{gitadapter.MaxAcquiredBlobBytes, gitadapter.MaxAcquiredBlobBytes, evidence.CarveoutSafeMaxLines, evidence.CarveoutSafeMaxLineBytes, 1 << 20}
+func standardLimits() limits {
+	return limits{gitadapter.MaxAcquiredBlobBytes, gitadapter.MaxAcquiredBlobBytes, evidence.CarveoutSafeMaxLines, evidence.CarveoutSafeMaxLineBytes, 1 << 20}
+}
 
 type absoluteClock struct {
 	now             func() time.Time
@@ -46,32 +49,48 @@ func matcherDeadline(ctx context.Context, now time.Time) time.Time {
 	}
 	return now.Add(time.Second)
 }
+
+type publisher func(context.Context, string, evidence.Evidence) (publicationadapter.Result, error)
+
+type canonicalInput struct{ document evidence.Evidence }
+
 func main() {
-	args := os.Args[1:]
-	if isProjectShaped(args) {
-		os.Exit(runCLI(context.Background(), "", args, os.Stdin, os.Stdout, os.Stderr, nil, limits{}))
+	os.Exit(runCommand(context.Background(), os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getwd, gitRunner, standardLimits(), publicationadapter.Publish))
+}
+func runCommand(ctx context.Context, args []string, input io.Reader, stdout, stderr io.Writer, getwd func() (string, error), runner gitadapter.Runner, bound limits, publish publisher) int {
+	if isProjectShaped(args) || isPublicationShaped(args) {
+		return runCLI(ctx, "", args, input, stdout, stderr, runner, bound, publish)
 	}
-	repository, err := os.Getwd()
+	repository, err := getwd()
 	if err != nil {
-		fmt.Fprint(os.Stderr, "invalid input\n")
-		os.Exit(exitInvalid)
+		fmt.Fprint(stderr, "invalid input\n")
+		return exitInvalid
 	}
-	os.Exit(runCLI(context.Background(), repository, args, os.Stdin, os.Stdout, os.Stderr, gitRunner, standardLimits))
+	return runCLI(ctx, repository, args, input, stdout, stderr, runner, bound, publish)
 }
 func isProjectShaped(args []string) bool {
 	return len(args) > 0 && args[0] == "project" && len(args) != 3
 }
-func runCLI(ctx context.Context, repository string, args []string, input io.Reader, stdout, stderr io.Writer, runner gitadapter.Runner, bound limits) int {
+func isPublicationShaped(args []string) bool {
+	return len(args) > 0 && args[0] == "publish" && len(args) != 3
+}
+func runCLI(ctx context.Context, repository string, args []string, input io.Reader, stdout, stderr io.Writer, runner gitadapter.Runner, bound limits, publish publisher) int {
 	if isProjectShaped(args) {
 		if len(args) == 2 {
 			return runProject(args[1:], input, stdout, stderr)
 		}
 		return projectExit(stderr, exitInvalid)
 	}
+	if isPublicationShaped(args) {
+		if len(args) == 2 {
+			return runPublish(ctx, args[1:], input, stdout, stderr, publish)
+		}
+		return projectExit(stderr, exitInvalid)
+	}
 	return run(ctx, repository, args, stdout, stderr, runner, bound)
 }
 func runProject(args []string, input io.Reader, stdout, stderr io.Writer) int {
-	if len(args) != 1 || input == nil {
+	if len(args) != 1 {
 		return projectExit(stderr, exitInvalid)
 	}
 	format, ok := map[string]evidence.ProjectionFormat{
@@ -81,23 +100,69 @@ func runProject(args []string, input io.Reader, stdout, stderr io.Writer) int {
 	if !ok {
 		return projectExit(stderr, exitInvalid)
 	}
-	inputBytes, err := io.ReadAll(io.LimitReader(input, projectInputCap+1))
-	if err != nil {
-		return projectExit(stderr, exitAbsent)
+	decoded, code := decodeCanonical(input)
+	if code != 0 {
+		return projectExit(stderr, code)
 	}
-	if int64(len(inputBytes)) > projectInputCap {
-		return projectExit(stderr, exitBound)
-	}
-	document, err := evidence.DecodeCanonical(inputBytes)
-	if err != nil {
-		return projectExit(stderr, exitInvalid)
-	}
-	output, err := evidence.ProjectEvidence(document, format)
+	output, err := evidence.ProjectEvidence(decoded.document, format)
 	if err != nil {
 		return projectExit(stderr, exitInvalid)
 	}
 	_, _ = stdout.Write(output)
 	return 0
+}
+func runPublish(ctx context.Context, args []string, input io.Reader, stdout, stderr io.Writer, publish publisher) int {
+	if len(args) != 1 {
+		return projectExit(stderr, exitInvalid)
+	}
+	decoded, code := decodeCanonical(input)
+	if code != 0 {
+		return projectExit(stderr, code)
+	}
+	if publish == nil {
+		return projectExit(stderr, exitAbsent)
+	}
+	result, err := publish(ctx, args[0], decoded.document)
+	if err != nil {
+		return projectExit(stderr, publicationExit(err))
+	}
+	fmt.Fprintln(stdout, result.Identity)
+	return 0
+}
+func decodeCanonical(input io.Reader) (canonicalInput, int) {
+	if input == nil {
+		return canonicalInput{}, exitInvalid
+	}
+	inputBytes, err := io.ReadAll(io.LimitReader(input, projectInputCap+1))
+	if err != nil {
+		return canonicalInput{}, exitAbsent
+	}
+	if int64(len(inputBytes)) > projectInputCap {
+		return canonicalInput{}, exitBound
+	}
+	document, err := evidence.DecodeCanonical(inputBytes)
+	if err != nil {
+		return canonicalInput{}, exitInvalid
+	}
+	return canonicalInput{document: document}, 0
+}
+func publicationExit(err error) int {
+	var failure *publicationadapter.Error
+	if !errors.As(err, &failure) {
+		return exitAbsent
+	}
+	switch failure.Code {
+	case publicationadapter.Invalid:
+		return exitInvalid
+	case publicationadapter.Unavailable:
+		return exitAbsent
+	case publicationadapter.Interrupted:
+		return exitStopped
+	case publicationadapter.Conflict:
+		return exitConflict
+	default:
+		return exitAbsent
+	}
 }
 func projectExit(stderr io.Writer, code int) int {
 	fmt.Fprint(stderr, diagnostic(code))
@@ -239,7 +304,7 @@ func blobExit(err error) int {
 	}
 }
 func diagnostic(code int) string {
-	return map[int]string{exitInvalid: "invalid input\n", exitAbsent: "content unavailable\n", exitBound: "resource bound exceeded\n", exitUTF8: "invalid UTF-8\n", exitStopped: "operation interrupted\n", exitRace: "git object race\n"}[code]
+	return map[int]string{exitInvalid: "invalid input\n", exitAbsent: "content unavailable\n", exitBound: "resource bound exceeded\n", exitUTF8: "invalid UTF-8\n", exitStopped: "operation interrupted\n", exitRace: "git object race\n", exitConflict: "publication conflict\n"}[code]
 }
 func gitRunner(ctx context.Context, repository string, cap int, args ...string) ([]byte, error) {
 	command := exec.CommandContext(ctx, "git", append([]string{"--no-replace-objects", "-C", repository}, args...)...)
