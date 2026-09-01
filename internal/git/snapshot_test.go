@@ -1,13 +1,16 @@
 package gitadapter
 
 import (
+	"context"
 	"errors"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	evidence "github.com/kozz36/git-change-evidence"
 )
@@ -128,6 +131,118 @@ func TestAcquirePreservesSHA256Identity(t *testing.T) {
 	if err != nil || len(snapshot.Base) != 64 || len(snapshot.Head) != 64 {
 		t.Fatalf("snapshot = %#v, %v", snapshot, err)
 	}
+}
+
+func TestAcquireBlobCancelsRunningGitCommand(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		cause error
+		want  BlobErrorCode
+	}{
+		{"custom canceled", errors.New("custom cancellation"), BlobCanceled}, {"deadline", context.DeadlineExceeded, BlobDeadline},
+	} {
+		t.Run(test.name, func(t *testing.T) { assertAcquireBlobStops(t, test.cause, test.want) })
+	}
+}
+
+type deadlineContext struct{ context.Context }
+
+func (ctx deadlineContext) Err() error {
+	if ctx.Context.Err() != nil {
+		return context.DeadlineExceeded
+	}
+	return nil
+}
+func assertAcquireBlobStops(t *testing.T, cause error, want BlobErrorCode) {
+	if testing.Short() {
+		t.Skip("uses a real Git repository")
+	}
+	repo := repository(t, false)
+	write(t, repo, "file", "x")
+	head := commit(t, repo)
+	readyRead, readyWrite, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	releaseRead, releaseWrite, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		readyRead.Close()
+		readyWrite.Close()
+		releaseRead.Close()
+		releaseWrite.Close()
+	})
+	child := make(chan *exec.Cmd, 1)
+	runner := Runner(func(ctx context.Context, repository string, byteCap int, args ...string) ([]byte, error) {
+		if len(args) > 1 && args[0] == "cat-file" && args[1] == "blob" {
+			return controlledOutput(ctx, os.Args[0], []string{"-test.run=^TestAcquireBlobHelperProcess$", "--", "blob-helper"}, nil, byteCap, func(command *exec.Cmd) {
+				command.Stdin, command.ExtraFiles = releaseRead, []*os.File{readyWrite}
+				child <- command
+			})
+		}
+		return gitOutputBounded(ctx, repository, byteCap, args...)
+	})
+	ctx, cancel := context.WithCancelCause(context.Background())
+	if cause == context.DeadlineExceeded {
+		inner, end := context.WithCancel(context.Background())
+		ctx, cancel = deadlineContext{inner}, func(error) { end() }
+	}
+	defer cancel(cause)
+	result := make(chan struct {
+		blob Blob
+		err  error
+	}, 1)
+	go func() {
+		blob, err := AcquireBlob(ctx, runner, BlobRequest{Repository: repo, Revision: head, Path: "file"}, BlobBounds{ByteCap: 1})
+		result <- struct {
+			blob Blob
+			err  error
+		}{blob, err}
+	}()
+	ready := make(chan error, 1)
+	go func() {
+		_, err := io.ReadFull(readyRead, make([]byte, 1))
+		ready <- err
+	}()
+	select {
+	case err := <-ready:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("helper did not report readiness")
+	}
+	command := <-child
+	cancel(cause)
+	select {
+	case outcome := <-result:
+		assertBlobFailure(t, outcome.blob, outcome.err, want)
+	case <-time.After(time.Second):
+		releaseWrite.Close()
+		select {
+		case <-result:
+			t.Fatal("canceled Git command did not return before helper release")
+		case <-time.After(time.Second):
+			t.Fatal("helper did not exit after release")
+		}
+	}
+	if command.ProcessState == nil {
+		t.Fatal("direct child was not reaped")
+	}
+}
+
+func TestAcquireBlobHelperProcess(t *testing.T) {
+	if len(os.Args) == 0 || os.Args[len(os.Args)-1] != "blob-helper" {
+		return
+	}
+	ready := os.NewFile(3, "ready")
+	if _, err := ready.Write([]byte{1}); err != nil {
+		os.Exit(2)
+	}
+	_, _ = io.Copy(io.Discard, os.Stdin)
+	os.Exit(0)
 }
 
 func assertChange(t *testing.T, entry evidence.CommittedChange, status, previous, mode string, kind evidence.GitEntryKind, binary bool) {
