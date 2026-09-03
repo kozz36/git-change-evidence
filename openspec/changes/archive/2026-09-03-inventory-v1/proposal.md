@@ -84,12 +84,12 @@ Remove only the new root Inventory V1 contract and its focused tests. No consume
 
 ## Success Criteria
 
-- [ ] Inventory V1 has a neutral, versioned, canonical root-package document/API and does not contain CNSIC or project-specific compatibility identity.
-- [ ] Every entry preserves exact raw path bytes and derives SHA-256 content identity plus exact byte length from copied content, never from a caller assertion.
-- [ ] Construction and validating decode require the exact Accounting Policy V1 document and verify the policy link from its canonical bytes.
-- [ ] Repeated equivalent valid inputs produce byte-identical canonical Inventory V1 documents and the same system-derived document digest.
-- [ ] The decoder rejects duplicate or unknown fields, invalid types or values, non-canonical ordering/encoding, duplicate paths, and incorrect policy linkage.
-- [ ] Empty Inventory V1 is documented and tested as verified empty requested scope; unavailable acquisition cannot be encoded as empty inventory.
-- [ ] The API consumes only the exact caller-provided path set and defines no filesystem discovery behavior.
-- [ ] Existing `UntrackedRecord`, `UntrackedInventory`, defensive-copy behavior, unavailable outcomes, and internal acquisition tests remain unchanged and passing.
-- [ ] Filesystem acquisition and `WU-4C` integration, Accounting Result V1, and delivery mechanics remain outside this change.
+- [x] Inventory V1 has a neutral, versioned, canonical root-package document/API and does not contain CNSIC or project-specific compatibility identity.
+- [x] Every entry preserves exact raw path bytes and derives SHA-256 content identity plus exact byte length from copied content, never from a caller assertion.
+- [x] Construction and validating decode require the exact Accounting Policy V1 document and verify the policy link from its canonical bytes.
+- [x] Repeated equivalent valid inputs produce byte-identical canonical Inventory V1 documents and the same system-derived document digest.
+- [x] The decoder rejects duplicate or unknown fields, invalid types or values, non-canonical ordering/encoding, duplicate paths, and incorrect policy linkage.
+- [x] Empty Inventory V1 is documented and tested as verified empty requested scope; unavailable acquisition cannot be encoded as empty inventory.
+- [x] The API consumes only the exact caller-provided path set and defines no filesystem discovery behavior.
+- [x] Existing `UntrackedRecord`, `UntrackedInventory`, defensive-copy behavior, unavailable outcomes, and internal acquisition tests remain unchanged and passing.
+- [x] Filesystem acquisition and `WU-4C` integration, Accounting Result V1, and delivery mechanics remain outside this change.
