@@ -2,11 +2,11 @@ schema: spec-driven
 
 context: |
   Product: git-change-evidence.
-  Status: Bootstrap decision complete; this PR contains planning artifacts only.
+  Status: Inventory V1 is merged; this repository contains its implementation, tests, and closure evidence.
   Architecture: Functional Core / Imperative Shell with Hexagonal profile adapters.
-  Runtime baseline: Go 1.25.10. The public neutral API will be at the module root,
-  the CLI at cmd/git-change-evidence/, and non-public shell/adapters under internal/.
-  No Go source, tests, or go.mod module identity exist in this planning slice.
+  Runtime baseline: Go 1.25.10. The public neutral API is at the module root,
+  the CLI is at cmd/git-change-evidence/, and non-public shell/adapters are under internal/.
+  Go source, co-located Go tests, and the go.mod module identity now exist.
   Evidence-only boundary: never approve, reject, gate, block, merge, deploy, release,
   or assign delivery authority.
   Module identity: github.com/kozz36/git-change-evidence (owner-approved). Deferred: publication identity,
