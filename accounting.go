@@ -44,24 +44,16 @@ func Account(snapshot CommittedSnapshot, policy AccountingPolicy) (AccountingRes
 	if err != nil {
 		return AccountingResult{}, err
 	}
-	result := AccountingResult{Totals: make([]CategoryTotal, len(policy.Categories))}
-	for i, category := range policy.Categories {
-		result.Totals[i].Category = category.Name
+	changes := snapshot.Entries()
+	entries := make([]accountingEntry, len(changes))
+	for i, change := range changes {
+		entries[i] = accountingEntry{path: []byte(change.Path), lines: change.Lines}
 	}
-	for _, change := range snapshot.Entries() {
-		total := &result.Totals[matchingCategory(policy, change.Path, index)]
-		if !change.Lines.Countable {
-			total.NonCountable++
-			continue
-		}
-		var ok bool
-		if total.Additions, ok = addLines(total.Additions, change.Lines.Additions); !ok {
-			return AccountingResult{}, accountingFailure("totals", AccountingOverflow)
-		}
-		if total.Deletions, ok = addLines(total.Deletions, change.Lines.Deletions); !ok {
-			return AccountingResult{}, accountingFailure("totals", AccountingOverflow)
-		}
+	_, totals, ok := legacyAccountingDomain(policy, index).classifyAndTotal(entries)
+	if !ok {
+		return AccountingResult{}, accountingFailure("totals", AccountingOverflow)
 	}
+	result := AccountingResult{Totals: totals}
 	for i, category := range policy.Categories {
 		if category.LineThreshold == 0 {
 			continue
@@ -121,29 +113,12 @@ func validateAccountingPolicy(policy AccountingPolicy) (map[string]int, error) {
 }
 
 func accountingFailure(field, code string) error { return &AccountingError{Field: field, Code: code} }
-func addLines(left, right uint64) (uint64, bool) {
-	if ^uint64(0)-left < right {
-		return 0, false
-	}
-	return left + right, true
-}
 func lineTotal(total CategoryTotal) (uint64, bool) {
 	if total.NonCountable != 0 {
 		return 0, false
 	}
 	return addLines(total.Additions, total.Deletions)
 }
-func matchingCategory(policy AccountingPolicy, path string, index map[string]int) int {
-	for i, category := range policy.Categories {
-		for _, glob := range category.PathGlobs {
-			if matchPathGlob([]byte(glob), []byte(path)) {
-				return i
-			}
-		}
-	}
-	return index[policy.Default]
-}
-
 func validPathGlob(glob string) bool {
 	bytes := []byte(glob)
 	if len(bytes) == 0 {
