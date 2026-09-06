@@ -24,7 +24,7 @@ This forecast includes every existing Result V1 planning artifact, all focused/a
 - Each PR targets `main` only after its predecessor lands; PR1 is current.
 - PR1 exploration+proposal (379); PR2 three Result specs (321); PR3 design+evidence-v1 spec (366); PR4 tasks (314).
 - PR5 accounting foundation (235–290); PR6 Result model (255–305); PR7 wire+identity (285–330); PR8 exact observations (280–335); PR9 antecedents+snapshot (275–330).
-- PR10 constructor, ordering, ownership, and early compatibility (bounded Issue #66 slice); planned PR11 ownership and PR12 legacy-differential responsibilities retire when this Unit 5 slice completes. PR13 decoder shape (350–400 target); PR14 authority hardening (75–95).
+- PR10 constructor, ordering, ownership, and early compatibility (bounded Issue #66 slice); planned PR11 ownership and PR12 legacy-differential responsibilities retire when this Unit 5 slice completes. PR13 private entry/measurement shape slice (Issue #68; 295–385 forecast including 20-line contingency); PR14 remaining structural subtrees with their own authority cases (the prior 75–95 forecast is withdrawn and must be re-estimated before apply).
 - PR15 semantic decoder (280–335); PR16 canonical rejection (145–175); PR17 report binding (235–295); PR18 apply evidence/final census (25–40).
 - PR13/PR15 must stop rather than hide overage if actual scope exceeds 400; no code-golf or artificial split.
 
@@ -125,7 +125,7 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
 - [x] Unit 3 — Exact-rational Result observation derivation.
 - [x] Unit 4 — Exact antecedent and immutable snapshot validation boundary.
 - [x] Unit 5 — Result constructor, deterministic ordering, defensive ownership, inventory-only provenance, fail-atomicity, and shared-domain compatibility (PR10 / Issue #66; implementation checkbox, independent gate pending).
-- [ ] Unit 6 — Strict decoder: duplicate-aware closed structural shape.
+- [ ] Unit 6 — Strict decoder: duplicate-aware closed structural shape (PR13 entry/measurement private slice complete only after parent settlement; remaining structural subtrees stay pending).
 - [ ] Unit 7 — Strict decoder: value validation, recomputation, and noncanonical rejection.
 - [ ] Unit 8 — Antecedent-aware Report V1 provenance binding without report-surface expansion.
 - [ ] Unit 9 — Mutation-kill evidence and final verification census.
@@ -219,16 +219,16 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
 ### 6. Strict decoder: duplicate-aware closed structural shape
 
 - **Dependencies:** units 2, 4, and 5; shape parsing needs the Result model, validated antecedents, and builder-backed recomputation boundary.
-
-- **Files / symbols:** add `result_v1_decode.go`, `result_v1_decode_shape.go`, and `result_v1_decode_shape_keys.go` with Result-specific wrappers/key normalization around `decodePolicyObject`; add `result_v1_decode_shape_test.go` and `result_v1_decode_authority_test.go` only if needed to retain the 160-line target.
+- **Owner Issue #68 ruling / PR13 boundary:** approved only the private `validateResultEntryShapes(raw []byte) error` entry/measurement subtree. Add `result_v1_decode_shape.go`, `result_v1_decode_shape_keys.go`, and `result_v1_decode_shape_test.go`; do not add `result_v1_decode.go`, a public decoder, or a stub-success API. This bounded `stacked-to-main` work unit has the owner-approved 295–385 total changed-line forecast, including 20-line contingency, with no size exception.
+- **PR13 behavior:** require a non-null entries array; closed indexed entry objects with `path_b64`, `category`, and `measurement`; closed countable/non-countable measurements and required primitive fields; duplicate and escaped-duplicate rejection before unmarshal collapsing; and normalized authority recognition for metadata/discriminators only. Category strings remain structural strings: `release` and `merge` are accepted without category-membership, Base64, path, canonical-byte, or other semantic validation.
 - **Requirement coverage:** `result-v1-contract` **Strict antecedent-aware canonical decoding** / *Unknown, duplicate, and authority-bearing nested fields* and *Policy-derived authority-like string remains evidence*; `result-v1-provenance` **Result V1 remains neutral evidence-only provenance** / *Authority-bearing candidate provenance* and *Policy-derived authority-like value remains evidence*.
-- **RED:** add `TestDecodeAccountingResultV1RejectsClosedShapesDuplicatesAndAuthorityKeys`; run:
+- **RED:** add `TestResultV1EntryShapesRejectClosedShapesDuplicatesAndAuthorityKeys`; run:
   ```bash
-  go test . -run '^TestDecodeAccountingResultV1RejectsClosedShapesDuplicatesAndAuthorityKeys$'
+  go test . -run '^TestResultV1EntryShapesRejectClosedShapesDuplicatesAndAuthorityKeys$'
   ```
-- **GREEN:** require every field at root/revisions/entry/measurement/total/observation depth; reject unknown and duplicate decoded keys including escaped duplicates; recognize normalized authority-bearing keys/discriminators only as structural metadata; accept permitted exact Policy-derived values such as `merge` or `release`.
-- **TRIANGULATE:** table-test missing fields, `null`, arrays/booleans/strings where objects/arrays are required, unknown fields, `approval`, `merge-gate`, `delivery_authority`, duplicate and escaped-duplicate `schema`/`path_b64`, unsupported schema/kind, and policy-derived `release` category values.
-- **REFACTOR / verify:** preserve correct field-path `ContractError` values and never use `json.Unmarshal` alone where it could collapse duplicates. Rerun the focused command and `go test ./...`. **Rollback:** remove only Result decoder shape code/tests; construction remains available without a decoder.
+- **GREEN / TRIANGULATE:** table-test malformed/trailing input, null/non-array entries, multiple entry-index paths, both measurement variants, missing/unknown/duplicate/escaped-duplicate keys, authority keys/discriminators, unsupported kind, JSON primitive types, and policy-like `release`/`merge` category values. Preserve literal `ContractError` field/code assertions and do not use `json.Unmarshal` before duplicate-aware parsing.
+- **Remaining Unit 6 (PR14):** root, revisions, totals, and observations structural subtrees remain unchecked and must carry their own missing/unknown/duplicate/escaped-duplicate/authority coverage. The historical PR14 75–95 forecast is withdrawn; re-estimate and obtain its delivery decision before apply. Units 7–9 are unchanged.
+- **REFACTOR / verify:** rerun the focused command and `go test ./...`; check-only formatting remains required. **Rollback:** remove only this private entry/measurement shape code/tests; construction remains available and no partial public decoder exists.
 
 ### 7. Strict decoder: value validation, recomputation, and noncanonical rejection
 
