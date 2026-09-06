@@ -82,6 +82,34 @@ func TestValidateResultAntecedentsRequiresExactPolicyInventoryChain(t *testing.T
 	assertResultPolicyGlob(t, laterView, "src/**")
 }
 
+func TestNewAccountingResultV1InventoryOnlyChangesIdentity(t *testing.T) {
+	policy := newPolicy(t, resultUnit5Policy())
+	empty, err := NewInventoryV1(policy, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	nonempty, err := NewInventoryV1(policy, []InventoryEntryInput{{Path: []byte("untracked"), Content: []byte("content")}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	snapshot := resultUnit5Snapshot([]CommittedChange{{Path: "a/x", Lines: CommittedLineCounts{Additions: 4, Countable: true}}})
+	emptyResult, err := NewAccountingResultV1(policy, empty, snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	nonemptyResult, err := NewAccountingResultV1(policy, nonempty, snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(emptyResult.Entries(), nonemptyResult.Entries()) || !reflect.DeepEqual(emptyResult.Totals(), nonemptyResult.Totals()) || !reflect.DeepEqual(emptyResult.Observations(), nonemptyResult.Observations()) || emptyResult.InventoryDigest() == nonemptyResult.InventoryDigest() || emptyResult.Digest() == nonemptyResult.Digest() {
+		t.Fatal("inventory changed accounting or failed to change identity")
+	}
+	emptySnapshot, err := NewAccountingResultV1(policy, nonempty, resultUnit5Snapshot(nil))
+	if err != nil || len(emptySnapshot.Entries()) != 0 || !reflect.DeepEqual(emptySnapshot.Totals(), []ResultCategoryTotalV1{{Category: "raw"}, {Category: "source"}, {Category: "other"}}) {
+		t.Fatalf("nonempty inventory empty snapshot = %#v, %v", emptySnapshot, err)
+	}
+}
+
 func resultAntecedentFixture(t *testing.T) (PolicyDocumentV1, InventoryDocumentV1) {
 	t.Helper()
 	policy := newPolicy(t, PolicyInput{Categories: []CategoryInput{{Name: "source", PathGlobs: [][]byte{[]byte("src/**")}}}, Default: "source"})
