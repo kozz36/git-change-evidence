@@ -119,9 +119,9 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
 
 - [x] Unit 0 — Apply gate, baseline, and layout review (completed by merged PR57 at `31bcc06d9147adae1c830040d494ab5bdba5a659`; its baseline/package-boundary evidence was independently verified as evidence `14046`).
 - [x] Unit 1 — Shared accounting classification and totals foundation (completed by merged PR57; see independent evidence `14046`).
-- [ ] Unit 2 — Canonical Result V1 types, wire encoding, and identity primitive (partial: PR6 model slice complete; PR7 owns the wire/identity remainder).
+- [x] Unit 2 — Canonical Result V1 types, wire encoding, and identity primitive (PR6 model slice and PR7 wire/identity remainder complete).
   - [x] PR6 — Public Result V1 model types, private document state, and defensive inspection accessors.
-  - [ ] PR7 — Canonical wire structs, encoding, Base64/LF, and system-derived identity.
+  - [x] PR7 — Canonical wire structs, encoding, Base64/LF, and system-derived identity.
 - [ ] Unit 3 — Exact-rational Result observation derivation.
 - [ ] Unit 4 — Exact antecedent and immutable snapshot validation boundary.
 - [ ] Unit 5 — Result constructor, deterministic ordering, and defensive ownership.
