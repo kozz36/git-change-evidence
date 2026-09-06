@@ -24,7 +24,7 @@ This forecast includes every existing Result V1 planning artifact, all focused/a
 - Each PR targets `main` only after its predecessor lands; PR1 is current.
 - PR1 exploration+proposal (379); PR2 three Result specs (321); PR3 design+evidence-v1 spec (366); PR4 tasks (314).
 - PR5 accounting foundation (235–290); PR6 Result model (255–305); PR7 wire+identity (285–330); PR8 exact observations (280–335); PR9 antecedents+snapshot (275–330).
-- PR10 constructor (285–335); PR11 ownership (135–160); PR12 legacy adapter+differential evidence (255–320); PR13 decoder shape (350–400 target); PR14 authority hardening (75–95).
+- PR10 constructor, ordering, ownership, and early compatibility (bounded Issue #66 slice); planned PR11 ownership and PR12 legacy-differential responsibilities retire when this Unit 5 slice completes. PR13 decoder shape (350–400 target); PR14 authority hardening (75–95).
 - PR15 semantic decoder (280–335); PR16 canonical rejection (145–175); PR17 report binding (235–295); PR18 apply evidence/final census (25–40).
 - PR13/PR15 must stop rather than hide overage if actual scope exceeds 400; no code-golf or artificial split.
 
@@ -124,7 +124,7 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
   - [x] PR7 — Canonical wire structs, encoding, Base64/LF, and system-derived identity.
 - [x] Unit 3 — Exact-rational Result observation derivation.
 - [x] Unit 4 — Exact antecedent and immutable snapshot validation boundary.
-- [ ] Unit 5 — Result constructor, deterministic ordering, and defensive ownership.
+- [x] Unit 5 — Result constructor, deterministic ordering, defensive ownership, inventory-only provenance, fail-atomicity, and shared-domain compatibility (PR10 / Issue #66; implementation checkbox, independent gate pending).
 - [ ] Unit 6 — Strict decoder: duplicate-aware closed structural shape.
 - [ ] Unit 7 — Strict decoder: value validation, recomputation, and noncanonical rejection.
 - [ ] Unit 8 — Antecedent-aware Report V1 provenance binding without report-surface expansion.

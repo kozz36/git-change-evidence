@@ -252,3 +252,53 @@ The exact current PR9 candidate is 349 changed lines: 252 Go additions (`result_
 
 - Unit 5 public constructor/ownership tests remain out of scope; this private validator coverage does not claim their public behavior.
 - Parent must independently verify the uncommitted candidate and preserve the separately scoped PR9 approval before any lifecycle action.
+
+## PR10 — Unit 5 constructor, ordering, ownership, and compatibility
+
+- **Work unit:** complete Unit 5 only in the owner-approved `stacked-to-main` Issue #66 slice; no commit, push, PR, merge, or lifecycle settlement occurred.
+- **Completed:** `NewAccountingResultV1` validates exact antecedents and snapshots, reuses `resultAccountingDomain`, raw-byte-sorts entries, projects policy-order totals and closed observations, then delegates canonical identity and ownership to `resultDocument`.
+- **Excluded:** Units 6–9 (strict decoder, report binding, mutation-kill/final census), legacy API changes, acquisition, CLI, configuration, and every other root surface remain deferred.
+- **Approval and layout:** Issue #66 specifically approves this constructor plus four new root Go files and the existing antecedent-test helper; it is not blanket PR9 approval. Root census changes from 44 to 48 Go files: `result_v1_build.go` (41), `result_v1_construct_test.go` (86), `result_v1_ownership_test.go` (87), and `result_v1_compatibility_test.go` (102); `result_v1_antecedents_test.go` (136) supplies the approved existing-helper vector. All five changed root Go files are below 160 lines and below the eight-file threshold.
+
+### Completed tasks
+
+- [x] Completed Unit 5 and retired its redundant planned PR11 ownership and PR12 legacy-differential responsibilities; downstream PR13–PR18 remain planned.
+- [x] Added public construction, order, ownership, inventory-only, exact-zero fatal, and shared-domain legacy vectors; Unit 3 precision-edge coverage was rerun rather than duplicated.
+
+### TDD Cycle Evidence
+
+The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` remains absent, so the configured RED → GREEN → TRIANGULATE → REFACTOR contract was followed directly with `GOTOOLCHAIN=go1.25.10`.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED | `go test . -run '^(TestNewAccountingResultV1ConstructsExclusiveCanonicalEvidence|TestNewAccountingResultV1OwnsIngressAndEgress|TestNewAccountingResultV1InventoryOnlyChangesIdentity|TestNewAccountingResultV1ReturnsZeroOnFatalFailure|TestResultV1AndAccountAgreeOnSharedDomainVectors|TestAccountUsesFirstMatchingRawByteGlobAndDefault|TestAccountReturnsEmptyResultOnOverflow)$'` | Failed as expected: `NewAccountingResultV1` was undefined in all five required public tests. |
+| GREEN | Same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.002s`. |
+| TRIANGULATE | Same focused command after reference-overflow and detailed legacy-observation vectors | Passed: `ok github.com/kozz36/git-change-evidence 0.010s`. |
+| REFACTOR | `gofmt -w` changed Go files, then same focused command | Passed (`cached`); format-only review, no behavior change. |
+
+### Verification and boundary
+
+- Focused Units 1–4 regressions passed: accounting domain, Result wire, exact-rational including precision edge, and antecedent/snapshot validation.
+- `go test ./...`, configured check-only `gofmt`, and `git diff --check` passed; race testing is N/A because this synchronous immutable constructor adds no concurrency.
+- **Files changed:** `result_v1_build.go`, `result_v1_construct_test.go`, `result_v1_ownership_test.go`, `result_v1_compatibility_test.go`, `result_v1_antecedents_test.go`, `tasks.md`, and this cumulative progress artifact.
+- **Workload / PR boundary:** PR10 is the complete Unit 5 slice. Initial candidate: 350 additions + 2 deletions = 352 (historical, independent evidence FAIL). Corrected candidate: 396 additions + 2 deletions = 398, including four untracked Go files, independently confirmed; delivery/settlement remain parent-owned.
+
+### Remaining risks
+
+- Strict decoding and Report V1 binding do not exist yet; callers must not treat construction as decoder or report-provenance proof.
+- The absent strict-TDD support file is a process risk only; required TDD evidence is recorded above.
+
+## PR10 corrective evidence — reset after independent FAIL
+
+- **Initial independent result:** FAIL (`e2dd60b9ca568e88ac59008a46e0d1af19a22ad36d0dbd80f2786b9bf3a651d5`); no gate pass was claimed before revalidation.
+- **F1 closed:** immutable test-owned canonical, entry/path, total, and observation snapshots now survive sequential returned-view mutation; exact private zero is asserted.
+- **F2 closed:** public construction directly checks supplied links/revisions plus a literal independently shaped canonical wire golden and SHA-256 from expected bytes.
+- **F3 closed:** valid-policy construction rejects both zero inventory and a real inventory linked to another valid policy with the exact zero result.
+- **Supplemental scope:** ordinary compatibility now directly asserts expected ratio limit, numerator, and denominator.
+### TDD Cycle Evidence
+| Stage | Evidence |
+|---|---|
+| Historical RED | Original five constructor tests were undefined before initial GREEN; preserved. |
+| Supplemental tests | Uncached focused command passed before and after these test-only corrections; no fabricated new RED or production change. |
+- **Revalidation:** independent uncached focus/full suite, configured check-only `gofmt`, and `git diff --check` passed; F1–F3 closed. Its sole remaining finding was the missing historical 352-line census, restored above and read back by the parent without code changes; settlement/delivery remain parent-owned.
+- **Boundary:** PR10 remains Unit 5 evidence-only corrective scope; final candidate stays within the hard 400-line total budget.
