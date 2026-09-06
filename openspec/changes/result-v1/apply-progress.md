@@ -302,3 +302,84 @@ The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` remains absent
 | Supplemental tests | Uncached focused command passed before and after these test-only corrections; no fabricated new RED or production change. |
 - **Revalidation:** independent uncached focus/full suite, configured check-only `gofmt`, and `git diff --check` passed; F1–F3 closed. Its sole remaining finding was the missing historical 352-line census, restored above and read back by the parent without code changes; settlement/delivery remain parent-owned.
 - **Boundary:** PR10 remains Unit 5 evidence-only corrective scope; final candidate stays within the hard 400-line total budget.
+
+## PR13 — Issue #68 private entry/measurement shape slice
+
+- **Work unit:** owner-approved Issue #68, `stacked-to-main` PR13 only. This candidate adds the private `validateResultEntryShapes(raw []byte) error` entry/measurement structural boundary; parent owns all delivery and settlement.
+- **Completed slice:** entries reject malformed, trailing, null, and non-array JSON; each indexed entry is a duplicate-aware closed object requiring string `path_b64`, string `category`, and object `measurement`; countable/non-countable measurement variants are closed with required unsigned-integer fields where applicable.
+- **Authority and duplicate behavior:** Result-specific object wrapping preserves token-level decoded-key duplicate detection, including escaped keys; normalized authority-bearing metadata and discriminators return `authority_field`, while unknown metadata returns `unknown_field`. Permitted category values such as `release` and `merge` remain structural strings and are not treated as authority.
+- **Deferred by owner ruling:** no public decoder, `result_v1_decode.go`, semantic Base64/path/category-membership/canonical-byte validation, root/revision/total/observation shapes, provenance/recomputation, or partial-success API was added. Unit 6 remains unchecked pending PR14’s remaining structural subtrees and their own authority cases; Units 7–9 are unchanged.
+
+### Completed tasks
+
+- [x] Implemented the approved private entry/measurement shape subtree with indexed `ContractError` paths.
+- [x] Authored `TestResultV1EntryShapesRejectClosedShapesDuplicatesAndAuthorityKeys` before production behavior with literal field/code oracles for valid variants and malformed, missing, unknown, duplicate, escaped-duplicate, authority, discriminator, and primitive-type cases.
+- [x] Amended `tasks.md` with the Issue #68 ruling, exact PR13 focus command/name, private-slice boundary, and the withdrawn/re-estimate-before-apply PR14 forecast.
+
+### TDD Cycle Evidence
+
+The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent; the configured RED → GREEN → TRIANGULATE → REFACTOR contract was applied directly. Go commands used `GOTOOLCHAIN=go1.25.10`.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED test correction | `GOTOOLCHAIN=go1.25.10 go test . -run '^TestResultV1EntryShapesRejectClosedShapesDuplicatesAndAuthorityKeys$'` | Failed (exit 1): the newly authored test had an unused local plus the expected undefined validator; corrected the test-only unused local before production. |
+| RED | Same focused command | Failed as expected (exit 1): `validateResultEntryShapes` was undefined. |
+| GREEN | Same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`. |
+| TRIANGULATE | Same focused command after normalized denial/rejection metadata vectors | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`. |
+| Additional authority coverage | Same focused command after the literal `approval` metadata row | Passed: `ok github.com/kozz36/git-change-evidence 0.002s`; no production change was required. |
+| REFACTOR | `gofmt -w result_v1_decode_shape.go result_v1_decode_shape_keys.go result_v1_decode_shape_test.go && GOTOOLCHAIN=go1.25.10 go test . -run '^TestResultV1EntryShapesRejectClosedShapesDuplicatesAndAuthorityKeys$'` | Passed (`cached`) after format-only review. |
+
+### Verification
+
+- `GOTOOLCHAIN=go1.25.10 go test . -run '^TestResultV1EntryShapesRejectClosedShapesDuplicatesAndAuthorityKeys$'` passed after GREEN, TRIANGULATE, and REFACTOR.
+- `GOTOOLCHAIN=go1.25.10 go test ./...` passed for root, CLI, Git, inventory, and publication packages.
+- `test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"` passed.
+- `git diff --check origin/main` passed.
+- Race testing is N/A: this synchronous private parser introduces no concurrency-bearing behavior.
+
+### Files changed
+
+- `result_v1_decode_shape.go`
+- `result_v1_decode_shape_keys.go`
+- `result_v1_decode_shape_test.go`
+- `openspec/changes/result-v1/tasks.md`
+- `openspec/changes/result-v1/apply-progress.md`
+
+### Workload / PR boundary
+
+- **PR13 boundary:** private entries/measurements structural shape only; no partial public decode surface. The owner-approved hard limit is 400 total additions plus deletions, with a 295–385 forecast including contingency and no size exception.
+- **Candidate census:** against `origin/main`, 229 additions + 9 deletions = **238 changed lines**: `result_v1_decode_shape.go` 88/0, `result_v1_decode_shape_keys.go` 15/0, `result_v1_decode_shape_test.go` 63/0, `tasks.md` 9/9, and `apply-progress.md` 54/0. All three approved new root Go files are below 160 lines; the root Go census is exactly 48 → 51. This is below the 400-line hard limit; the historical 295–385 forecast was a planning range, not a reason to pad the delivered slice.
+- **Remaining work:** PR14 must re-estimate before apply and complete root/revisions/totals/observations structural shapes plus authority cases. Unit 7 remains semantic/canonical decoding; Unit 8 remains Report binding; Unit 9 remains mutation-kill/final census.
+
+### Risks and deviations
+
+- The original Unit 6 design describes the full decoder shape; this owner-approved PR13 intentionally implements only the private entry/measurement subtree. This is a scoped deferral, not a semantic change.
+- `.pi/gentle-ai/support/strict-tdd.md` is absent; strict TDD was followed from `openspec/config.yaml` and the parent contract.
+- The candidate is uncommitted and not delivered. Parent must independently verify the final census and decide lifecycle settlement.
+
+## PR13 corrective evidence — confirmed test-evidence gaps
+
+- **Scope:** Test/evidence correction only for the approved private entry/measurement shape slice. No production, configuration, task-checkbox, acquisition, or lifecycle surface changed.
+- **Initial independent outcome:** FAIL (`32f86b23a92e47abe2c042c9131993614df98c14c88ff8054acb81ecf54b8917`) on the historical candidate. Its original census is retained, not overwritten: 229 additions + 9 deletions = **238** across `result_v1_decode_shape.go` (88/0), `result_v1_decode_shape_keys.go` (15/0), `result_v1_decode_shape_test.go` (63/0), `tasks.md` (9/9), and this progress artifact (54/0).
+- **Finding → supplemental test rows:**
+  1. Non-countable closure lacked an independent `deletions` vector: `non-countable deletions are closed` now asserts `entries[0].measurement.deletions` / `unknown_field`; the existing additions row is retained.
+  2. `policyUint` boundaries were distinguishable only from boolean/string wrong types: `accepts countable zero and max uint64` establishes the valid premise, while negative, fractional, and `MaxUint64 + 1` values each reject for **both** additions and deletions with their exact indexed field and `invalid_uint` code.
+- **Correction result:** all original cases remain; the only Go edit is the supplemental test table. The production shape parser was already correct for these rows.
+
+### TDD Cycle Evidence
+
+The original PR13 undefined-validator RED, GREEN, TRIANGULATE, and REFACTOR history above is preserved unchanged. The strict-TDD support file remains absent. This correction is supplemental coverage against already-correct production, so it records no fabricated fresh RED or production GREEN cycle.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| Supplemental baseline (not RED) | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1EntryShapesRejectClosedShapesDuplicatesAndAuthorityKeys$'` before the test-only edit | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`. |
+| Supplemental boundary/triangulation (not a new GREEN cycle) | Same uncached focused command after adding deletion and both-field numeric-boundary rows | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`. |
+| REFACTOR | No production or behavior-preserving refactor was needed; the configured check-only format gate was run. | Passed. |
+
+### Revalidation and workload boundary
+
+- `GOTOOLCHAIN=go1.25.10 go test ./... -count=1` passed: root, CLI, Git, inventory, and publication packages.
+- `test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"` passed.
+- `git diff --check origin/main` passed. Race testing remains N/A: this synchronous private parser correction adds no concurrency.
+- **Final post-correction census:** 264 additions + 9 deletions = **273**: `result_v1_decode_shape.go` (88/0), `result_v1_decode_shape_keys.go` (15/0), `result_v1_decode_shape_test.go` (71/0), `tasks.md` (9/9), and this progress artifact (81/0). It is below the 400-line PR13 hard limit and recorded separately from the retained historical 238-line census above.
+- **Boundary and remaining work:** Unit 6 remains unchecked; PR14 still owns root, revisions, totals, and observations structural subtrees and must be re-estimated before apply. The parent independent gate remains pending; this evidence does not claim gate PASS, delivery, settlement, or publication.
