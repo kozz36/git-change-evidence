@@ -103,3 +103,57 @@ The planned five-line observation helper forecast was inaccurate: concrete close
 - Units 3–9 remain pending; no later-unit code or public API was added.
 - The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` remains absent; the configured RED → GREEN → TRIANGULATE → REFACTOR contract was followed directly.
 - Candidate remains uncommitted for the parent-owned independent check and lifecycle settlement.
+
+## PR8 — Exact-rational observations
+
+- **Work unit:** Unit 3 only, the approved `stacked-to-main` PR8 exact-observation slice. Baseline is `origin/main` at `3f2ef5c0b69b4e034aa590012be3018cba4b20a9` (merged PR61). The historical PR7 entry records its then-uncommitted state; PR7 is now delivered by that merge. Recorded delivery through PR7 is 2,349 changed lines; the current uncommitted PR8 candidate is 290 changed lines, so the projection is 2,349 + 290 = 2,639 changed lines.
+- **Completed:** private derivation from a validated `PolicyView` and recomputed `CategoryTotal` values; closed threshold-then-ratio order; exact Policy V1 decimal limits; unavailable variants; checked required line totals; and `math/big.Int` strict rational comparison.
+- **Excluded:** antecedent/snapshot validation (Unit 4), construction/ordering/ownership, decoder work, legacy API changes, report binding, and all other deferred Result V1 work remain untouched.
+
+### Completed tasks
+
+- [x] Completed Unit 3 in `tasks.md`; Units 4–9 remain unchanged and pending.
+- [x] Added `result_v1_observations.go` with non-countable-before-sum availability, fatal no-partial-observation overflow behavior, and both-side ratio total evaluation.
+- [x] Added table-driven closed-order/unavailable, equality, overflow, ordinary-compatibility, and precision-edge tests. Supplemental coverage proves fail-atomicity when an available threshold precedes a late threshold or ratio overflow, and compares equality, non-countable numerator/reference, zero-denominator, and available-zero ratio vectors with legacy `Account`. The optional precision test split is a cohesive exact-ratio/legacy-float boundary and keeps each Go file below 160 lines.
+
+### TDD Cycle Evidence
+
+Toolchain for every Go command: `GOTOOLCHAIN=go1.25.10` with that toolchain's `GOROOT/bin` first on `PATH`.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED | `go test . -run '^(TestResultV1ObservationsUseClosedOrderAndUnavailableVariants|TestResultV1ExactRatioPrecisionEdge|TestResultV1PrecisionEdgeIsTheOnlyAvailableRatioComparatorDifference|TestResultV1StrictGreaterThanExcludesEqualityBoundary|TestResultV1RejectsRequiredLineTotalOverflow)$'` | Failed as expected (exit 1): `resultObservations` was undefined in all five named tests. |
+| GREEN | Same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`. |
+| TRIANGULATE | `go test . -run '^TestResultV1NonCountableTotalsRemainUnavailableBeforeAddition$'` | Passed: the additional unavailable vector proves non-countability is checked before an otherwise-overflowing addition/deletion sum. |
+| REFACTOR | `gofmt -w result_v1_observations.go result_v1_observations_test.go result_v1_observations_precision_test.go`, then the required focused command | Passed: format-only refactor; no behavior change. |
+| Legacy regression | `go test . -run '^(TestAccountUsesFirstMatchingRawByteGlobAndDefault|TestAccountReturnsEmptyResultOnOverflow|TestAccountingDomainPreservesFirstMatchDefaultAndNonCountable|TestAccountingDomainRejectsCheckedAccumulationOverflow)$'` | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`. |
+| Supplemental-test baseline (not RED) | Required PR8 focused command before the supplemental test edit | Passed (`cached`): production was already correct and no production file was changed. |
+| Additional negative verification | Required PR8 focused command after adding the late-overflow and differential rows | Passed: those new rows are supplemental verification of existing behavior, not a new production TDD cycle. |
+| Supplemental test refactor | `gofmt -w result_v1_observations_test.go result_v1_observations_precision_test.go`, then required PR8 and legacy focused commands | Passed (`cached`): format-only review made no production change. |
+
+### Verification
+
+- `go test ./...` passed for root, CLI, Git, inventory, and publication packages.
+- `test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"` passed.
+- `git diff --check` passed.
+- `go test -race ./...` is N/A: this pure derivation adds no concurrency-bearing behavior.
+
+### Layout, workload, and PR boundary
+
+The user separately approved this bounded PR8 root-package addition. The root had 38 Go files before this slice and has 41 after it; the three added co-located files are `result_v1_observations.go` (84 lines), `result_v1_observations_test.go` (92 lines), and `result_v1_observations_precision_test.go` (58 lines). They add 234 Go lines with no Go deletions, every file is below the 160-line threshold, and three changed Go files remain below the eight-file package threshold. The optional precision test split follows the exact-comparison responsibility boundary rather than mechanically spreading coverage.
+
+This is an uncommitted PR8/Unit 3 candidate only. Its actual delta against `origin/main` is 289 additions plus 1 deletion (290 total): 234 Go additions, 55 documentation additions, and 1 documentation deletion. It remains within the approved 400-total-changed-line slice budget. No delivery, commit, push, merge, or lifecycle settlement occurred; the parent owns independent checking and settlement.
+
+### Files changed
+
+- `result_v1_observations.go`
+- `result_v1_observations_test.go`
+- `result_v1_observations_precision_test.go`
+- `openspec/changes/result-v1/tasks.md`
+- `openspec/changes/result-v1/apply-progress.md`
+
+### Remaining work and risks
+
+- Units 4–9 remain pending; PR8 deliberately does not add `NewAccountingResultV1`, antecedent/snapshot validation, decoder, or report-binding behavior.
+- The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` remains absent, so the configured RED → GREEN → TRIANGULATE → REFACTOR contract was applied directly.
+- Parent verification must retain the uncommitted-candidate distinction and independently confirm final diff accounting before any lifecycle action.

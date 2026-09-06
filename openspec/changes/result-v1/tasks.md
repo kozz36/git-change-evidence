@@ -122,7 +122,7 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
 - [x] Unit 2 — Canonical Result V1 types, wire encoding, and identity primitive (PR6 model slice and PR7 wire/identity remainder complete).
   - [x] PR6 — Public Result V1 model types, private document state, and defensive inspection accessors.
   - [x] PR7 — Canonical wire structs, encoding, Base64/LF, and system-derived identity.
-- [ ] Unit 3 — Exact-rational Result observation derivation.
+- [x] Unit 3 — Exact-rational Result observation derivation.
 - [ ] Unit 4 — Exact antecedent and immutable snapshot validation boundary.
 - [ ] Unit 5 — Result constructor, deterministic ordering, and defensive ownership.
 - [ ] Unit 6 — Strict decoder: duplicate-aware closed structural shape.
