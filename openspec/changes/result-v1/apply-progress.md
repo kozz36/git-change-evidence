@@ -157,3 +157,98 @@ This is an uncommitted PR8/Unit 3 candidate only. Its actual delta against `orig
 - Units 4–9 remain pending; PR8 deliberately does not add `NewAccountingResultV1`, antecedent/snapshot validation, decoder, or report-binding behavior.
 - The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` remains absent, so the configured RED → GREEN → TRIANGULATE → REFACTOR contract was applied directly.
 - Parent verification must retain the uncommitted-candidate distinction and independently confirm final diff accounting before any lifecycle action.
+
+## PR9 — Exact antecedents and immutable snapshot boundary
+
+- **Work unit:** Unit 4 only, the approved `stacked-to-main` PR9 slice. PR8 was delivered at 2,639 changed lines by merged PR63 (`e89596b4df82b6943b56853096ceef367adcdc58`); this candidate remains uncommitted for parent-owned independent checking and settlement.
+- **Completed:** exact Policy V1 → Inventory V1 canonical revalidation with recomputed SHA-256 links; copied decoded policy material; native same-width snapshot revision validation; raw-byte primary path validation and duplicate rejection; and fail-atomic private validation outputs.
+- **Excluded:** Result construction, ordering/classification integration, public ownership integration, decoder, report binding, legacy/Policy/Inventory/snapshot edits, shell work, and Units 5–9 remain deferred.
+
+### Completed tasks
+
+- [x] Completed Unit 4 in `tasks.md`; Units 5–9 remain untouched and pending.
+- [x] Added private `validateResultAntecedents` and `validateResultSnapshot` without public constructors or decoder integration.
+- [x] Added table-driven exact-chain, hostile raw-path, metadata-exclusion, atomic-failure, and defensive private-output tests.
+
+### TDD Cycle Evidence
+
+The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent; the configured RED → GREEN → TRIANGULATE → REFACTOR contract was applied directly. Every Go command used `GOTOOLCHAIN=go1.25.10` with that toolchain's `GOROOT/bin` first on `PATH`.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED | `go test . -run '^(TestValidateResultAntecedentsRequiresExactPolicyInventoryChain|TestValidateResultSnapshotAcceptsNativeIDsAndRejectsInvalidPaths)$'` | Failed as expected (exit 1): both private validators were undefined. |
+| GREEN | Same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`. |
+| TRIANGULATE | `go test . -run '^TestValidateResult(Antecedents|Snapshot)'` | Passed after zero/stale/substituted/noncanonical antecedent, cross-width/invalid-path, late-failure, raw-byte, and ownership vectors. |
+| REFACTOR | `gofmt -w result_v1_antecedents.go result_v1_antecedents_test.go`, then the required focused command | Passed: format-only refactor; no behavior change. |
+
+### Verification
+
+- `go test ./...` passed for root, CLI, Git, inventory, and publication packages.
+- `test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"` passed.
+- `git diff --check` passed.
+- `go test -race ./...` is N/A: this synchronous pure validation slice introduces no concurrency-bearing behavior.
+
+### Layout, workload, and PR boundary
+
+PR9 adds two root-package Go files: `result_v1_antecedents.go` (64 lines) and `result_v1_antecedents_test.go` (142 lines). Both are below the 160-line threshold; the root increases from 41 to 43 Go files, and two changed Go files remain below the eight-file package threshold. This uncommitted candidate is 255 changed lines (254 additions, 1 deletion): 206 Go additions plus 48 documentation additions and 1 documentation deletion. This is the bounded antecedent/snapshot validation seam only; no size exception is used. The historical 4,495–5,125 forecast remains context rather than a guarantee; its parent-provided arithmetic remaining range after delivered PR8 is 1,856–2,486 changed lines.
+
+### Files changed
+
+- `result_v1_antecedents.go`
+- `result_v1_antecedents_test.go`
+- `openspec/changes/result-v1/tasks.md`
+- `openspec/changes/result-v1/apply-progress.md`
+
+### Remaining work and risks
+
+- Units 5–9 remain pending; the private outputs are deliberately not wired into a constructor or public Result V1 state.
+- The strict-TDD support file remains absent; no concurrency behavior was introduced.
+- Parent must independently check this uncommitted PR9 projection before lifecycle settlement; no commit, push, merge, or delivery action occurred.
+
+## PR9 corrective evidence — antecedent test closure
+
+- **Scope:** Corrective verification only for the existing Unit 4 private antecedent/snapshot seam; no production, configuration, deferred API, or lifecycle surface changed.
+- **Findings closed:** strengthened returned-value ownership, failure atomicity, supplied-inventory link binding, and PR9 approval/accounting evidence.
+- **Delivery state:** this PR9 candidate is uncommitted and not delivered; parent-owned independent checking remains required.
+
+### Corrective finding coverage
+
+1. Antecedent ownership now independently checks the original policy view, same-chain later view, fresh decode from caller-cached canonical material, and canonical-accessor buffer mutations against preserved bodies and identities.
+2. Every negative antecedent row captures policy view and both links, then asserts the typed zero view and empty digests; this includes valid policy progress followed by a late stale supplied-inventory digest.
+3. An isolated valid-bytes/correct-digest inventory fixture changes only its cached supplied policy link to another valid digest. Strict inventory decoding otherwise succeeds, so this proves the validator's additional supplied-link predicate.
+4. The cohesive snapshot boundary test and its assertion helper moved to `result_v1_snapshot_test.go` because the antecedent coverage otherwise exceeded the 160-line Go-file limit; this is a responsibility split, not compression.
+
+### TDD Cycle Evidence
+
+The historical PR9 RED/GREEN/TRIANGULATE/REFACTOR record above is retained. The strict-TDD support file remains absent. These are supplemental tests against independently inspected, already-correct production, so no fabricated RED or production change was made.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| Supplemental verification | `go test . -run '^TestValidateResult(Antecedents|Snapshot)'` | Passed: added negative and ownership vectors exercise all four corrective findings. |
+| REFACTOR | `gofmt -w result_v1_antecedents_test.go result_v1_snapshot_test.go`, then the focused command | Passed (`cached`); cohesive test-file move only. |
+
+### Verification
+
+- Focused validator tests passed after the supplemental coverage and after the format-only refactor.
+- `go test ./...` passed.
+- The configured check-only `gofmt` gate passed.
+- `git diff --check` passed.
+- `go test -race ./...` is N/A: no concurrency-bearing behavior was introduced.
+
+### Layout, workload, approval, and PR boundary
+
+The user separately approved PR9's bounded root-package addition under the chosen 400-total-changed-line budget and approved the root/worktree issue #64 context. That approval is specific to this PR9 work unit; it neither inherits nor grants blanket approval from historical PR6–PR8 review context.
+
+The exact current PR9 candidate is 349 changed lines: 252 Go additions (`result_v1_antecedents.go` 64, `result_v1_antecedents_test.go` 108, `result_v1_snapshot_test.go` 80) plus documentation 96 additions and 1 deletion. Every changed Go file is at or below 160 lines; three root-package Go files are below the eight-file package limit. Recorded delivery remains 2,639 changed lines through merged PR8; projected delivery is 2,639 + 349 = 2,988 changed lines if this candidate is later accepted. PR9 is not delivered.
+
+### Files changed
+
+- `result_v1_antecedents.go` (pre-existing PR9 candidate production)
+- `result_v1_antecedents_test.go` (corrected antecedent coverage)
+- `result_v1_snapshot_test.go` (cohesive snapshot coverage split)
+- `openspec/changes/result-v1/apply-progress.md`
+
+### Remaining risks
+
+- Unit 5 public constructor/ownership tests remain out of scope; this private validator coverage does not claim their public behavior.
+- Parent must independently verify the uncommitted candidate and preserve the separately scoped PR9 approval before any lifecycle action.
