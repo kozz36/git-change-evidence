@@ -383,3 +383,27 @@ The original PR13 undefined-validator RED, GREEN, TRIANGULATE, and REFACTOR hist
 - `git diff --check origin/main` passed. Race testing remains N/A: this synchronous private parser correction adds no concurrency.
 - **Final post-correction census:** 264 additions + 9 deletions = **273**: `result_v1_decode_shape.go` (88/0), `result_v1_decode_shape_keys.go` (15/0), `result_v1_decode_shape_test.go` (71/0), `tasks.md` (9/9), and this progress artifact (81/0). It is below the 400-line PR13 hard limit and recorded separately from the retained historical 238-line census above.
 - **Boundary and remaining work:** Unit 6 remains unchecked; PR14 still owns root, revisions, totals, and observations structural subtrees and must be re-estimated before apply. The parent independent gate remains pending; this evidence does not claim gate PASS, delivery, settlement, or publication.
+
+## PR14a — Issue #70 private observation-shape slice
+
+- **Work unit:** owner-approved `stacked-to-main` PR14a only: private `validateResultObservationShapes(raw []byte) error`; root Go approval is exactly three new files (51→54). Parent retains the pending gate and all lifecycle/delivery authority.
+- **Implemented:** duplicate-aware indexed closed observation objects for available/unavailable threshold and ratio variants. Structural checks cover required/forbidden presence (including `null`), strings, `uint64`, booleans that reject `null`, kind/availability dispatch, and existing authority-key recognition. Zero denominators and unavailable `exceeded:true` remain structural-only for Unit 7.
+- **Excluded / remaining:** Unit 6 stays unchecked. PR14b separately needs root/revisions/totals/envelope integration and approval/re-estimation; Unit 7 semantic/recomputation/canonical work (PR15) is unchanged. No public decoder, Result value, policy/category/digest/arithmetic/canonical semantics, or integration was added.
+
+### TDD Cycle Evidence
+
+| Stage | Command | Actual result |
+|---|---|---|
+| Initial test correction | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1ObservationShapesRejectClosedShapesDuplicatesAndAuthorityKeys$'` | Failed (exit 1) on test-only raw-literal syntax; fixed before accepting RED. |
+| RED | Same focused command | Failed as expected (exit 1): `validateResultObservationShapes` undefined. |
+| GREEN compile correction | Same focused command | Failed (exit 1): missing private indexed-field helper; added before accepting GREEN. |
+| GREEN | Same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.004s`. |
+| TRIANGULATE | Same focused command after second-index unavailable-ratio forbidden-`null` vector | Passed: `ok github.com/kozz36/git-change-evidence 0.004s`. |
+| REFACTOR | `gofmt -w result_v1_decode_observation_shape.go result_v1_decode_observation_shape_test.go result_v1_decode_observation_closure_test.go`, then same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.004s`. |
+
+### Matrix / workload boundary
+
+- Literal, decoder-independent matrix: 25 required occurrences × missing/null/wrong-primitive/container/ordinary-duplicate/escaped-duplicate; 11 forbidden premises × ordinary/null; five uint occurrences × zero/MaxUint64 plus nine invalid forms; boolean true/false and null/numeric/string/array/object; all four variants; malformed/trailing/non-array/null/empty, non-object, authority, unsupported-kind, and second-index cases. The closure helper runs from the exact focused test.
+- Issue #70 docs forecast is 30 changed lines combined plus 25 contingency; current candidate census is 316 additions + 3 deletions = 319 (288 untracked Go; docs 28 additions + 3 deletions). PR13's historical 238/273 counts and all earlier PR10 352/398 evidence remain unchanged above.
+- **Files changed:** `result_v1_decode_observation_shape.go`, `result_v1_decode_observation_shape_test.go`, `result_v1_decode_observation_closure_test.go`, `tasks.md`, and this cumulative progress artifact. The uncached focus, configured check-only `gofmt`, and `git diff --check origin/main` passed; no full-suite/final verification, archive, delivery, or lifecycle action was run.
+- **Risk:** `.pi/gentle-ai/support/strict-tdd.md` remains absent; strict TDD followed the configured contract. Parent gate/settlement remains pending.
