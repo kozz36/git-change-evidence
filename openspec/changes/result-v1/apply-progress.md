@@ -407,3 +407,43 @@ The original PR13 undefined-validator RED, GREEN, TRIANGULATE, and REFACTOR hist
 - Issue #70 docs forecast is 30 changed lines combined plus 25 contingency; current candidate census is 316 additions + 3 deletions = 319 (288 untracked Go; docs 28 additions + 3 deletions). PR13's historical 238/273 counts and all earlier PR10 352/398 evidence remain unchanged above.
 - **Files changed:** `result_v1_decode_observation_shape.go`, `result_v1_decode_observation_shape_test.go`, `result_v1_decode_observation_closure_test.go`, `tasks.md`, and this cumulative progress artifact. The uncached focus, configured check-only `gofmt`, and `git diff --check origin/main` passed; no full-suite/final verification, archive, delivery, or lifecycle action was run.
 - **Risk:** `.pi/gentle-ai/support/strict-tdd.md` remains absent; strict TDD followed the configured contract. Parent gate/settlement remains pending.
+
+## PR14b-1 — Issue #72 private revisions/totals shape slice
+
+- **Work unit:** owner-approved `stacked-to-main` PR14b-1 only. It adds the private revisions and totals structural validators in three root Go files (54→57); the parent owns delivery, settlement, and all protected workflow actions.
+- **Completed:** `validateResultRevisionsShape`, `validateResultTotalsShapes`, `validateResultTotalShape`, and indexed `resultTotalField`. They reuse `resultShapeObject`, `inventoryRequired`, `policyString`, and `policyUint`; no public decoder or semantic validation was introduced.
+- **Excluded:** root/envelope integration, public decode, antecedent/provenance, Base64/path/digest/revision semantics, canonical equality, recomputation, Report/CLI, and every Unit 7–9 surface. Unit 6 remains unchecked pending its separately scoped root/envelope completion.
+- **Design deviation:** none. The deliberately partial PR14b-1 boundary is the approved Issue #72 work-unit split; root/envelope work remains deferred.
+
+### Completed tasks
+
+- [x] Added closed private revisions and totals shape validation with literal `ContractError` field/code behavior.
+- [x] Added the required focused revisions and totals matrix tests before their production validators.
+- [x] Recorded the Issue #72 PR14b-1 split in `tasks.md` without checking Unit 6.
+
+### TDD Cycle Evidence
+
+The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent; the authoritative configured RED → GREEN → TRIANGULATE → REFACTOR contract was applied directly. All Go commands used Go 1.25.10.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^(TestResultV1RevisionShapesRejectClosedShapesDuplicatesAndAuthorityKeys\|TestResultV1TotalShapesRejectClosedShapesDuplicatesAndAuthorityKeys)$'` | Failed as expected (exit 1): both private validators were undefined. |
+| GREEN | Same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`. |
+| TRIANGULATE test correction | Same focused command | Failed because a test used a double-escaped JSON key, so it tested a literal backslash rather than an escaped authority key; corrected the test before accepting the stage. |
+| TRIANGULATE | Same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.002s` after the new empty-string and escaped-authority vectors; the full totals numeric matrix remained green. |
+| REFACTOR | `gofmt -w result_v1_decode_revisions_totals_shape.go result_v1_decode_revisions_shape_test.go result_v1_decode_totals_shape_test.go`, then the focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.001s`; format-only review, no behavior change. |
+
+### Matrix and verification
+
+- Revisions (`revisions.base`, `revisions.head`) and totals (`totals[i].category`, `additions`, `deletions`, `non_countable`) each cover missing, `null`, wrong primitive, container, ordinary duplicate, and escaped-key duplicate cases with literal fields/codes. Revisions are directly tested for malformed, trailing, null, and non-object input; totals cover malformed, trailing, null/non-array, non-object items, empty totals, and a divergent second indexed item.
+- Unknown `metadata` and normalized authority keys are asserted separately as `unknown_field` and `authority_field`. Structural strings remain unrestricted: revisions accept `release`/`merge`, totals accept `release`/`merge`, and empty totals are accepted.
+- Each totals uint site accepts `0` and `MaxUint64` and rejects negative, fractional, exponent, overflow, boolean, string, array, object, and `null` values as `invalid_uint`.
+- `GOTOOLCHAIN=go1.25.10 go test ./...` passed for root, CLI, Git, inventory, and publication packages.
+- `test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"` passed. `go test -race ./...` is N/A: this synchronous private validation adds no concurrency-bearing behavior.
+
+### Workload, files, and rollback
+
+- **Candidate census:** 211 additions + 2 deletions = **213** changed lines: 169 untracked Go additions (`56 + 67 + 46`) plus 42 OpenSpec additions and 2 OpenSpec deletions. The hard 400-line additions-plus-deletions limit includes all three untracked Go files and both scoped OpenSpec files; no size exception is used.
+- **Files changed:** `result_v1_decode_revisions_totals_shape.go`, `result_v1_decode_revisions_shape_test.go`, `result_v1_decode_totals_shape_test.go`, `openspec/changes/result-v1/tasks.md`, and this cumulative progress artifact.
+- **Rollback:** remove only those private validators, their co-located tests, and the scoped Issue #72/evidence documentation; prior entry/measurement and observation private slices remain intact.
+- **Delivery state / risk:** candidate only; no commit, push, PR, merge, verification phase, or settlement was performed. The absent strict-TDD support file is a process risk; the root/envelope and semantic decoder work remains separate.
