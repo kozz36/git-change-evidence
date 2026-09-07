@@ -447,3 +447,30 @@ The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent; the
 - **Files changed:** `result_v1_decode_revisions_totals_shape.go`, `result_v1_decode_revisions_shape_test.go`, `result_v1_decode_totals_shape_test.go`, `openspec/changes/result-v1/tasks.md`, and this cumulative progress artifact.
 - **Rollback:** remove only those private validators, their co-located tests, and the scoped Issue #72/evidence documentation; prior entry/measurement and observation private slices remain intact.
 - **Delivery state / risk:** candidate only; no commit, push, PR, merge, verification phase, or settlement was performed. The absent strict-TDD support file is a process risk; the root/envelope and semantic decoder work remains separate.
+
+## PR14b-2 — private Result root/envelope shape
+
+- **Work unit:** approved `stacked-to-main` PR14b-2 only: private Result root structural closure and direct subtree delegation. Parent retains independent-gate, delivery, and lifecycle authority.
+- **Completed:** added private `validateResultRootShape(raw []byte) error`; it closes exactly `schema`, `accounting_policy_sha256`, `inventory_sha256`, `revisions`, `entries`, `totals`, and `observations`; requires all seven; checks only the three root scalar strings; and passes unchanged raw child bytes directly to the four shipped private validators.
+- **Scope closure:** Unit 6 is checked in `tasks.md` as implementation-only after its private matrix passed. Its independent gate is pending; Units 7–9 remain unchecked. No public decoder, value/semantic/canonical validation, report/CLI surface, or delivery claim was added.
+
+### TDD Cycle Evidence
+
+The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent, so the configured RED → GREEN → TRIANGULATE → REFACTOR contract was applied directly with Go 1.25.10.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^(TestResultV1RootEnvelopeShapeRejectsClosedRoot\|TestResultV1RootEnvelopeShapeDelegatesClosedSubtrees)$'` | Failed as expected (exit 1): `validateResultRootShape` was undefined. This was an actual pre-production RED, not retrofitted proof. |
+| GREEN oracle correction | Same command | Failed after the minimal validator because the new test incorrectly expected generic `invalid` codes for delegated object/array errors; corrected only those literal test expectations to their established `invalid_object`/`invalid_array` paths. |
+| GREEN | Same command | Passed: `ok github.com/kozz36/git-change-evidence 0.002s`. |
+| TRIANGULATE | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1RootEnvelopeShape'` | Passed after independent second-entry and second-observation indexed negative rows plus the structural-subtree acceptance test: `ok github.com/kozz36/git-change-evidence 0.002s`. |
+| REFACTOR | `gofmt -w result_v1_decode_root_shape.go result_v1_decode_root_shape_test.go result_v1_decode_root_integration_test.go && GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1RootEnvelopeShape'` | Passed: format-only refactor, no behavior change. |
+
+### Matrix, verification, and boundary
+
+- **Root closure:** all seven members cover missing, `null`, wrong primitive, wrong container, ordinary duplicate, and escaped-key duplicate with literal `ContractError` field/code assertions. Root malformed/non-object/trailing input returns `document`/`invalid_object`; unknown and case/escaped/separator-normalized authority members preserve `document.<member>` paths. Empty arrays and arbitrary structural strings are accepted.
+- **Delegation:** direct-root integration exercises revisions, entries, totals, and observations. Each subtree has ordinary and escaped nested duplicate plus authority-key cases through the root. The valid fixture covers both measurement branches and all four observation variants; it also proves arbitrary revision/category/reference/limit strings remain structural. Nested invalid uint and divergent second-index errors retain their existing indexed paths.
+- Legal JSON leading/trailing root whitespace and whitespace between a colon and child arrays are accepted at this structural boundary. Canonical whitespace rejection remains deferred to Unit 7; this is no design deviation or canonical policy.
+- `GOTOOLCHAIN=go1.25.10 go test ./...`, the configured check-only format command, and `git diff --check` passed. `go test -race ./...` is N/A because this synchronous private validation adds no concurrency.
+- **Files:** `result_v1_decode_root_shape.go`, `result_v1_decode_root_shape_test.go`, `result_v1_decode_root_integration_test.go`, `tasks.md`, and this progress artifact. Root Go census is 57 → 60; each new Go file is below 160 lines.
+- **Rollback / workload:** remove only these three private root files and the scoped task/progress entries; shipped entries, observations, revisions, and totals validators remain intact. Candidate census is 200 additions + 3 deletions = 203 changed lines, including all three untracked Go files; it is below the approved 400-line PR14b-2 limit with no size exception. No commit, push, PR, merge, or settlement was performed.

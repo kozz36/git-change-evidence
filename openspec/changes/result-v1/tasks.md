@@ -24,7 +24,7 @@ This forecast includes every existing Result V1 planning artifact, all focused/a
 - Each PR targets `main` only after its predecessor lands; PR1 is current.
 - PR1 exploration+proposal (379); PR2 three Result specs (321); PR3 design+evidence-v1 spec (366); PR4 tasks (314).
 - PR5 accounting foundation (235–290); PR6 Result model (255–305); PR7 wire+identity (285–330); PR8 exact observations (280–335); PR9 antecedents+snapshot (275–330).
-- PR10 constructor, ordering, ownership, and early compatibility (bounded Issue #66 slice); planned PR11 ownership and PR12 legacy-differential responsibilities retire when this Unit 5 slice completes. PR13 private entry/measurement shape slice (Issue #68; shipped test retained). Owner-approved PR69 → Issue #70 PR14a observations structural shape (three new root Go files, 51→54) → Issue #72 PR14b-1 private revisions/totals structural shape (three new root Go files, 54→57) → separately approved PR14b root/envelope integration; PR15 semantic work is unchanged.
+- PR10 constructor, ordering, ownership, and early compatibility (bounded Issue #66 slice); planned PR11 ownership and PR12 legacy-differential responsibilities retire when this Unit 5 slice completes. PR13 private entry/measurement shape slice (Issue #68; shipped test retained). Owner-approved PR69 → Issue #70 PR14a observations structural shape (three new root Go files, 51→54) → Issue #72 PR14b-1 private revisions/totals structural shape (three new root Go files, 54→57) → approved PR14b-2 root/envelope integration (three new root Go files, 57→60); PR15 semantic work is unchanged.
 - PR15 semantic decoder (280–335); PR16 canonical rejection (145–175); PR17 report binding (235–295); PR18 apply evidence/final census (25–40).
 - PR13/PR15 must stop rather than hide overage if actual scope exceeds 400; no code-golf or artificial split.
 
@@ -125,7 +125,7 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
 - [x] Unit 3 — Exact-rational Result observation derivation.
 - [x] Unit 4 — Exact antecedent and immutable snapshot validation boundary.
 - [x] Unit 5 — Result constructor, deterministic ordering, defensive ownership, inventory-only provenance, fail-atomicity, and shared-domain compatibility (PR10 / Issue #66; implementation checkbox, independent gate pending).
-- [ ] Unit 6 — Strict decoder: duplicate-aware closed structural shape (PR13 entries/measurements and Issue #70 PR14a observations are private slices only; Unit 6 stays unchecked until separately approved PR14b completes root/revisions/totals/envelope integration).
+- [x] Unit 6 — Strict decoder: duplicate-aware closed structural shape (PR13 entries/measurements, PR14a observations, PR14b-1 revisions/totals, and PR14b-2 root/envelope are implementation-only complete; independent gate pending and no delivery claim).
 - [ ] Unit 7 — Strict decoder: value validation, recomputation, and noncanonical rejection.
 - [ ] Unit 8 — Antecedent-aware Report V1 provenance binding without report-surface expansion.
 - [ ] Unit 9 — Mutation-kill evidence and final verification census.
@@ -228,7 +228,8 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
   ```
 - **GREEN / TRIANGULATE:** table-test malformed/trailing input, null/non-array entries, multiple entry-index paths, both measurement variants, missing/unknown/duplicate/escaped-duplicate keys, authority keys/discriminators, unsupported kind, JSON primitive types, and policy-like `release`/`merge` category values. Preserve literal `ContractError` field/code assertions and do not use `json.Unmarshal` before duplicate-aware parsing.
 - **Issue #70 PR14a — observations only:** add private `validateResultObservationShapes(raw []byte) error` with four closed variants and focused `go test . -run '^TestResultV1ObservationShapesRejectClosedShapesDuplicatesAndAuthorityKeys$'`; no Result/public decoder, semantic policy/category/digest/arithmetic/canonical rules, or integration.
-- **Issue #72 PR14b-1 — revisions/totals only:** add private `validateResultRevisionsShape`, `validateResultTotalsShapes`, and `validateResultTotalShape` with the two focused closed-shape tests. This split excludes root/envelope integration, has its own approval/re-estimation, and leaves Unit 6 unchecked. A later separately approved PR14b root/envelope slice is still required; Units 7–9, including unchanged PR15 semantic decoder work, remain unchanged.
+- **Issue #72 PR14b-1 — revisions/totals only:** add private `validateResultRevisionsShape`, `validateResultTotalsShapes`, and `validateResultTotalShape` with the two focused closed-shape tests. This split excludes root/envelope integration and has its own approval/re-estimation.
+- **PR14b-2 — root/envelope only:** add private `validateResultRootShape(raw []byte) error` with exact seven-member closure, direct raw-child delegation to revisions/entries/totals/observations, and focused root/integration tests. Legal JSON root and child-array whitespace is accepted; no public decoder or semantic/canonical work is added. The Unit 6 checkbox is implementation-only after its actual matrix passes; the independent gate remains pending, while Units 7–9 remain unchecked.
 - **REFACTOR / verify:** rerun the focused command and `go test ./...`; check-only formatting remains required. **Rollback:** remove only this private entry/measurement shape code/tests; construction remains available and no partial public decoder exists.
 
 ### 7. Strict decoder: value validation, recomputation, and noncanonical rejection
