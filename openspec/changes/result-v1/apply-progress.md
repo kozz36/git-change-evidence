@@ -474,3 +474,78 @@ The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent, so 
 - `GOTOOLCHAIN=go1.25.10 go test ./...`, the configured check-only format command, and `git diff --check` passed. `go test -race ./...` is N/A because this synchronous private validation adds no concurrency.
 - **Files:** `result_v1_decode_root_shape.go`, `result_v1_decode_root_shape_test.go`, `result_v1_decode_root_integration_test.go`, `tasks.md`, and this progress artifact. Root Go census is 57 → 60; each new Go file is below 160 lines.
 - **Rollback / workload:** remove only these three private root files and the scoped task/progress entries; shipped entries, observations, revisions, and totals validators remain intact. Candidate census is 200 additions + 3 deletions = 203 changed lines, including all three untracked Go files; it is below the approved 400-line PR14b-2 limit with no size exception. No commit, push, PR, merge, or settlement was performed.
+
+## Unit 7A — private candidate materialization (plan `14590`)
+
+- **Work unit:** the parent-authorized `stacked-to-main` Unit 7A slice only. It adds a private candidate-to-owned-snapshot adapter; Unit 7 remains unchecked and the parent retains independent-gate, delivery, and lifecycle authority.
+- **Completed:** `materializeResultDecodeCandidate` validates UTF-8, reuses `validateResultRootShape` before typed extraction, requires the exact schema and lowercase SHA-256 links, and accepts only Base64 that round-trips through padded standard `base64.StdEncoding`.
+- **Excluded:** no public `DecodeAccountingResultV1`, partial public success, candidate category/total/observation domain parsing, snapshot path/revision/duplicate validation, antecedent validation, recomputation, canonical equality, Report binding, CLI, or Units 7B–9 work was added.
+
+### Completed tasks
+
+- [x] Added private candidate links and an owned `CommittedSnapshot` built solely from candidate revisions and countable/non-countable entry measurements.
+- [x] Added focused lexical, ownership, structural-entrypoint, and composed-real-constructor tests without mocks.
+- [x] Recorded the approved `14588` error boundary: private failures return a zero candidate with isolated `ContractError` field/code oracles; a later public decoder owns error plus zero-`ResultDocumentV1`, with no global multi-error precedence established here.
+
+### Pattern application matrix
+
+| Area | Unit 7A behavior | Delegated behavior / evidence |
+|---|---|---|
+| Lexical candidate values | UTF-8, root shape, schema, both digest forms, and exact padded standard Base64 | URL, unpadded, CRLF, and nonzero-pad-bit alternatives reject at `entries[0].path_b64`. |
+| Candidate ownership | Decoded path bytes are copied into a private snapshot; input/raw returned-entry mutation cannot alter it. | Non-UTF-8 `0xff 0x0a 0x61` path survives Base64 materialization. |
+| Snapshot semantics | Not reimplemented by materialization. | Real `NewAccountingResultV1` rejects invalid decoded paths, duplicate decoded paths, symbolic/cross-width/equal-with-entry revisions, and returns zero Result. |
+
+### TDD Cycle Evidence
+
+The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent, so the configured strict contract was followed directly with Go 1.25.10.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1DecodeValues'` | Failed as expected (exit 1): `materializeResultDecodeCandidate` was undefined at four test call sites. |
+| GREEN | Same focused command after the private adapter | Passed: `ok github.com/kozz36/git-change-evidence 0.002s`. |
+| TRIANGULATE | Same focused command after the independent lexically canonical empty-Base64/path-boundary case | Passed: `ok github.com/kozz36/git-change-evidence 0.002s`. |
+| REFACTOR | `GOTOOLCHAIN=go1.25.10 gofmt -w result_v1_decode_values.go result_v1_decode_values_test.go && GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1DecodeValues'` | Passed: format-only review; no behavior change. |
+
+### Verification, census, and boundary
+
+- `GOTOOLCHAIN=go1.25.10 go version` reported `go1.25.10 linux/amd64`.
+- `GOTOOLCHAIN=go1.25.10 go test ./... -count=1` passed for root, CLI, Git, inventory, and publication packages; configured check-only `gofmt` and `git diff --check` passed.
+- Race testing is N/A: this synchronous private materialization adds no concurrency-bearing behavior.
+- **Files / census:** `result_v1_decode_values.go` (74 additions), `result_v1_decode_values_test.go` (115 additions), `openspec/changes/result-v1/tasks.md` (2 additions), and this cumulative progress artifact (39 additions): 230 additions + 0 deletions = 230 total across four paths, including two untracked Go files. This is above the 225 forecast midpoint but below the 290 reserve forecast and hard 400 limit.
+- **Rollback / PR boundary:** remove only those two private Go files and the scoped task/progress notes. Root Go census is 60 → 62; both Go files remain below 160 lines. This is Unit 7A only, below the hard 400-total-line budget; no commit, push, PR, merge, verification-phase claim, or settlement occurred.
+
+## Unit 7A corrective evidence — ownership finding `14607`
+
+- **Scope:** Test/evidence-only correction for the approved Unit 7A private materialization slice. No production, task-checkbox, configuration, lifecycle, or deferred Unit 7B–9 surface changed.
+- **Historical gap retained:** The original ownership assertion changed only `raw[0]`, the opening brace. That made input invalid but did not overwrite bytes retained by the candidate, so its passing assertion was not evidence of raw-input independence.
+- **Corrected control:** The test constructs a distinct valid alternate with the same byte length, copies it into the existing `raw` backing array, and materializes that buffer as a control. The alternate changes both SHA-256 links (`1`/`2` to `3`/`4`), both 40-byte revisions (`a`/`b` to `5`/`6`), first path/counts (`a`, `2/1` to `b`, `3/4`), and the retained non-UTF-8 path (`ff 0a 61` to `ff 0a 69`). The control observes all alternate values; the first candidate still exposes all original fields after the raw overwrite and returned-entry mutation.
+
+### Completed correction
+
+- [x] Replaced the opening-brace-only mutation with an in-place full-buffer `copy(raw, alternate)`; `raw` is never reassigned.
+- [x] Retained returned-entry isolation and the non-UTF-8 path case while adding the alternate-control and original-candidate ownership oracles.
+
+### TDD Cycle Evidence
+
+The strict-TDD support file remains absent, so the configured RED → GREEN → TRIANGULATE → REFACTOR contract was applied directly with Go 1.25.10. This is a test-evidence correction against already-correct production; it does not claim a new production RED.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED premise kill | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1DecodeValuesMaterializesOwnedCandidate$'` with the historical `raw[0] = 'X'` mutation and the new alternate-premise assertion | Failed as expected (exit 1): `opening-brace mutation did not install alternate raw fixture`. |
+| GREEN test correction | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1DecodeValues'` | Initial compile failed because the new control compared `GitObjectID` values to strings; corrected the test-only oracle, then passed: `ok github.com/kozz36/git-change-evidence 0.005s`. |
+| TRIANGULATE controls | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1DecodeValuesMaterializesOwnedCandidate$'` | Passed: equal-length alternate/full-buffer overwrite, alternate materialization control, original-candidate retention, and returned-entry isolation all executed. |
+| REFACTOR | Configured check-only `gofmt`, then `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestResultV1DecodeValues'` | Passed: no behavior-preserving refactor was needed after direct test review; focused result `ok ... 0.006s`. |
+
+### Verification, census, and boundary
+
+- `GOTOOLCHAIN=go1.25.10 go test ./... -count=1` passed for root, CLI, Git, inventory, and publication packages; configured check-only `gofmt` and `git diff --check` passed.
+- Race testing is N/A: the existing synchronous private materialization has no concurrency-bearing behavior.
+- Production hash remains `08284b3e8a408855e9d9d5c7baee7b4be40f6c8956a37a6763af58845dfe9a4e`; `tasks.md` remains `8c084fd4c336deeb3310181b2f721cb32bfc98421c8ef8aeca14bc1222af3e2f`.
+- **Current candidate census:** 74 production + 131 test + 2 task + 75 progress additions = **282 additions + 0 deletions = 282 total** across the original four paths. The correction delta from the 230-line historical candidate is 52 additions (16 test, 36 progress); every Go file remains below 160 lines.
+- **Files changed by this correction:** `result_v1_decode_values_test.go` and this cumulative progress artifact only. The pre-existing production file and task amendment are byte-for-byte unchanged.
+- **Rollback / PR boundary:** remove only this ownership-control test correction and its cumulative evidence; Unit 7A remains the selected `stacked-to-main` work-unit slice, Unit 7 stays unchecked, and parent-owned independent checking/settlement remains pending. No commit, push, PR, merge, verification-phase claim, or settlement occurred.
+
+### Remaining risks
+
+- This correction proves candidate materialization ownership only; UTF-8 residuals, more Base64 cases, semantic/canonical Unit 7B work, and Units 8–9 remain out of scope.
+- The absent strict-TDD support file remains a process-risk note; no production behavior changed.
