@@ -126,7 +126,7 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
 - [x] Unit 4 — Exact antecedent and immutable snapshot validation boundary.
 - [x] Unit 5 — Result constructor, deterministic ordering, defensive ownership, inventory-only provenance, fail-atomicity, and shared-domain compatibility (PR10 / Issue #66; implementation checkbox, independent gate pending).
 - [x] Unit 6 — Strict decoder: duplicate-aware closed structural shape (PR13 entries/measurements, PR14a observations, PR14b-1 revisions/totals, and PR14b-2 root/envelope are implementation-only complete; independent gate pending and no delivery claim).
-- [ ] Unit 7 — Strict decoder: value validation, recomputation, and noncanonical rejection.
+- [x] Unit 7 — Strict decoder: value validation, recomputation, and noncanonical rejection (Unit 7A private candidate materialization plus parent-authorized Unit 7B complete public decoder; implementation-only, independent verification pending).
 - [ ] Unit 8 — Antecedent-aware Report V1 provenance binding without report-surface expansion.
 - [ ] Unit 9 — Mutation-kill evidence and final verification census.
 
@@ -239,6 +239,7 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
 - **Files / symbols:** add `result_v1_decode_values.go`; finish `DecodeAccountingResultV1` in `result_v1_decode.go`; add `result_v1_decode_semantics_test.go`, `result_v1_decode_canonical_test.go`, and, only if needed to retain the 160-line target, `result_v1_decode_recompute_test.go` and `result_v1_decode_alternates_test.go`.
 - **Approved Unit 7A private slice (plan `14590`):** add only `resultDecodeCandidate` and `materializeResultDecodeCandidate` plus co-located lexical/materialization tests. It validates UTF-8, the shipped root shape, exact schema/digest/Base64 lexical forms, and owned snapshot candidates; it delegates path, duplicate, revision, antecedent, recomputation, canonical-equality, and public-decoder behavior to the existing constructor or later Unit 7B work. Unit 7 remains unchecked.
 - **Approved error boundary (`14588`):** this private slice returns isolated `ContractError` field/code failures and a zero candidate. A later public decoder owns its error plus zero-`ResultDocumentV1` behavior; no global multi-error precedence is established here.
+- **Unit 7B execution decision:** the parent authorized only the complete public-decoder work-unit in the existing `stacked-to-main` chain. The user authorizes up to 400 production LOC (not total changed lines); this is not a size exception. The independent runtime safety ceiling remains 600 total changed lines. Unit 7B does not authorize Unit 8, Unit 9, independent verification, delivery, or lifecycle actions.
 - **Requirement coverage:** `result-v1-contract` **Strict antecedent-aware canonical decoding** / *Wrong exact antecedent despite valid syntax* and *Recomputed evidence differs*; **Closed Result V1 wire contract and content identity** / *Alternate wire representation*; `result-v1-provenance` **Result identity is system-derived and complete** / *Reordered candidate is not repaired*.
 - **RED:** add `TestDecodeAccountingResultV1RoundTripsOnlyExactCanonicalEvidence`, `TestDecodeAccountingResultV1RejectsValueAndSemanticMutations`, and `TestDecodeAccountingResultV1RejectsNoncanonicalRepresentations`; run:
   ```bash

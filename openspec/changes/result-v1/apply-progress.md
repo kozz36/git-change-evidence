@@ -549,3 +549,82 @@ The strict-TDD support file remains absent, so the configured RED → GREEN → 
 
 - This correction proves candidate materialization ownership only; UTF-8 residuals, more Base64 cases, semantic/canonical Unit 7B work, and Units 8–9 remain out of scope.
 - The absent strict-TDD support file remains a process-risk note; no production behavior changed.
+
+## Unit 7B — complete public decoder
+
+- **Work unit:** parent-authorized public `DecodeAccountingResultV1` completion only, in the existing `stacked-to-main` chain. This is implementation-only; independent verification, delivery, settlement, commits, pushes, PRs, and merges remain parent-owned and were not performed.
+- **Completed:** materialize the structural/lexical candidate, rebuild it through the existing `NewAccountingResultV1` semantic authority, compare each derived antecedent link, require byte-for-byte canonical equality, and return the rebuilt owned Result V1 value.
+- **Excluded:** Unit 8 Report binding, Unit 9 mutation-kill/final census, Report/CLI/acquisition work, materializer/constructor changes, and all lifecycle action remain out of scope.
+
+### Completed tasks
+
+- [x] Added the public decoder with the required candidate → constructor → link comparisons → canonical-bytes equality flow and an exact zero `ResultDocumentV1` on every error path.
+- [x] Added new public coverage for exact round trips/all views, effective input-buffer and returned-view ownership controls, semantic/recomputation and array-order mutations, antecedent substitutions, and canonical alternatives.
+- [x] Kept Unit 7's implementation checkbox current in `tasks.md`; Units 8–9 remain unchecked.
+
+### TDD Cycle Evidence
+
+The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent. The configured RED → GREEN → TRIANGULATE → REFACTOR contract was applied directly. Every Go command used `GOTOOLCHAIN=go1.25.10`.
+
+| Stage | Command | Actual result |
+|---|---|---|
+| RED | `go test . -count=1 -run '^(TestDecodeAccountingResultV1RoundTripsOwnedSelfConsistentEvidence\|TestDecodeAccountingResultV1RejectsSemanticAndOrderMutations\|TestDecodeAccountingResultV1ReturnsZeroOnFatalBoundaries)$'` | Failed as expected (exit 1): `DecodeAccountingResultV1` was undefined. |
+| GREEN test correction | Same focused command | Initially failed because the deletion-mutation fixture had two matching replacements; narrowed the test-only replacement to one occurrence. |
+| GREEN | Same focused command | Passed: `ok github.com/kozz36/git-change-evidence 0.003s`. |
+| TRIANGULATE test correction | Full public decoder focus after adding canonical tests | Initially failed because numeric/null mutation premises had zero or duplicate replacements; corrected only the test helpers/fixtures to require exactly one replacement. |
+| TRIANGULATE | Full public decoder focus after adding semantic threshold/ratio, ordered-array, canonical, Base64, alternate-antecedent, empty-equal-revision, and authority-like-category vectors | Passed: `ok github.com/kozz36/git-change-evidence 0.007s`. |
+| REFACTOR | `gofmt -w result_v1_decode.go result_v1_decode_semantics_test.go result_v1_decode_canonical_test.go`, then the full public decoder focus | Passed: `ok github.com/kozz36/git-change-evidence 0.006s`; format-only refactor. |
+| Inherited regression | `go test . -count=1 -run '^(TestResultV1DecodeValues\|TestNewAccountingResultV1ConstructsExclusiveCanonicalEvidence\|TestNewAccountingResultV1OwnsIngressAndEgress\|TestNewAccountingResultV1ReturnsZeroOnFatalFailure)$'` | Passed: `ok github.com/kozz36/git-change-evidence 0.002s`. |
+
+### Verification evidence
+
+- `GOTOOLCHAIN=go1.25.10 go test ./... -count=1` passed for root, CLI, Git, inventory, and publication packages after the final Go refactor.
+- The configured check-only `gofmt` command and `git diff --check` passed after the final Go refactor.
+- Race testing is N/A: this synchronous pure decoder adds no concurrency-bearing behavior.
+
+### Coverage boundary
+
+- **New public coverage:** exact canonical round-trip through all Result V1 views; input/canonical-byte/entry/nested-path isolation with an equal-length alternate raw-buffer control; exact P2→I2 success plus same-policy alternate-inventory and cross-policy inventory rejection; candidate-materializer, antecedent, snapshot, and overflow zero-result funnels; category/measurement/counts/totals/threshold/ratio/order mutations; and whitespace, reordered keys, escaped strings, LF, trailing JSON, Base64, numeric-form, null-array, and unknown-root rejection.
+- **Inherited private coverage retained:** `TestResultV1DecodeValues` continues to prove lexical UTF-8/schema/digest/Base64 materialization, candidate ownership, and delegated snapshot validation. Unit 7B adds the public zero-result and rebuilt-canonical behavior; it does not duplicate private implementation claims.
+- A successful decoder result proves self-consistency with supplied antecedents and embedded revision/path evidence only. It does not authenticate an external snapshot, Git object existence, acquisition, or ref stability.
+
+### Workload, files, and rollback
+
+- **PR boundary:** this is only the assigned Unit 7B public-decoder slice in the existing `stacked-to-main`, ask-on-risk path. The user authorized a 400-production-LOC limit (not a total-line limit); no size exception is inferred. The separate runtime safety ceiling is 600 total changed lines.
+- **Layout:** root Go census is 62 → 65. `result_v1_decode.go`, `result_v1_decode_semantics_test.go`, and `result_v1_decode_canonical_test.go` are each below the 160 changed-line threshold; no additional edit surface was used.
+- **Files changed:** `result_v1_decode.go`, `result_v1_decode_semantics_test.go`, `result_v1_decode_canonical_test.go`, `openspec/changes/result-v1/tasks.md`, and this cumulative progress artifact.
+- **Census:** 26 production additions; 291 test additions; 53 documentation additions + 1 documentation deletion; **370 additions + 1 deletion = 371 total changed lines**. This includes all three untracked Go files and stays below the separate 600-total runtime safety ceiling.
+- **Rollback:** remove only the three Unit 7B Go files and this Unit 7B task/progress evidence. Earlier Unit 7A private materialization remains independently removable.
+
+### Remaining risks
+
+- The strict-TDD support file remains absent; the prompt/config strict-TDD contract was followed directly.
+- Units 8 and 9 remain pending. Parent-owned independent verification must assess this uncommitted candidate before any settlement or delivery action.
+
+## Unit 7B corrective evidence — finding `14664`
+
+- **Scope:** Test/evidence correction only. Production, `tasks.md`, acquisition, lifecycle, and Units 8–9 remain unchanged; the historical Unit 7B TDD record above remains intact.
+
+### Correction matrix
+
+| Finding | Corrected evidence |
+|---|---|
+| Canonical Base64 CRLF | The JSON escape now decodes to real CR/LF; `base64.StdEncoding` decodes the equivalent `0xff` byte and the public decoder still rejects the noncanonical raw bytes. |
+| Ownership alternate | The equal-length alternate control must differ in canonical bytes and source additions (`2` versus `3`) before the original-result stability assertions run. |
+| Fatal snapshot/overflow | Valid canonical evidence now supplies both mutations; each named row asserts its isolated `ContractError` field/code and the exact zero result. |
+
+### Supplemental TDD and revalidation
+
+- Historical RED/GREEN/TRIANGULATE/REFACTOR evidence remains retained. This test-only correction does not claim a new production RED or GREEN cycle.
+- Supplemental baseline: `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^TestDecodeAccountingResultV1'` passed: `ok github.com/kozz36/git-change-evidence 0.006s`.
+- RED premise: the same command with the historical double-escaped CRLF fixture failed as expected because decoded JSON contained literal backslashes rather than CR/LF.
+- Test-oracle correction: the first ownership guard addressed entry zero (the non-countable asset) and failed; it now explicitly addresses the retained source entry at index two.
+- Supplemental GREEN/TRIANGULATE: the focused command passed after all three corrections: `ok github.com/kozz36/git-change-evidence 0.007s`.
+- `GOTOOLCHAIN=go1.25.10 go test ./... -count=1` passed for root, CLI, Git, inventory, and publication packages.
+- The configured check-only `gofmt` gate and `git diff --check` both passed after the final documentation update.
+
+### Census and residuals
+
+- The prior 371-change candidate remains the historical baseline: 26 production, 291 test, and 54 documentation changes. The current candidate is 418 additions plus 1 deletion = 419: 26 production additions, 311 test additions, and 81 documentation additions plus 1 deletion; production stays below the 400-production-LOC limit and the candidate stays below the 600-total safety cap.
+- Production SHA-256 remains `b2b1ca9f66b4e1de9626ff5289fade57a900ff98089d8151ce1c16cb24123da6`; `tasks.md` SHA-256 remains `d67f8427796d7ac5344e35e5c7916350b7314b6d990b3c08005cff15712a6060`.
+- Parent-owned independent reverify remains pending; no commit, push, switch, PR, delivery, or cleanup occurred.
