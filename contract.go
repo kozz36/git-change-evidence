@@ -33,6 +33,12 @@ type ReportInput struct {
 	Provenance Provenance
 }
 
+type ResultV1ReportBinding struct {
+	Policy    PolicyDocumentV1
+	Inventory InventoryDocumentV1
+	Result    ResultDocumentV1
+}
+
 type Evidence struct {
 	canonical  []byte
 	digest     Digest
@@ -62,6 +68,56 @@ func NewReportV1(input ReportInput) (Evidence, error) {
 func (e Evidence) CanonicalBytes() []byte { return append([]byte(nil), e.canonical...) }
 func (e Evidence) Digest() Digest         { return e.digest }
 func (e Evidence) Provenance() Provenance { return e.provenance }
+
+func NewReportV1FromResult(subject string, binding ResultV1ReportBinding) (Evidence, error) {
+	result, err := validateResultV1ReportBinding(binding)
+	if err != nil {
+		return Evidence{}, err
+	}
+	return NewReportV1(ReportInput{Subject: subject, Provenance: resultReportProvenance(result)})
+}
+
+func ValidateReportV1ResultProvenance(report Evidence, binding ResultV1ReportBinding) error {
+	decoded, err := DecodeCanonical(report.CanonicalBytes())
+	if err != nil {
+		return err
+	}
+	result, err := validateResultV1ReportBinding(binding)
+	if err != nil {
+		return err
+	}
+	derived := resultReportProvenance(result)
+	actual := decoded.Provenance()
+	if actual.AccountingDigest != derived.AccountingDigest {
+		return &ContractError{"provenance.accounting_sha256", "mismatched_digest"}
+	}
+	if actual.InputPolicyDigest != derived.InputPolicyDigest {
+		return &ContractError{"provenance.input_policy_sha256", "mismatched_digest"}
+	}
+	if actual.InventoryDigest != derived.InventoryDigest {
+		return &ContractError{"provenance.inventory_sha256", "mismatched_digest"}
+	}
+	if actual.Revisions.Base != derived.Revisions.Base {
+		return &ContractError{"provenance.revisions.base", "mismatched_revision"}
+	}
+	if actual.Revisions.Head != derived.Revisions.Head {
+		return &ContractError{"provenance.revisions.head", "mismatched_revision"}
+	}
+	return nil
+}
+
+func validateResultV1ReportBinding(binding ResultV1ReportBinding) (ResultDocumentV1, error) {
+	return DecodeAccountingResultV1(binding.Result.CanonicalBytes(), binding.Policy, binding.Inventory)
+}
+
+func resultReportProvenance(result ResultDocumentV1) Provenance {
+	return Provenance{
+		AccountingDigest:  Digest(result.Digest()),
+		InputPolicyDigest: Digest(result.AccountingPolicyDigest()),
+		InventoryDigest:   Digest(result.InventoryDigest()),
+		Revisions:         result.Revisions(),
+	}
+}
 
 func validateReportInput(input ReportInput) error {
 	if strings.TrimSpace(input.Subject) == "" {
