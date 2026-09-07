@@ -628,3 +628,45 @@ The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent. The
 - The prior 371-change candidate remains the historical baseline: 26 production, 291 test, and 54 documentation changes. The current candidate is 418 additions plus 1 deletion = 419: 26 production additions, 311 test additions, and 81 documentation additions plus 1 deletion; production stays below the 400-production-LOC limit and the candidate stays below the 600-total safety cap.
 - Production SHA-256 remains `b2b1ca9f66b4e1de9626ff5289fade57a900ff98089d8151ce1c16cb24123da6`; `tasks.md` SHA-256 remains `d67f8427796d7ac5344e35e5c7916350b7314b6d990b3c08005cff15712a6060`.
 - Parent-owned independent reverify remains pending; no commit, push, switch, PR, delivery, or cleanup occurred.
+
+## Unit 8 — Result-to-Report provenance binding
+
+- **Work unit:** approved Unit 8 only, in the existing `stacked-to-main` / ask-on-risk chain. Implementation is complete; independent verification, delivery, and lifecycle actions remain parent-owned and pending.
+- **Completed:** additive `ResultV1ReportBinding`, bound Report V1 construction, and canonical-report provenance validation. Both binding APIs strictly decode `binding.Result.CanonicalBytes()` against the supplied Policy/Inventory and derive every provenance value only from the rebuilt Result.
+- **Excluded:** Unit 9 mutation/census work, changes to `NewReportV1`, `DecodeCanonical`, report wire/projections, CLI, publication, CNSIC, and all lifecycle actions.
+
+### Completed tasks
+
+- [x] Completed the Unit 8 implementation checkbox only; Unit 9 remains unchecked.
+- [x] Added literal P1→I1→R1 provenance oracle, independent valid P2→I2→R2/report controls, five isolated canonical-valid report mismatch cases, invalid-chain zero-Evidence cases, and standalone-report preservation coverage.
+
+### TDD Cycle Evidence
+
+The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent; RED → GREEN → TRIANGULATE → REFACTOR was followed directly under the configured strict contract. Every Go command used `GOTOOLCHAIN=go1.25.10`.
+
+| Stage | Command / result |
+|---|---|
+| RED | `go test . -count=1 -run '^(TestResultV1ReportBindingDerivesAllProvenance|TestValidateReportV1ResultProvenanceRejectsEveryMismatchAndPreservesCanonicalAuthority|TestNewReportV1FromResultReturnsZeroEvidenceForInvalidChains|TestResultV1ReportBindingPreservesLegacyStandaloneReports)$'` failed as expected: the three binding API symbols were undefined. |
+| GREEN | The same focused command first exposed empty literal-oracle placeholders, then passed after the independently observed P1/I1/R1 literals were fixed: `ok github.com/kozz36/git-change-evidence 0.003s`. |
+| TRIANGULATE | Added P2/I2/R2 bound-report validation, all five one-field mismatch rows, zero/noncanonical/wrong-antecedent chains, and canonical-bytes-over-cached-view controls; focused command passed: `ok ... 0.004s`. |
+| REFACTOR | `gofmt -w contract.go result_v1_report_binding_test.go result_v1_report_legacy_test.go` followed by the focused command passed; a test-name/readability cleanup was rerun uncached with no production behavior change. |
+
+### Verification
+
+- Root focused binding plus legacy report/projection regression command passed uncached.
+- `GOTOOLCHAIN=go1.25.10 go test ./cmd/git-change-evidence -count=1 -run '^(TestRunProjectCanonicalJSON|TestRunProjectHumanTextAndRepeatedInput)$'` passed.
+- `GOTOOLCHAIN=go1.25.10 go test ./... -count=1` passed for root, CLI, Git, inventory, and publication packages.
+- Race testing is N/A: this pure synchronous binding adds no concurrency-bearing behavior.
+
+### Files, layout, workload, and rollback
+
+- **Files changed:** `contract.go`, `result_v1_report_binding_test.go`, `result_v1_report_legacy_test.go`, `openspec/changes/result-v1/tasks.md`, and this cumulative progress artifact.
+- **Layout:** root Go census is 65 → 67. Three changed root Go files are below 160 changed lines (`contract.go` 56 production additions; binding test 138 additions; legacy test 22 additions), below the eight-file package threshold. The two test files are co-located because one owns binding proof and the other owns standalone legacy behavior.
+- **Workload / PR boundary:** Unit 8 is the approved 400-production-LOC-cap slice. Production is 56 additions and 0 deletions; tests are 160 additions and 0 deletions; documentation is 43 additions and 1 deletion. The untracked-inclusive total is 259 additions plus 1 deletion = 260 changed lines, below the separate 650-total runtime ceiling. No size exception or new split was used.
+- **Rollback:** remove only the additive binding type/APIs and their two co-located tests; standalone `NewReportV1`, `DecodeCanonical`, report projections, CLI, and publication remain usable.
+
+### Remaining tasks, deviations, and risks
+
+- Unit 9 remains pending; this record does not claim the independent verification gate, delivery, archive, or whole-SDD closure.
+- No design deviation: validator canonical-decodes the Report first, validates the exact binding second, and compares only decoded report provenance with rebuilt Result-derived values.
+- The missing strict-TDD support file remains a process risk. Parent independent verification should re-run the focused/full/format/diff gates and inspect the actual untracked-inclusive census before delivery.
