@@ -128,7 +128,7 @@ No rename is assumed or omitted: listed `result_v1*` paths are additions, `accou
 - [x] Unit 6 — Strict decoder: duplicate-aware closed structural shape (PR13 entries/measurements, PR14a observations, PR14b-1 revisions/totals, and PR14b-2 root/envelope are implementation-only complete; independent gate pending and no delivery claim).
 - [x] Unit 7 — Strict decoder: value validation, recomputation, and noncanonical rejection (Unit 7A private candidate materialization plus parent-authorized Unit 7B complete public decoder; implementation-only, independent verification pending).
 - [x] Unit 8 — Antecedent-aware Report V1 provenance binding without report-surface expansion (implementation-only; parent independent verification and delivery remain pending).
-- [ ] Unit 9 — Mutation-kill evidence and final verification census.
+- [x] Unit 9 — Mutation-kill evidence and final verification census.
 
 ### 0. Apply gate, baseline, and layout review (no implementation)
 

@@ -670,3 +670,105 @@ The strict-TDD support file `.pi/gentle-ai/support/strict-tdd.md` is absent; RED
 - Unit 9 remains pending; this record does not claim the independent verification gate, delivery, archive, or whole-SDD closure.
 - No design deviation: validator canonical-decodes the Report first, validates the exact binding second, and compares only decoded report provenance with rebuilt Result-derived values.
 - The missing strict-TDD support file remains a process risk. Parent independent verification should re-run the focused/full/format/diff gates and inspect the actual untracked-inclusive census before delivery.
+
+## Unit 9 — serial mutation-kill evidence and final census
+
+- **Work unit:** approved Unit 9 verification/census only; all eleven mutations were temporary, one at a time, and source bytes were restored before the next row.
+- **Completed:** existing-killer census, 11/11 assertion kills, restoration checks, focused/full/format/coverage checks, and the Unit 9 checkbox.
+- **No behavior/test change:** no production or test file persists a modification; no formal verify, sync, archive, delivery, or lifecycle action was performed.
+- **Strict-TDD context:** `.pi/gentle-ai/support/strict-tdd.md` is absent; this no-new-behavior census used the required baseline GREEN → assertion-failing mutant → exact restore GREEN evidence rather than a new RED/GREEN implementation cycle.
+
+### Census confirmation
+
+- `DecodeAccountingResultV1` checks candidate policy and inventory links separately, then requires whole-byte equality to the rebuilt canonical Result; `materializeResultDecodeCandidate` round-trips padded standard Base64.
+- `ValidateReportV1ResultProvenance` reuses canonical binding validation and compares accounting, policy, inventory, base, and head provenance independently.
+- Existing exercised tests include `TestDecodeAccountingResultV1RoundTripsOwnedSelfConsistentEvidence`, `TestDecodeAccountingResultV1RejectsSemanticAndOrderMutations`, and `TestValidateReportV1ResultProvenanceRejectsEveryMismatchAndPreservesLegacySurfaces`; the self-rebuilder is not represented as an independent digest oracle.
+
+### Mutation-kill matrix
+
+Every `run` command below was run with `GOTOOLCHAIN=go1.25.10`, `-count=1`, first on baseline source (GREEN), then on the temporary mutant (named assertion failure), and again after byte-exact restoration (GREEN).
+
+| Row | Exact temporary replacement | Run / observed assertion failure | Restored SHA-256 |
+|---|---|---|---|
+| ORD-1 | `bytes.Compare(...) < 0` → `> 0` | `go test . -run '^TestNewAccountingResultV1ConstructsExclusiveCanonicalEvidence$'`; `TestNewAccountingResultV1ConstructsExclusiveCanonicalEvidence`: reversed entries | `result_v1_build.go` `4db67187203056b083aa3dd35b02bc2d6060b334e894d711f448ccf6d48d0f0c` |
+| PATH-1 | `[]byte(change.Path)` → `[]byte(string([]rune(change.Path)))` | `go test . -run '^TestNewAccountingResultV1ConstructsExclusiveCanonicalEvidence$'`; constructor test: hostile `0xff` changed to UTF-8 replacement bytes | `result_v1_antecedents.go` `bb4df4247338f40fe92384c7dacbaf51bbbf8f0fab3b2ef720041c89dbbb9ac5` |
+| B64-1 | `base64.StdEncoding` → `base64.URLEncoding` | `go test . -run '^TestResultV1CanonicalWireHostilePathAndIdentity$'`; wire test: `_wpmaWxl`, want `/wpmaWxl` | `result_v1_wire.go` `d35b274ae19fd32603b822c9e0886a1a45ff94f0caced45ede443a6aa67fbc0d` |
+| PROV-1 | cached `inventory.AccountingPolicyDigest() != policyDigest` → `false` only | `go test . -run '^TestValidateResultAntecedentsRequiresExactPolicyInventoryChain$'`; supplied-link-after-decode subtest got nil error | `result_v1_antecedents.go` `bb4df4247338f40fe92384c7dacbaf51bbbf8f0fab3b2ef720041c89dbbb9ac5` |
+| CLASS-1 | `match` category forward range → reverse index loop | `go test . -run '^TestAccountingDomainPreservesFirstMatchDefaultAndNonCountable$'`; category 1, want 0 | `accounting_domain.go` `7a6ef6e613dfaba388e9f7d08031c78704852752dc110f6db1d50cf78d2a921d` |
+| OVF-1 | `^uint64(0)-left < right` → `false` | `go test . -run '^(TestAccountingDomainRejectsCheckedAccumulationOverflow|TestResultV1RejectsRequiredLineTotalOverflow)$'`; both named overflow tests failed | `accounting_domain_totals.go` `15e7ac7dc54437cd692cc5fa23e254ffd76a9ea0a6132e5599b50a8d01f9be48` |
+| RATIO-1 | exact `big.Int` cross-product body → limit-digits/scale `big.Rat.Float64` and `float64(n)/float64(d) > limitFloat` | `go test . -run '^(TestResultV1ExactRatioPrecisionEdge|TestResultV1PrecisionEdgeIsTheOnlyAvailableRatioComparatorDifference)$'`; both 2^53 precision tests failed | `result_v1_observations.go` `75c8a4b816778d545b75eff4bb419671944dc7958fb27f9131117bc5f10995cf` |
+| GT-LINE-1 | `actual > category.LineThreshold` → `>=` | `go test . -run '^TestResultV1StrictGreaterThanExcludesEqualityBoundary$'`; equal line threshold became exceeded | `result_v1_observations.go` `75c8a4b816778d545b75eff4bb419671944dc7958fb27f9131117bc5f10995cf` |
+| GT-RATIO-1 | `left.Cmp(right) > 0` → `>= 0` | `go test . -run '^TestResultV1StrictGreaterThanExcludesEqualityBoundary$'`; equal exact ratio became exceeded | `result_v1_observations.go` `75c8a4b816778d545b75eff4bb419671944dc7958fb27f9131117bc5f10995cf` |
+| DIG-LF-1 | terminal `canonical = append(canonical, '\\n')` omitted | `go test . -run '^TestResultV1CanonicalWireHostilePathAndIdentity$'`; canonical bytes lacked LF | `result_v1_wire.go` `d35b274ae19fd32603b822c9e0886a1a45ff94f0caced45ede443a6aa67fbc0d` |
+| DIG-HASH-1 | `sha256.Sum256(canonical)` → `sha256.Sum256(canonical[:len(canonical)-1])` | `go test . -run '^TestResultV1CanonicalWireHostilePathAndIdentity$'`; digest mismatched independent expected value | `result_v1_wire.go` `d35b274ae19fd32603b822c9e0886a1a45ff94f0caced45ede443a6aa67fbc0d` |
+
+### Final evidence and integrity
+
+- Baseline Unit 9 focus and final Unit 9 focus passed with `-count=1`; final focus covered accounting/domain, constructor/order, antecedents, wire, exact ratio/equality, overflow, binding, and legacy-report regression names.
+- Baseline and final `GOTOOLCHAIN=go1.25.10 go test ./... -count=1` passed for root, CLI, Git, inventory, and publication packages.
+- Configured check-only `gofmt` and `git diff --check` passed; `go test -race ./...` is N/A because Unit 9 adds no concurrency-bearing behavior.
+- Informational `go test -cover ./...` passed: root 94.9%; CLI 83.5%; Git 85.2%; inventory 75.8%; publication 79.3% (configured threshold 0).
+- All six temporary source hashes exactly match pre-mutation hashes above. All 67 Go/test files match the initial clean HEAD manifest before documentation: `8edb8044a7d474a4adc6aaf790fc95988b6610b71910ed89188aebe6e8bc36c5`; root Go census remains 67.
+- **Persistent files:** `openspec/changes/result-v1/tasks.md` (Unit 9 checked) and this cumulative progress artifact only. **PR boundary:** Unit 9 evidence only; no production-line delta, no test delta, and no delivery claim.
+
+### Remaining risks
+
+- The strict-TDD support file remains absent; this is a documented process risk, not a fallback to standard implementation mode.
+- Parent-owned independent formal verification and all delivery/lifecycle decisions remain outside this completed Unit 9 evidence slice.
+
+## Unit 9 corrective evidence — F1/F2 supplemental tests and F3 recovered history
+
+- **Scope:** bounded test/evidence correction only. This append adds `result_v1_construction_evidence_test.go`; production, existing tests, tasks, and the verifier report remain untouched. The Unit 9 mutation matrix and the prior formal-FAIL record above are retained unchanged.
+- **F1 scenario:** the public `TestNewAccountingResultV1ClassifiesRenameByPrimaryPath` constructs a policy ordered `docs`, `source`, `other` with `docs/**`, `src/**`, and default `other`. It first establishes the divergent `docs/old.txt` and `src/new.go` fixture categories, then constructs one renamed committed change with previous path `docs/old.txt`, current path `src/new.go`, and countable `4` additions / `2` deletions. It asserts exactly one entry with the literal current raw path, `source` category, and countable measurement; policy-order totals are exactly `docs (0,0,0)`, `source (4,2,0)`, and `other (0,0,0)`.
+- **F2 scenario:** the public `TestNewAccountingResultV1ReproducesIdentityFromIndependentAntecedents` reuses `resultUnit5Antecedents` and `resultUnit5Snapshot`, strict-decodes cached Policy canonical bytes twice, and strict-decodes cached Inventory canonical bytes twice against the respective fresh Policy values. It asserts equal antecedent bytes/digests and both Inventory→Policy links, constructs two Results from equivalent valid snapshots, then asserts each Result's two links and equal canonical evidence bytes/digest.
+
+### Current supplemental-test evidence
+
+The configured strict-TDD rubric remains active. This is supplemental coverage of already-correct production, so no production behavior cycle or production mutant was authorized and no fabricated undefined-symbol RED is claimed.
+
+| Stage | Exact command / observed result |
+|---|---|
+| Baseline census, not RED | `GOTOOLCHAIN=go1.25.10 go test . -count=1 -run '^(TestNewAccountingResultV1ClassifiesRenameByPrimaryPath|TestNewAccountingResultV1ReproducesIdentityFromIndependentAntecedents|TestNewAccountingResultV1ConstructsExclusiveCanonicalEvidence|TestValidateResultAntecedentsRequiresExactPolicyInventoryChain|TestAccountUsesFirstMatchingRawByteGlobAndDefault|TestAccountReturnsEmptyResultOnOverflow|TestAccountingDomainPreservesFirstMatchDefaultAndNonCountable|TestAccountingDomainRejectsCheckedAccumulationOverflow)$'` passed (`ok ... 0.001s`) before this new file existed. The six existing selected tests passed; the two new names were absent, which is a census fact rather than a RED failure. |
+| GREEN, supplemental test addition | The same uncached focused command passed after the two tests were added: `ok github.com/kozz36/git-change-evidence 0.002s`. |
+| TRIANGULATE | F1 directly proves distinct old/current policy categories plus public entry/totals facts; F2 independently reconstructs both strict antecedent pairs and compares public Result identity. No unrelated optional vector was added. |
+| REFACTOR | No behavior-preserving production or test refactor was needed. The configured check-only formatting gate passed; it did not rewrite files. |
+
+### F3 historical strict-TDD record
+
+This is a recovered **2026-09-04 UTC historical run**, not a new execution and not a claim that a current verifier witnessed its RED. A bounded Python extractor read only the supplied local session artifact's named tool-call/result records, emitted only command/result facts below, and did not persist raw conversation text or unexpected fields. The source artifact is the local-only basename `2026-09-04T12-56-31-002Z_01a06c7d-fc1a-7d4b-8d78-f72bce0f75f7.jsonl`, SHA-256 `c35a6dfafdc84bb1d2b9dce49da1826ff509a0c223326e32361ea3685446bfd5`; reproduction requires that original local session store and matching bytes, so it is not repository-portable evidence.
+
+| Historical stage | Artifact records / observed result |
+|---|---|
+| Pre-change | `faf02a8e` → `23c62a0f`, artifact lines 28→35, at 12:57:30: seven-test baseline passed cached. |
+| RED | `a92abee9` → `16abeb2c`, lines 43→44, at 12:58:54: exit 1 with `undefined: legacyAccountingDomain` and `undefined: accountingEntry`. |
+| GREEN | `88d33d02` → `0aa7bb0e`, lines 51→52, at 12:59:58: basic focus passed, `ok ... 0.001s`. |
+| TRIANGULATE | `b7c3e8dc` → `1399f152`, lines 55→56, at 13:00:57: expanded focus passed, `ok ... 0.001s`. |
+| REFACTOR | `c0966aa0` → `73d21fb5`, lines 57→58, at 13:01:17: historical `gofmt -w` followed by expanded focus passed cached. |
+| Adapter coverage | `0d379941` → `29adafdc`, lines 61→62, at 13:01:50: added `PolicyView` focus passed, `ok ... 0.010s`. |
+| Final | `210d5aba` → `518269eb` / `e3a40873` / `20e1405f`, lines 69→70/71/72, at 13:02:28: basic focus passed `0.006s`; full five-package test passed; formatting and diff checks were empty. |
+
+The extractor confirmed these actual historical commands rather than inferring them:
+
+```bash
+GOTOOLCHAIN=go1.25.10 go test . -run '^(TestAccountUsesFirstMatchingRawByteGlobAndDefault|TestAccountRejectsInvalidPolicyBeforeAccounting|TestAccountReturnsEmptyResultOnOverflow|TestNewReportV1CanonicalBytesAndDigest|TestDecodeCanonicalRejectsClosedAndAuthorityBearingDocuments|TestProjectEvidenceCanonicalJSON|TestProjectEvidenceHumanText)$'
+GOTOOLCHAIN=go1.25.10 go test . -run '^(TestAccountUsesFirstMatchingRawByteGlobAndDefault|TestAccountReturnsEmptyResultOnOverflow|TestAccountingDomainPreservesFirstMatchDefaultAndNonCountable|TestAccountingDomainRejectsCheckedAccumulationOverflow)$'
+GOTOOLCHAIN=go1.25.10 go test . -run '^(TestAccountUsesFirstMatchingRawByteGlobAndDefault|TestAccountReturnsEmptyResultOnOverflow|TestAccountingDomainPreservesFirstMatchDefaultAndNonCountable|TestAccountingDomainRejectsCheckedAccumulationOverflow|TestAccountSharedDomainTriangulatesLegacyBehavior)$'
+GOTOOLCHAIN=go1.25.10 go test . -run '^(TestAccountUsesFirstMatchingRawByteGlobAndDefault|TestAccountReturnsEmptyResultOnOverflow|TestAccountingDomainPreservesFirstMatchDefaultAndNonCountable|TestAccountingDomainRejectsCheckedAccumulationOverflow|TestAccountSharedDomainTriangulatesLegacyBehavior|TestResultAccountingDomainProjectsPolicyViewLosslessly)$'
+GOTOOLCHAIN=go1.25.10 go test ./...
+```
+
+### Correction census and independent handoff
+
+- New co-located test file: 86 lines (below the configured 160-line per-file threshold); root Go census is 67 → 68. Production Go manifest before this correction is `a363aa6bc71170177655170ca1458d52f2d71f04a18cf737980d806ebd189a81` and must remain unchanged after it. Workload is 242 existing report lines + 47 prior task/progress changes + this correction's 86 test and 57 documentation lines = 432 total, below the 650 runtime ceiling.
+- This correction adds 57 documentation lines (717 → 774) to the pre-existing progress artifact, whose pre-correction SHA-256 was `e48c0563c1a43f3bc46ede93449e61eb807aecea5719a8ca8cefe7ebb2dcc4d4`; final hash is independently read back after this append.
+- `tasks.md` is preserved at SHA-256 `475b01e9d8523ed21ced86680be28de55a4ee7200c26c543fc852c8306e9778a`; `verify-report.md` is preserved at SHA-256 `4d1fca4f02823705d8e023206f42899cf06a0ba016a9d2b93b1c40e89276fa2a`.
+- Current validation after the test addition: focused new/constructor/antecedent/legacy command and `GOTOOLCHAIN=go1.25.10 go test ./... -count=1` passed for all five packages; the configured check-only `gofmt` gate and final `git diff --check` passed. Independent formal re-verification remains parent-owned.
+- **Risk / next step:** an independent formal verifier must re-run the focused/full/format/diff gates, confirm F1/F2 scenario satisfaction and F3 historical-artifact scope, and make no delivery or lifecycle inference from this correction.
+
+## Key Learnings
+
+1. A renamed change is classified from its current primary path bytes.
+2. Independent strict decodes reproduce identical antecedent-linked Result evidence.
+3. Historical tool records require local artifact bytes for reproducibility.
+4. Supplemental tests can close scenarios without inventing a RED failure.
+5. Formal verification remains independent from historical execution recovery.
