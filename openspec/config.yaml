@@ -56,7 +56,7 @@ testing:
 
 layout:
   scope: repository-development guidance only; never a generic-core policy or evidence threshold
-  public_api: {directory: ., allowed: public neutral Go API files and their co-located tests}
+  public_api: {directory: ., allowed: public neutral Go API files and their co-located tests, exception: narrowly approved public census subpackage only}
   cli: {directory: cmd/git-change-evidence, allowed: CLI adaptation only}
   non_public: {directory: internal, allowed: shell implementations and adapters only}
   tests: {placement: co-located *_test.go files}
@@ -87,5 +87,8 @@ rules:
     format_command: test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"
     build_command: go test ./...
     coverage_threshold: 0
+    manual_evidence:
+      go-ast-census:
+        scenarios: [GAC-008-S01, GAC-009-S01, GAC-010-S01]
   archive:
     - Preserve the complete audit trail and warn before destructive deltas.
