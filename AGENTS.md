@@ -15,7 +15,7 @@ Use **Functional Core / Imperative Shell** with **Hexagonal Architecture** adapt
 
 ## Go Layout and Testing
 
-- Public neutral Go APIs belong at the repository/module root.
+- Public neutral Go APIs belong at the repository/module root, except for the narrowly approved public `census` subpackage.
 - The CLI belongs in `cmd/git-change-evidence/`; non-public shell and adapters belong in `internal/`.
 - Tests are co-located as `*_test.go` files. Do not add `pkg/`, a Python-style `src/` plus `tests/` layout, or package-level `AGENTS.md` files.
 - Target Go baseline: **Go 1.25.10**. Until a later work unit establishes a module identity, this planning slice intentionally contains no `go.mod` or Go source files.
