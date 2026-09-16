@@ -58,6 +58,9 @@ func main() {
 	os.Exit(runCommand(context.Background(), os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getwd, gitRunner, standardLimits(), publicationadapter.Publish))
 }
 func runCommand(ctx context.Context, args []string, input io.Reader, stdout, stderr io.Writer, getwd func() (string, error), runner gitadapter.Runner, bound limits, publish publisher) int {
+	if isCensusShaped(args) {
+		return runCensus(args, stdout, stderr)
+	}
 	if isProjectShaped(args) || isPublicationShaped(args) {
 		return runCLI(ctx, "", args, input, stdout, stderr, runner, bound, publish)
 	}
@@ -74,7 +77,13 @@ func isProjectShaped(args []string) bool {
 func isPublicationShaped(args []string) bool {
 	return len(args) > 0 && args[0] == "publish" && len(args) != 3
 }
+func isCensusShaped(args []string) bool {
+	return len(args) > 0 && args[0] == "census-go-ast"
+}
 func runCLI(ctx context.Context, repository string, args []string, input io.Reader, stdout, stderr io.Writer, runner gitadapter.Runner, bound limits, publish publisher) int {
+	if isCensusShaped(args) {
+		return runCensus(args, stdout, stderr)
+	}
 	if isProjectShaped(args) {
 		if len(args) == 2 {
 			return runProject(args[1:], input, stdout, stderr)
