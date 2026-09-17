@@ -28,9 +28,7 @@ See [the census guide](docs/census.md) for executable commands and limits.
 
 ## Guidance
 
-Contributors should read [AGENTS.md](AGENTS.md). The separate
-`docs/agent-consumers.md` guide is planned for a later work unit and is not
-included in this slice.
+Contributors should read [AGENTS.md](AGENTS.md). Consumer integrators should read [the Consumer Integration Guide](docs/consumer-integration-guide.md).
 
 ## License
 
