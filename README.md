@@ -1,20 +1,39 @@
 # git-change-evidence
 
-`git-change-evidence` is a planned generic, multi-project Git evidence CLI and Go package. It will produce deterministic change evidence from immutable Git revisions and project-specific profiles.
+`git-change-evidence` is an evidence-only tool for reporting technical states,
+measurements, and observations from supplied inputs. It does not approve,
+reject, gate, block, merge, deploy, release, or assign delivery authority.
 
-## Status
+## Preview status
 
-**Bootstrap decision complete; implementation has not started.** The repository intentionally contains no Go source, module identity, packaging, CI, or release automation yet.
+`v0.1.0-preview.1` is the planned preview identity for this source/dev build.
+It is not a published distribution, release, tag, package, or download asset.
 
-The product is evidence-only: it may report observations and warnings, but it will never approve, reject, block, or otherwise own delivery decisions.
+The CLI and its machine-readable contracts are the primary integration surface.
+The public Go API at the module root and the public [`census`](census) subpackage
+remain supported.
 
-## Bootstrap decisions
+## Build locally
 
-- Go 1.25.10 is the target baseline. The future public neutral API is at the repository/module root, the CLI is at `cmd/git-change-evidence/`, and non-public shell/adapters are under `internal/`.
-- The future primary gate is `go test ./...`; concurrency-bearing surfaces also run `go test -race ./...`; formatting is check-only as recorded in `openspec/config.yaml`.
-- The core receives immutable typed Go structs and interfaces. TOML, YAML, and JSON decoding remain adapter concerns; no concrete configuration-file syntax is selected.
-- Module/publication identity, packaging, CI, license, release, and distribution remain deferred.
+From the repository root with Go 1.25.10:
 
-## Product charter
+```sh
+go build -o gce ./cmd/git-change-evidence
+go build -o git-change-evidence ./cmd/git-change-evidence
+```
 
-The authoritative scope, architecture, governance, and milestones are in [docs/product-charter.md](docs/product-charter.md). The first intended consumer is a CNSIC profile; its policy is not part of this product's generic core.
+Use the canonical census form `./gce census go-ast`; the legacy
+`./git-change-evidence census-go-ast` form remains equivalent during pre-v1.
+See [the census guide](docs/census.md) for executable commands and limits.
+
+## Guidance
+
+Contributors should read [AGENTS.md](AGENTS.md). The separate
+`docs/agent-consumers.md` guide is planned for a later work unit and is not
+included in this slice.
+
+## License
+
+This repository is licensed under [Apache-2.0](LICENSE). That selection does
+not settle separate attribution, intellectual-property, confidentiality, or
+other legal questions; those remain owner-controlled review matters.
