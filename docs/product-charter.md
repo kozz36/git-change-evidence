@@ -2,7 +2,23 @@
 
 `git-change-evidence` is a generic multi-project Git evidence CLI and Go package. It creates reproducible, machine-readable evidence about a change without deciding whether that change may be delivered.
 
-**Status:** the Bootstrap Decision is complete. This charter is the authoritative product boundary until superseded by a versioned governance decision.
+**Status:** the Bootstrap Decision is complete. The current public-preview governance below is authoritative for the implemented repository; the preserved bootstrap record remains historical evidence.
+
+## Current public-preview governance
+
+The Go module, source implementation, co-located tests, and CI now exist. The product remains a generic multi-project Git evidence CLI and Go package built with Go 1.25.10, Functional Core / Imperative Shell, and Hexagonal Architecture profile adapters. The established layout, test commands, testing rubric, and repository-development thresholds remain in `AGENTS.md` and `openspec/config.yaml`.
+
+`v0.1.0-preview.1` is the planned source/dev preview identity, not a claim that a tag, release, package, downloadable asset, distribution channel, or repository-visibility change exists. Apache-2.0 is the selected repository license; it does not settle third-party attribution, intellectual-property, confidentiality, export, or other legal questions.
+
+The CLI and its machine-readable contracts are the primary consumer integration surface. `gce census go-ast` is the canonical census command, while `git-change-evidence census-go-ast` remains supported throughout pre-v1. The public root Go API and public `census` subpackage remain supported without deprecation or removal.
+
+The evidence-only boundary remains unchanged: GCE reports technical evidence, measurements, and observations, but never approves, rejects, gates, blocks, merges, deploys, releases, or assigns delivery authority. Consumers own their stop, escalation, review, and delivery decisions.
+
+Concrete configuration-file syntax, broad distribution, signing/provenance, and release automation remain deferred. Multilingual census is a separate post-preview roadmap, not a preview blocker: Python → JavaScript/TypeScript → Vue → Java → Rust.
+
+## Historical bootstrap record
+
+The sections below preserve the bootstrap decision and CNSIC provenance as historical evidence. They MUST NOT be silently rewritten or deleted; where they describe superseded absence or deferral, the current public-preview governance above controls.
 
 ## Product intent
 
