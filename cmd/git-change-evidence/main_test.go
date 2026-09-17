@@ -33,7 +33,7 @@ func TestRunCLIDispatchesExactProjectArity(t *testing.T) {
 }
 
 func TestRunCLIPreservesThreeArgumentSpecialBaseReferences(t *testing.T) {
-	for _, reference := range []string{"project", "publish"} {
+	for _, reference := range []string{"project", "publish", "census"} {
 		t.Run(reference, func(t *testing.T) {
 			fixture := newFixture(map[string]string{"base/source": "keep\nmove", "head/source": "keep", "head/new": "move\nfresh"})
 			fixture.baseAlias = reference
@@ -51,6 +51,14 @@ func TestRunCLIPreservesThreeArgumentSpecialBaseReferences(t *testing.T) {
 				t.Fatalf("stdout, stderr, calls = %q, %q, %d; want %q, empty, zero", got, stderr.String(), calls, want)
 			}
 		})
+	}
+}
+
+func TestRunCLIPreservesImmutableBaseForGoASTPath(t *testing.T) {
+	fixture := newFixture(map[string]string{"base/go-ast": "keep\nmove", "head/go-ast": "keep", "head/new": "move\nfresh"})
+	var stdout, stderr bytes.Buffer
+	if code := runCLI(context.Background(), "repository", []string{fixture.base, "go-ast", "new"}, nil, &stdout, &stderr, fixture.runner, standardLimits(), nil); code != 0 || stdout.String() != "moved=1 new=1 additions=2\n" || stderr.Len() != 0 {
+		t.Fatalf("exit, stdout, stderr = %d, %q, %q", code, stdout.String(), stderr.String())
 	}
 }
 
@@ -420,5 +428,106 @@ func write(t *testing.T, repository, name, contents string) {
 	t.Helper()
 	if err := os.WriteFile(repository+"/"+name, []byte(contents), 0o600); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestCanonicalCensusMalformedArgsDoNotFallThrough(t *testing.T) {
+	for name, args := range map[string][]string{
+		"empty":        {"census", "go-ast"},
+		"invalid flag": {"census", "go-ast", "--invalid"},
+		"third token":  {"census", "go-ast", "new-file"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			assert := func(code int, stdout, stderr *bytes.Buffer, cwdCalls, runnerCalls, publisherCalls int) {
+				if code != exitInvalid || stdout.Len() != 0 || stderr.String() != "invalid input\n" || cwdCalls != 0 || runnerCalls != 0 || publisherCalls != 0 {
+					t.Fatalf("exit, stdout, stderr, cwd, runner, publisher = %d, %q, %q, %d, %d, %d", code, stdout.String(), stderr.String(), cwdCalls, runnerCalls, publisherCalls)
+				}
+			}
+			stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
+			cwdCalls, runnerCalls, publisherCalls := 0, 0, 0
+			runner := func(context.Context, string, int, ...string) ([]byte, error) {
+				runnerCalls++
+				return nil, errors.New("git must not run")
+			}
+			publish := func(context.Context, string, evidence.Evidence) (publicationadapter.Result, error) {
+				publisherCalls++
+				return publicationadapter.Result{}, errors.New("publisher must not run")
+			}
+			code := runCommand(context.Background(), args, panicReader{}, stdout, stderr, func() (string, error) { cwdCalls++; return "repository", nil }, runner, standardLimits(), publish)
+			assert(code, stdout, stderr, cwdCalls, runnerCalls, publisherCalls)
+			stdout.Reset()
+			stderr.Reset()
+			code = runCLI(context.Background(), "repository", args, panicReader{}, stdout, stderr, runner, standardLimits(), publish)
+			assert(code, stdout, stderr, 0, runnerCalls, publisherCalls)
+		})
+	}
+}
+
+func TestDiscoveryIsExactAndSideEffectFree(t *testing.T) {
+	for _, test := range []struct {
+		args []string
+		want string
+	}{
+		{[]string{"--help"}, "Usage: git-change-evidence"},
+		{[]string{"census", "--help"}, "census go-ast"},
+		{[]string{"census", "go-ast", "--help"}, "census-go-ast"},
+		{[]string{"census-go-ast", "--help"}, "census go-ast"},
+		{[]string{"--version"}, "git-change-evidence v0.1.0-preview.1 (source/dev build; not release provenance)"},
+	} {
+		t.Run(strings.Join(test.args, " "), func(t *testing.T) { assertDiscovery(t, test.args, test.want) })
+	}
+}
+
+func assertDiscovery(t *testing.T, args []string, want string) {
+	t.Helper()
+	assert := func(code int, stdout, stderr *bytes.Buffer, cwdCalls, runnerCalls, publisherCalls int) {
+		if code != 0 || stderr.Len() != 0 || !strings.HasSuffix(stdout.String(), "\n") || !strings.Contains(stdout.String(), want) || cwdCalls != 0 || runnerCalls != 0 || publisherCalls != 0 {
+			t.Fatalf("exit, stdout, stderr, cwd, runner, publisher = %d, %q, %q, %d, %d, %d", code, stdout.String(), stderr.String(), cwdCalls, runnerCalls, publisherCalls)
+		}
+	}
+	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
+	cwdCalls, runnerCalls, publisherCalls := 0, 0, 0
+	runner := func(context.Context, string, int, ...string) ([]byte, error) {
+		runnerCalls++
+		return nil, errors.New("git must not run")
+	}
+	publish := func(context.Context, string, evidence.Evidence) (publicationadapter.Result, error) {
+		publisherCalls++
+		return publicationadapter.Result{}, errors.New("publisher must not run")
+	}
+	code := runCommand(context.Background(), args, panicReader{}, stdout, stderr, func() (string, error) { cwdCalls++; return "repository", nil }, runner, standardLimits(), publish)
+	assert(code, stdout, stderr, cwdCalls, runnerCalls, publisherCalls)
+	stdout.Reset()
+	stderr.Reset()
+	code = runCLI(context.Background(), "repository", args, panicReader{}, stdout, stderr, runner, standardLimits(), publish)
+	assert(code, stdout, stderr, 0, runnerCalls, publisherCalls)
+}
+
+type panicReader struct{}
+
+func (panicReader) Read([]byte) (int, error) { panic("input must not be read") }
+
+type shortWriter struct{}
+
+func (shortWriter) Write(value []byte) (int, error) { return len(value) - 1, nil }
+
+func TestDiscoveryWriteFailuresAreUnavailable(t *testing.T) {
+	for name, stdout := range map[string]io.Writer{"error": censusErrorWriter{}, "short": shortWriter{}} {
+		t.Run(name, func(t *testing.T) {
+			var stderr bytes.Buffer
+			cwdCalls := 0
+			code := runCommand(context.Background(), []string{"--version"}, panicReader{}, stdout, &stderr, func() (string, error) { cwdCalls++; return "repository", nil }, nil, standardLimits(), nil)
+			if code != exitAbsent || stderr.String() != "content unavailable\n" || cwdCalls != 0 {
+				t.Fatalf("exit, stderr, cwd = %d, %q, %d", code, stderr.String(), cwdCalls)
+			}
+		})
+	}
+}
+
+func TestDiscoveryTextRequiresExactArguments(t *testing.T) {
+	for _, args := range [][]string{{"--help", "extra"}, {"census", "--help", "extra"}, {"census", "go-ast", "--help", "extra"}, {"--", "--help"}, {"--version=preview"}} {
+		if text, found := discoveryText(args); found || text != "" {
+			t.Fatalf("args %q unexpectedly discovered %q", args, text)
+		}
 	}
 }

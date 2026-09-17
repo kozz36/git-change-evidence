@@ -21,6 +21,14 @@ const exitInvalid, exitAbsent, exitBound, exitUTF8, exitStopped, exitRace, exitC
 
 const projectInputCap int64 = 16 << 20
 
+const previewVersion = "v0.1.0-preview.1"
+
+const (
+	rootHelp    = "Usage: git-change-evidence <base-ref> <source-file> <new-file>\n\nCommands:\n  census go-ast    Run the canonical Go AST census.\n  census-go-ast   Run the retained pre-v1 compatibility census.\n  project         Project canonical evidence.\n  publish         Store evidence locally.\n  --version       Print the source-build version.\n"
+	censusHelp  = "Usage: gce census go-ast --source-root <absolute-path> --receiver <identifier> --selector <identifier> -- <paths...>\n\nCanonical: gce census go-ast\nLegacy compatibility: git-change-evidence census-go-ast\n"
+	versionText = "git-change-evidence " + previewVersion + " (source/dev build; not release provenance)\n"
+)
+
 type limits struct{ perBlob, aggregate, lines, lineBytes, pairs int }
 
 func standardLimits() limits {
@@ -54,10 +62,56 @@ type publisher func(context.Context, string, evidence.Evidence) (publicationadap
 
 type canonicalInput struct{ document evidence.Evidence }
 
+func discoveryText(args []string) (string, bool) {
+	switch {
+	case len(args) == 1 && args[0] == "--help":
+		return rootHelp, true
+	case len(args) == 2 && args[0] == "census" && args[1] == "--help":
+		return censusHelp, true
+	case len(args) == 3 && args[0] == "census" && args[1] == "go-ast" && args[2] == "--help":
+		return censusHelp, true
+	case len(args) == 2 && args[0] == "census-go-ast" && args[1] == "--help":
+		return censusHelp, true
+	case len(args) == 1 && args[0] == "--version":
+		return versionText, true
+	default:
+		return "", false
+	}
+}
+
+func writeDiscovery(args []string, stdout, stderr io.Writer) (bool, int) {
+	text, found := discoveryText(args)
+	if !found {
+		return false, 0
+	}
+	if stdout == nil {
+		return true, projectExit(stderr, exitAbsent)
+	}
+	written, err := io.WriteString(stdout, text)
+	if err != nil || written != len(text) {
+		return true, projectExit(stderr, exitAbsent)
+	}
+	return true, 0
+}
+
+func normalizeCensusArgs(args []string) []string {
+	if len(args) < 2 || args[0] != "census" || args[1] != "go-ast" {
+		return args
+	}
+	normalized := make([]string, len(args)-1)
+	normalized[0] = "census-go-ast"
+	copy(normalized[1:], args[2:])
+	return normalized
+}
+
 func main() {
 	os.Exit(runCommand(context.Background(), os.Args[1:], os.Stdin, os.Stdout, os.Stderr, os.Getwd, gitRunner, standardLimits(), publicationadapter.Publish))
 }
 func runCommand(ctx context.Context, args []string, input io.Reader, stdout, stderr io.Writer, getwd func() (string, error), runner gitadapter.Runner, bound limits, publish publisher) int {
+	if found, code := writeDiscovery(args, stdout, stderr); found {
+		return code
+	}
+	args = normalizeCensusArgs(args)
 	if isCensusShaped(args) {
 		return runCensus(args, stdout, stderr)
 	}
@@ -81,6 +135,10 @@ func isCensusShaped(args []string) bool {
 	return len(args) > 0 && args[0] == "census-go-ast"
 }
 func runCLI(ctx context.Context, repository string, args []string, input io.Reader, stdout, stderr io.Writer, runner gitadapter.Runner, bound limits, publish publisher) int {
+	if found, code := writeDiscovery(args, stdout, stderr); found {
+		return code
+	}
+	args = normalizeCensusArgs(args)
 	if isCensusShaped(args) {
 		return runCensus(args, stdout, stderr)
 	}
