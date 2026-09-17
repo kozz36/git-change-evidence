@@ -9,8 +9,10 @@ context: |
   Go source, co-located Go tests, and the go.mod module identity now exist.
   Evidence-only boundary: never approve, reject, gate, block, merge, deploy, release,
   or assign delivery authority.
-  Module identity: github.com/kozz36/git-change-evidence (owner-approved). Deferred: publication identity,
-  packaging, CI, license, release, distribution, and concrete configuration-file syntax.
+  Module identity: github.com/kozz36/git-change-evidence (owner-approved). Current repository facts:
+  implementation, co-located tests, and CI exist; Apache-2.0 and the planned source/dev preview
+  identity v0.1.0-preview.1 are selected. Deferred: broad distribution, packaging,
+  signing/provenance, release automation, and concrete configuration-file syntax.
 
 strict_tdd: true
 testing:

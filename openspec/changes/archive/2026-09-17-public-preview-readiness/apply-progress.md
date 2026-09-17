@@ -6,7 +6,7 @@
 - Native state: `applyState: ready`, `nextRecommended: apply`, dependencies unblocked.
 - `actionContext`: `repo-local` workspace `/data/Projects/git-change-evidence-worktrees/public-preview`; allowed root is the workspace root. No action-context warnings.
 - Session slice: PR 1 CLI → PR 0 planning, tasks 1–5 only. Tasks 6–9 are explicitly out of scope.
-- Delivery: `auto-chain`, `stacked-to-main`, review budget 400 changed lines; the corrected local chain is PR 0 planning → `main`, PR 1 CLI → PR 0, PR 2 public entrypoint/license → PR 1, PR 3 governance/consumer guide → PR 2, and PR 4 audit/spec reconciliation → PR 3. No `size:exception` or push is authorized.
+- Delivery: `auto-chain`, `stacked-to-main`, review budget 400 changed lines; the corrected local chain is PR 0a foundations → `main`, PR 0b design/tasks → PR 0a, PR 1 CLI → PR 0b, PR 2 public entrypoint/license → PR 1, PR 3 governance/consumer guide → PR 2, and PR 4 audit/spec reconciliation → PR 3. The original forecast omitted planning artifacts; this split enforces <=400 without `size:exception` and grants no push authority.
 
 ## Task progress
 
@@ -138,3 +138,58 @@ The focused RED command failed as expected for absent production helpers; focuse
 - Revised PR3 LOC: 196 additions plus 7 deletions = 203 changed lines, within the 400-line budget.
 - Residual status: the README guide-path inconsistency is resolved. `openspec/config.yaml` retains stale CI/license deferrals and remains outside this correction's authorization.
 - Scope: only `README.md` and this cumulative progress record were changed for this correction; no task, code, phase, commit, branch, push, PR, publication, tag, release, or visibility action occurred.
+
+## PR 4 publication audit and active-spec reconciliation (task 8)
+
+- Native status consumed: `gentle-ai.sdd-status` v2; `applyState: ready`, `nextRecommended: apply`, and `actionContext` authorizes only the canonical repo-local workspace. No action-context warning was present.
+- Delivery boundary: PR 4 → PR 3, task 8 only; `auto-chain`, `stacked-to-main`, review budget 400. Before any write, forecast task 8 at 185 changed lines and the expected task-9 evidence addition at 64 lines, for 249 combined lines; this is within budget. Task 9 is not executed in this slice.
+- Completed task 8 and changed only `openspec/changes/public-preview-readiness/publication-audit.md`, `openspec/specs/inventory-v1-contract/spec.md`, `openspec/config.yaml`, this task record, and this cumulative progress record. The task checkbox is persisted as `[x]`; task 9 remains `[ ]`.
+- Audit evidence: `publication-audit.md` has 12 complete rows covering current documentation/examples, repository/CI context, all six active specs, generated `.atl/skill-registry.md`, historical OpenSpec/CNSIC/local-path provenance, license/dependency/third-party questions, potential sensitive findings without secret values, and owner-only consent boundaries. It explicitly labels uninspected Git history, unpublished refs, external settings/secrets/metadata, outside-tree generated/release assets, and legal/IP clearance.
+- Active-spec evidence: all six exact `openspec/specs/**/spec.md` paths were fully read. Inventory V1 alone received two prose-only corrections: its provenance sequence is historical/current truth, and WU-4C is historical while the normative acquisition exclusion remains. `openspec/specs/evidence-v1-provenance/spec.md` SHA-256 remains `9d3e413d1ce67bd4bd6382fa51a61bbe57ad7586c10973dd588530ab967aed5d` and is byte-unchanged; the other four active specs remain unchanged.
+- Config evidence: the narrow context reconciliation records existing implementation, module, co-located tests, CI, Apache-2.0, and the selected source/dev preview identity. Testing rubric, commands, layout, thresholds, evidence-only boundary, and genuinely deferred concrete configuration syntax, broad distribution/packaging, signing/provenance, and release automation remain unchanged.
+- Checks passed: `git diff --check`; PyYAML parse plus required root/rubric/threshold structure; audit-table completeness (12 rows and six active-spec paths); English/portable ASCII additions and manual evidence-only review; unchanged Evidence V1 provenance SHA-256; and archive/task-8 allowed-path checks. Ruby was unavailable for the first YAML attempt, so PyYAML supplied the successful parser check.
+- TDD mode: skipped under the configured default rubric because this slice modifies documentation, OpenSpec prose, and YAML only; no Go behavior or production code changed.
+- Untouched evidence: no archive diff exists; no predecessor hash, literal historical evidence, `.atl/skill-registry.md`, or `.gitignore` was edited. The pre-existing `.atl/skill-registry.md` and `.gitignore` worktree modifications remain outside authorization.
+- Final PR4 LOC: 66 additions + 5 deletions = 71 changed lines, including 41 new audit lines, task/progress evidence, and all narrow prose/YAML reconciliation; no `size:exception` is requested.
+- Residual owner stops: the audit does not inspect or clear Git history, unpublished refs, external systems or credentials, outside-tree/release assets, legal/IP/confidentiality matters, or third-party obligations. Owner consent remains necessary before any visibility change, tag/release/asset publication, destructive remediation, credential action, or legal/confidentiality determination; these are not GCE gates or approvals.
+
+## Remaining tasks
+
+- [ ] 9. **Perform the implementation-slice review for the selected stacked-PR sequence.**
+
+## PR 4 task 9 implementation-slice review
+
+- Native `gentle-ai.sdd-status` v2 was consumed before this task: `applyState: ready`, `nextRecommended: apply`, repo-local canonical workspace authorized, and no `actionContext` warnings. This task performs no verify/archive action.
+- Delivery correction supersession: older progress called the planning base “PR 0” after observing omitted planning artifacts. Actual adjacent commit ranges are PR 0a foundations `1f7e815..6425853` (395) and PR 0b design/tasks `6425853..8102781` (288); splitting them enforces <=400 without `size:exception` and grants no push authority.
+
+### Actual six-slice census
+
+| Slice | Actual range | Additions | Deletions | Total | Paths |
+|---|---|---:|---:|---:|---|
+| PR 0a foundations | `1f7e815..6425853` | 395 | 0 | 395 | 3: `explore.md`, `proposal.md`, preview `spec.md` |
+| PR 0b design/tasks | `6425853..8102781` | 288 | 0 | 288 | 2: `design.md`, `tasks.md` |
+| PR 1 CLI | `8102781..7da467f` | 374 | 6 | 380 | 5: CLI `main.go`, two CLI tests, `apply-progress.md`, `tasks.md` |
+| PR 2 entrypoint/license | `7da467f..2049b4f` | 293 | 30 | 323 | 5: `LICENSE`, `README.md`, `docs/census.md`, progress, tasks |
+| PR 3 governance | `2049b4f..91d3e96` | 196 | 7 | 203 | 6: `AGENTS.md`, `README.md`, consumer guide, charter, progress, tasks |
+| PR 4 audit | `git diff 91d3e96` after task 9 and runtime-metadata restoration | 115 | 16 | 131 | 5: progress, audit, tasks, config, Inventory spec |
+
+All adjacent ancestry checks passed, including `91d3e96` ancestor of branch `docs/public-preview-audit` at HEAD `e40f803ab098f4f56ae4cc31c208f18b5a7c4004`. Every measured slice is within the 400-line budget.
+
+### Final-candidate evidence
+
+- Passed: `go test ./cmd/git-change-evidence -run 'Test.*(Census|Discovery|Version|Normalize|RunCommand|RunCLI)'`; `go test ./...`; and the exact configured check-only `gofmt` command.
+- Passed dual-binary smoke in an external `mktemp -d`: built `gce` and `git-change-evidence`; both help/version calls succeeded with empty stderr; valid canonical/legacy census stdout was byte-identical valid JSON; each canonical/legacy invalid call exited 2 with empty stdout and exact stderr `invalid input\n`; temporary directory was removed.
+- Passed official Apache comparison: byte-identical `LICENSE`, SHA-256 `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`, 202 lines, appendix present. All 12 current local Markdown links resolved; seven current-facing docs passed English/manual and portable-path review.
+- Passed PyYAML config parse/invariants (`spec-driven`, strict TDD, primary `go test ./...`, exact format command, 160-line threshold); all six active specs were read; Evidence V1 SHA remains `9d3e413d1ce67bd4bd6382fa51a61bbe57ad7586c10973dd588530ab967aed5d`; audit has 12 complete rows and five owner-boundary rows; Inventory V1 retains three acquisition-separation invariants.
+- Diff/name-status review found no multilingual implementation, capabilities schema, evidence-schema/digest/API removal, `internal/` or functional-core policy change, visibility/tag/release/assets action, history rewrite, archive or `.atl` deletion, CNSIC cutover, MEH integration, packaging/signing/release automation, or delivery authority. `git diff --check` passes.
+- Race test is N/A: task 9 changes only task/progress evidence and the full stack's Go delta adds CLI argument normalization/discovery without goroutines, synchronization, or concurrency-dependent behavior.
+
+| TDD cycle | Evidence | Result |
+|---|---|---|
+| Task 9 default non-Go artifact review | No production or test Go edit; configured rubric default is skip | N/A without bypassing prior CLI TDD evidence |
+
+### Residuals and boundaries
+
+- No forbidden path was written by task 9: only this progress record and `tasks.md` are authorized. Runtime `.atl/skill-registry.md` and `.gitignore` metadata was outside scope and restored before the final census/status, so neither path is part of PR 4.
+- Owner-controlled residuals remain Git history/unpublished refs, external settings/secrets/metadata, outside-tree assets, legal/IP/confidentiality/attribution review, and consent before visibility, tags, releases, assets, destructive remediation, or credential action. This evidence grants none of those actions.
+- Independent rollback boundaries remain PR 0a foundations, PR 0b design/tasks, PR 1 CLI/tests, PR 2 license/entrypoint docs, PR 3 governance/guide, and PR 4 audit/targeted active-spec prose; no branch, commit, push, PR, tag, release, publication, or archive action was taken.

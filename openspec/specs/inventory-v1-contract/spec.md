@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define a neutral, immutable, canonical Inventory V1 document in the public root Go package. It is the second document in the provenance sequence after Accounting Policy V1 and before any future Accounting Result V1.
+Define a neutral, immutable, canonical Inventory V1 document in the public root Go package. It is the second document in the historical provenance sequence after Accounting Policy V1 and before the now-established Accounting Result V1.
 
 ## Requirements
 
@@ -97,7 +97,7 @@ The decoder MUST NOT silently add, drop, coerce, reorder, repair, deduplicate, n
 
 An Inventory V1 document with zero entries MUST mean that the caller has successfully verified the exact requested scope and found it empty. It MUST NOT mean unavailable, unsupported, missing, unsafe, racing, failed, or unrequested acquisition. The pure Inventory V1 document and API MUST have no availability/status variant and MUST NOT translate an acquisition failure into an empty Inventory V1 document.
 
-Inventory V1 construction MUST consume only the exact entry set supplied by its caller. It MUST NOT enumerate directories, open paths, inspect the filesystem, follow links, infer omitted paths, augment the set, or define discovery semantics. Safe filesystem acquisition and adapter integration remain outside this contract and are deferred to WU-4C.
+Inventory V1 construction MUST consume only the exact entry set supplied by its caller. It MUST NOT enumerate directories, open paths, inspect the filesystem, follow links, infer omitted paths, augment the set, or define discovery semantics. Safe filesystem acquisition and adapter integration remain outside this contract; WU-4C is a historical work-unit reference.
 
 #### Scenario: Verified empty requested scope
 - **GIVEN** an adapter or caller has completed acquisition of an explicitly requested scope and verified that it contains no inventory entries
