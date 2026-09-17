@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"github.com/kozz36/git-change-evidence/census"
@@ -300,4 +301,120 @@ func writeCensusFile(t *testing.T, root, name, content string) {
 	}
 }
 
+func TestCanonicalAndLegacyCensusParity(t *testing.T) {
+	root := t.TempDir()
+	for name, content := range map[string]string{
+		"match.go":   "package fixture\nfunc f() { os.Open(\"x\") }\n",
+		"zero.go":    "package fixture\nfunc f() {}\n",
+		"a.go":       "package fixture\nfunc a() { os.Open(\"a\") }\n",
+		"z.go":       "package fixture\nfunc z() { os.Open(\"z\") }\n",
+		"unicode.go": "package fixture\nfunc f() { π.Écho(\"x\") }\n",
+		"bad.go":     "package {\n",
+	} {
+		writeCensusFile(t, root, name, content)
+	}
+	rawPath := string([]byte{0xff, 'x', '.', 'g', 'o'})
+	writeCensusFile(t, root, rawPath, "package fixture\nfunc f() { os.Open(\"x\") }\n")
+	for name, test := range map[string]struct {
+		receiver, selector string
+		paths              []string
+	}{
+		"match":          {"os", "Open", []string{"match.go"}},
+		"zero":           {"os", "Open", []string{"zero.go"}},
+		"reversed paths": {"os", "Open", []string{"z.go", "a.go"}},
+		"unicode":        {"π", "Écho", []string{"unicode.go"}},
+		"non-UTF-8":      {"os", "Open", []string{rawPath}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			legacy := censusArgs(root, test.receiver, test.selector, test.paths...)
+			canonical := append([]string{"census", "go-ast"}, legacy[1:]...)
+			legacyCode, legacyOut, legacyErr := runCensusCommand(t, legacy)
+			canonicalCode, canonicalOut, canonicalErr := runCensusCommand(t, canonical)
+			if legacyCode != 0 || canonicalCode != legacyCode || !bytes.Equal(canonicalOut, legacyOut) || canonicalErr != legacyErr {
+				t.Fatalf("canonical = (%d, %q, %q), legacy = (%d, %q, %q)", canonicalCode, canonicalOut, canonicalErr, legacyCode, legacyOut, legacyErr)
+			}
+		})
+	}
+	duplicate := []string{
+		"census-go-ast",
+		"--source-root", root,
+		"--receiver", "os",
+		"--receiver", "os",
+		"--selector", "Open",
+		"--", "match.go",
+	}
+	for name, legacy := range map[string][]string{
+		"invalid flag":       {"census-go-ast", "--invalid"},
+		"missing options":    {"census-go-ast", "--source-root", root, "--"},
+		"missing separator":  {"census-go-ast", "--source-root", root, "--receiver", "os", "--selector", "Open", "match.go"},
+		"duplicate":          duplicate,
+		"invalid path":       censusArgs(root, "os", "Open", "../outside.go"),
+		"invalid identifier": censusArgs(root, "not-valid", "Open", "match.go"),
+		"unavailable":        censusArgs(root, "os", "Open", "missing.go"),
+		"parser":             censusArgs(root, "os", "Open", "bad.go"),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if name == "duplicate" {
+				if _, err := parseCensusConfig(legacy); err == nil {
+					t.Fatal("duplicate option unexpectedly parsed")
+				}
+				withoutDuplicate := append([]string(nil), legacy[:5]...)
+				withoutDuplicate = append(withoutDuplicate, legacy[7:]...)
+				if _, err := parseCensusConfig(withoutDuplicate); err != nil {
+					t.Fatalf("duplicate removal did not isolate the option error: %v", err)
+				}
+			}
+			canonical := append([]string{"census", "go-ast"}, legacy[1:]...)
+			legacyCode, legacyOut, legacyErr := runCensusCommand(t, legacy)
+			canonicalCode, canonicalOut, canonicalErr := runCensusCommand(t, canonical)
+			if canonicalCode != legacyCode || !bytes.Equal(canonicalOut, legacyOut) || canonicalErr != legacyErr || len(canonicalOut) != 0 {
+				t.Fatalf("canonical = (%d, %q, %q), legacy = (%d, %q, %q)", canonicalCode, canonicalOut, canonicalErr, legacyCode, legacyOut, legacyErr)
+			}
+		})
+	}
+	legacy := censusArgs(root, "os", "Open", "match.go")
+	canonical := append([]string{"census", "go-ast"}, legacy[1:]...)
+	for _, args := range [][]string{legacy, canonical} {
+		var stderr bytes.Buffer
+		if code := runCommand(context.Background(), args, nil, censusErrorWriter{}, &stderr, func() (string, error) { t.Fatal("cwd used"); return "", nil }, nil, limits{}, nil); code != exitAbsent || stderr.String() != "content unavailable\n" {
+			t.Fatalf("writer failure = (%d, %q)", code, stderr.String())
+		}
+	}
+	boundedLegacy := censusArgs(root, "os", "Open", "match.go", "zero.go")
+	boundedCanonical := append([]string{"census", "go-ast"}, boundedLegacy[1:]...)
+	for _, args := range [][]string{boundedLegacy, normalizeCensusArgs(boundedCanonical)} {
+		var stdout, stderr bytes.Buffer
+		if code := runCensusWith(args, &stdout, &stderr, census.Limits{MaxFiles: 1, MaxFileBytes: 1, MaxTotalBytes: 1, MaxMatches: 1}, func(string) (censusSourceRoot, error) { t.Fatal("source root opened"); return nil, nil }); code != exitBound || stdout.Len() != 0 || stderr.String() != "resource bound exceeded\n" {
+			t.Fatalf("resource bound = (%d, %q, %q)", code, stdout.String(), stderr.String())
+		}
+	}
+}
+
 var _ io.Writer = censusErrorWriter{}
+
+func TestNormalizeCensusArgs(t *testing.T) {
+	valid := censusArgs("/source-root", "os", "Open", "source.go")
+	for _, test := range []struct {
+		name       string
+		args, want []string
+	}{
+		{"empty tail", []string{"census", "go-ast"}, []string{"census-go-ast"}},
+		{"malformed tail", []string{"census", "go-ast", "--invalid"}, []string{"census-go-ast", "--invalid"}},
+		{"three tokens", []string{"census", "go-ast", "new-file"}, []string{"census-go-ast", "new-file"}},
+		{"valid tail", append([]string{"census", "go-ast"}, valid[1:]...), valid},
+		{"separator and raw bytes", []string{"census", "go-ast", "--", "\xffraw"}, []string{"census-go-ast", "--", "\xffraw"}},
+		{"legacy unchanged", []string{"census-go-ast", "--invalid"}, []string{"census-go-ast", "--invalid"}},
+		{"unrelated unchanged", []string{"census", "other", "new-file"}, []string{"census", "other", "new-file"}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			original := append([]string(nil), test.args...)
+			got := normalizeCensusArgs(test.args)
+			if !slices.Equal(got, test.want) || !slices.Equal(test.args, original) || !slices.Equal(normalizeCensusArgs(got), got) {
+				t.Fatalf("normalized, original, idempotent = %q, %q, %q", got, test.args, normalizeCensusArgs(got))
+			}
+			if len(test.args) > 1 && test.args[0] == "census" && test.args[1] == "go-ast" && &got[0] == &test.args[0] {
+				t.Fatal("canonical normalization reused caller backing array")
+			}
+		})
+	}
+}
