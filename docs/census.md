@@ -1,12 +1,32 @@
 # Go AST census CLI
 
-`git-change-evidence census-go-ast` is a local, evidence-only adapter over the
-public `census.GoASTV1` API. It neither discovers files nor invokes Git.
+`gce census go-ast` is the canonical local, evidence-only adapter over the
+public `census.GoASTV1` API. The retained pre-v1 compatibility invocation,
+`git-change-evidence census-go-ast`, is equivalent. Neither invocation
+discovers files or invokes Git.
+
+Build both local executable names from the repository root as described in the
+[README](../README.md):
+
+```sh
+go build -o gce ./cmd/git-change-evidence
+go build -o git-change-evidence ./cmd/git-change-evidence
+```
 
 ## Command
 
 ```text
-git-change-evidence census-go-ast \
+./gce census go-ast \
+  --source-root <absolute-source-root> \
+  --receiver <identifier> \
+  --selector <identifier> \
+  -- <explicit-relative-go-files...>
+```
+
+The equivalent legacy form is:
+
+```text
+./git-change-evidence census-go-ast \
   --source-root <absolute-source-root> \
   --receiver <identifier> \
   --selector <identifier> \
@@ -19,14 +39,14 @@ Go's `token.IsIdentifier` validation. The command has no implicit current
 working directory root and does not accept Git revisions, shell expressions, or
 discovery patterns.
 
-For example, after creating `/opt/census-fixture/example.go` with an `os.Open`
-call, a local smoke command is:
+For a repository-root smoke command, use the supplied source scope directly:
 
 ```sh
-git-change-evidence census-go-ast \
-  --source-root /opt/census-fixture \
-  --receiver os --selector Open -- example.go
+./gce census go-ast --source-root "$(pwd -P)" \
+  --receiver os --selector Open -- cmd/git-change-evidence/main.go
 ```
+
+The legacy command accepts the same options and has the same technical result.
 
 ## Input confinement and limits
 
@@ -39,12 +59,13 @@ On Linux, the adapter opens `/` and every supplied root/path component through
 file descriptors using `openat`, `O_NOFOLLOW`, `O_NONBLOCK`, and post-open
 `fstat`/`fstatat(AT_SYMLINK_NOFOLLOW)` identity checks. It rejects symlinks at
 the root, intermediate, and selected-file positions; rejects nonregular files;
-and reads only the opened regular file descriptor. This prevents path-component
-symlink traversal and avoids FIFO/device open hangs, including replacement races
-between metadata checks and open.
+and reads only the opened regular file descriptor.
 
-The Linux implementation is deliberate: another platform reports source content
-as unavailable rather than weakening the no-follow confinement guarantee.
+The descriptor checks reject symlink, nonregular, and changed-entry inputs while
+opening the supplied root and paths.
+
+The Linux implementation is deliberate: non-Linux platforms report source
+content as unavailable rather than using a different confinement behavior.
 
 `census.DefaultLimits()` is applied before parsing source content:
 
@@ -57,10 +78,11 @@ Every selected regular file receives one bounded content read. The CLI builds
 `InventoryDocumentV1` from those exact captured bytes and passes the same bytes
 to `census.GoASTV1`.
 
-This is a per-file captured-byte snapshot, not an atomic snapshot of the whole
-source tree. A concurrently changing tree can therefore contain selected files
-captured at different instants; each emitted file hash, byte length, inventory
-identity, and match span still bind to the exact bytes supplied to the extractor.
+This is syntax-only analysis of supplied file bytes, not semantic resolution or
+an atomic whole-tree snapshot. A concurrently changing tree can therefore
+contain selected files captured at different instants; each emitted file hash,
+byte length, inventory identity, and match span still bind to the exact bytes
+supplied to the extractor.
 
 ## JSON output
 
