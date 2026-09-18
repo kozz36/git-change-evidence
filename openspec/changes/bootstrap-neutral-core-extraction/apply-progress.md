@@ -98,3 +98,14 @@ main
 - **Boundary:** stacked-to-main PR 2 task 2.1 only; rollback removes PR 2 contracts, tests, and corpus without affecting PR 1 planning.
 ### Remaining Tasks / Risks
 - [ ] 2.2 onward remain outside this slice; strict-TDD support was read from the predecessor checkout because it is absent here.
+
+## Public Preview Task 7 — Bounded Reconciliation Decision
+- User-resolved decision: **Preservar y separar**.
+- Preserve active `bootstrap-neutral-core-extraction` at exactly 3/12; no reconciliation, archive, or sync is performed.
+- The final matrix census is 4 proven-present / 4 partial / 3 absent / 1 superseded-decision; this evidence census does not alter task chronology or checkbox status. See [reconciliation-matrix.md](reconciliation-matrix.md).
+- The matrix-identified residual capabilities are separated into active proposal-level change `post-preview-neutral-capabilities`; see [explore.md](../post-preview-neutral-capabilities/explore.md) and [proposal.md](../post-preview-neutral-capabilities/proposal.md).
+- That residual change contains exactly matrix residuals 2.2, 2.3, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3 at proposal level only; no specs, design, tasks, implementation, or verification exist yet.
+- Every future phase is post-preview and nonblocking for planned source/dev `v0.1.0-preview.1`.
+- This is evidence-only and conveys no authority.
+- Planning-only strict TDD and test execution are N/A. No production, tests, or external actions occurred.
+- Task 7 creates no authority for Task 8 or later publication work.
