@@ -19,8 +19,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   behavior.
 - Supported public Go APIs at the module root and in the public `census`
   subpackage.
-- Apache-2.0 repository licensing and public-preview documentation and
-  governance guidance.
+- Apache-2.0 repository licensing, root third-party notices for
+  `golang.org/x/sys v0.38.0`, and public-preview documentation and governance
+  guidance.
+- Release-preparation evidence that `go-ast-census` is archived, while
+  `bootstrap-neutral-core-extraction` remains active and unarchived at 3/12
+  tasks and `post-preview-neutral-capabilities` remains an active, proposal-only
+  change with zero tasks and next recommended step `spec`.
 
 ### Limitations
 

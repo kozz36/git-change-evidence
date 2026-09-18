@@ -7,14 +7,19 @@ authorized by this document.
 
 ## Read this first
 
-**Preparation baseline:** `origin/main@16aaa4498f91c6d1ff91b330e1df6a47db26c922`
-with tree `e1926f0fafd43e56e0c719cd23afe0a1bf96fb33`.
+**Current integration base:** `main@1a431c576b277496152a3781c421d412663064e2`
+with tree `73330f0db975881f60fbba3c3aeae4d74450d5d0`.
 
-This baseline records preparation inputs only. A future final reviewed release
-commit and its future tag must be selected by the owner before any publication.
-Task-6 ephemeral builds are rehearsal candidates only and **MUST be regenerated
-from the future reviewed/tagged commit before any upload**. Do not upload,
-publish, tag, release, or retain a rehearsal as a release asset.
+This is the current integration input for release preparation. A future final
+reviewed release commit and its future tag must be selected by the owner before
+any publication.
+
+**Historical Task-6 rehearsal baseline:**
+`origin/main@16aaa4498f91c6d1ff91b330e1df6a47db26c922`, tree
+`e1926f0fafd43e56e0c719cd23afe0a1bf96fb33`. Its two-member Linux archives
+are historical rehearsal evidence only and **MUST NEVER be reused**. Final
+assets must be rebuilt from the final tagged commit. Do not upload, publish,
+tag, release, or retain a rehearsal as a release asset.
 
 ## Scope at a glance
 
@@ -22,8 +27,8 @@ publish, tag, release, or retain a rehearsal as a release asset.
 | --- | --- |
 | Preview wording | Source/dev preview; not release provenance. |
 | Candidate source | Source archive plus Linux `amd64` and `arm64` archives. |
-| Linux archive members | Every Linux archive contains both `gce` and `git-change-evidence`. |
-| Integrity record | `SHA256SUMS` covers the source archive, both Linux archives, and the SBOM. |
+| Linux archive members | Every Linux archive contains exactly `gce`, `git-change-evidence`, `LICENSE`, and `THIRD_PARTY_NOTICES`. |
+| Integrity record | `SHA256SUMS` covers exactly the other five files in the six-file unsigned external set. |
 | SBOM | CycloneDX SBOM planned with temporary pinned `cyclonedx-gomod@v1.10.0`; it must not be installed into the repository. |
 | Publication | Owner-controlled future work, not part of preparation or rehearsal. |
 
@@ -58,23 +63,25 @@ questions.
 
 ## Candidate manifest plan
 
-The planned manifest is source plus two Linux architecture records, an SBOM,
-and `SHA256SUMS`:
+The planned external set contains exactly six unsigned files:
 
 ```text
 git-change-evidence_v0.1.0-preview.1_source.tar.gz
 git-change-evidence_v0.1.0-preview.1_linux_amd64.tar.gz
 git-change-evidence_v0.1.0-preview.1_linux_arm64.tar.gz
-git-change-evidence_v0.1.0-preview.1.sbom.cdx.json
+git-change-evidence_v0.1.0-preview.1_linux_amd64.sbom.cdx.json
+git-change-evidence_v0.1.0-preview.1_linux_arm64.sbom.cdx.json
 SHA256SUMS
 ```
 
 Record the selected source commit and tree, version wording, tool versions,
 byte sizes, and SHA-256 values. Record `GOOS=linux` and the relevant `GOARCH`
-for each binary archive. Each Linux archive must contain exactly the two
-executable names `gce` and `git-change-evidence`; inspect the members and
-architecture before accepting rehearsal evidence. The SBOM must identify the
-same source and link each archive by filename and SHA-256.
+for each binary archive. Each Linux archive must contain exactly `gce`,
+`git-change-evidence`, `LICENSE`, and `THIRD_PARTY_NOTICES`; inspect the
+members and architecture before accepting final-asset evidence. Each SBOM must
+identify the same source and link its archive by filename and SHA-256.
+`SHA256SUMS` covers exactly the other five external files. `LICENSE` and
+`THIRD_PARTY_NOTICES` are archive members, not additional upload assets.
 
 ## Safe preparation checks
 
@@ -89,48 +96,39 @@ git status --short
 git diff --name-only
 ```
 
-Confirm the first two commands match the preparation baseline and tree above.
-Use this rehearsal checklist before scheduling Task 6; do not interpret a
-passing check as release authorization.
+Confirm the first two commands match the current integration base and tree
+above. Do not interpret a passing check as release authorization.
 
-- [ ] The preparation baseline commit and tree still match the values above.
-- [ ] Rehearsal output will be created only outside the repository in a fresh temporary directory.
-- [ ] No candidate asset will be uploaded, retained as a release asset, or copied into the repository.
-- [ ] `SHA256SUMS`, archive members, binary architectures, SBOM coverage, and CLI contract checks will be recorded.
+- [ ] The current integration-base commit and tree still match the values above.
+- [ ] Final assets will be created only outside the repository in a fresh temporary directory.
+- [ ] No candidate asset will be uploaded, retained as a release asset, or copied into the repository before the owner-controlled publication steps.
+- [ ] `SHA256SUMS`, four-member Linux archives, binary architectures, SBOM coverage, and CLI contract checks will be recorded.
 
-Before any future upload—not before the Task-6 rehearsal—the owner must select
-the final reviewed release commit and tag, and every upload candidate must be
-regenerated from that selected commit.
+Before any future upload, the owner must select the final reviewed release
+commit and tag. Every final asset must be rebuilt from that selected tagged
+commit; the historical Task-6 rehearsal must never be reused.
 
-## Future rehearsal procedure (Task 6 only)
+## Historical Task-6 rehearsal procedure (superseded)
 
-Do not execute this section as part of documentation preparation. It describes
-a future, non-publishing rehearsal. Create a new temporary working directory
-outside the repository and remove it after evidence capture. Do not write any
-generated archive, checksum, binary, manifest, or SBOM into the repository.
+Do not execute or reuse this historical two-member procedure. It documents the
+non-publishing rehearsal evidence below only. A final asset build must instead
+use the final tagged commit, the four-member Linux archive contract, and the
+six-file unsigned external set. The historical rehearsal created its temporary
+working directory outside the repository and wrote no generated archive,
+checksum, binary, manifest, or SBOM into the repository.
 
-1. Verify the selected source commit and tree. For the preparation rehearsal,
-   use the baseline above; for any upload candidate, use only the future
-   reviewed/tagged commit.
-2. Produce the source archive and Linux `amd64` and `arm64` archives in the
-   temporary directory. Put both `gce` and `git-change-evidence` in each Linux
-   archive.
-3. Generate a CycloneDX SBOM with temporary pinned
-   `cyclonedx-gomod@v1.10.0`. For example, set `GOBIN` to a tools directory
-   under the temporary directory before running the pinned tool; do not add it
-   to `go.mod`, `go.sum`, or any repository path. Record the generator version
-   and the SBOM's source and archive linkage.
-4. After the SBOM exists, generate `SHA256SUMS` in bytewise filename order so
-   it covers the source archive, both Linux archives, and the SBOM; then verify
-   the checksum file from the temporary directory.
-5. Verify archive members, Linux binary architecture, checksums, SBOM coverage,
-   `--version` source/dev wording, and canonical/legacy census parity where
-   executable.
-6. Capture only the observed evidence, then delete the entire temporary
-   directory. A later upload requires a fresh rebuild from the future reviewed
-   release commit and tag.
+1. The historical preparation rehearsal used the historical baseline above.
+2. Its two-member Linux archives contained `gce` and `git-change-evidence`.
+3. It generated per-target CycloneDX SBOMs with temporary pinned
+   `cyclonedx-gomod@v1.10.0` without changing repository dependencies.
+4. Its `SHA256SUMS` covered the source archive, both Linux archives, and both
+   target SBOMs.
+5. It recorded archive members, Linux binary architecture, checksums, SBOM
+   coverage, source/dev wording, and canonical/legacy census parity.
+6. It captured evidence and deleted the complete temporary directory. It must
+   never be reused for final assets.
 
-## Observed Task 6 rehearsal evidence
+## Historical Task-6 rehearsal evidence (not reusable)
 
 The non-publishing rehearsal completed from the preparation baseline on
 2026-09-17. It used a temporary Git index and object directory so the real
@@ -223,17 +221,19 @@ They do not describe downloadable assets or release provenance. Any future
 upload candidate must be regenerated from the future reviewed release commit
 and tag.
 
-## Active change and archive blocker
+## Lifecycle state
 
-`bootstrap-neutral-core-extraction` remains active and resumable at **3/12
+`go-ast-census` is archived at
+`openspec/changes/archive/2026-09-18-go-ast-census/`. It is historical archive
+evidence, not an active release-preparation blocker.
+
+`bootstrap-neutral-core-extraction` remains active and unarchived at **3/12
 tasks**. Its recorded `nextRecommended` value is `apply`. Do not complete,
 archive, delete, or rewrite that change during release preparation.
 
-The `go-ast-census` archive is not complete. Two canonical executor attempts
-each ended after **1 turn, 0 tool calls, and 0 writes**. A separate native
-STATUS v2 reports that archive state is ready. No manual fallback was used; the
-retry budget is exhausted. Preserve this blocker and do not claim archive
-completion.
+`post-preview-neutral-capabilities` remains active and proposal-only with zero
+tasks. Its recorded `nextRecommended` value is `spec`; do not add implementation
+or task progress during release preparation.
 
 ## Owner-controlled publication gates
 
@@ -254,10 +254,11 @@ No technical report or checklist result grants authority for these decisions.
 ## Verification and recovery
 
 Before accepting documentation evidence, verify local Markdown links, the
-baseline and tree identifiers, source/dev wording, both Linux architecture and
-binary names, `SHA256SUMS`, `cyclonedx-gomod@v1.10.0`, the archive-blocker
-statement, and the absence of publication claims. Also run `git diff --check`
-and inspect the changed-path and changed-line census.
+current integration and historical rehearsal identifiers, source/dev wording,
+both Linux architectures, the exact four Linux archive members,
+`SHA256SUMS`, `cyclonedx-gomod@v1.10.0`, the archived/active lifecycle states,
+and the absence of publication claims. Also run `git diff --check` and inspect
+the changed-path and changed-line census.
 
 If the documentation is incorrect, revert only the preparation documents and
 repeat their checks. If rehearsal artifacts are incorrect or incomplete, delete

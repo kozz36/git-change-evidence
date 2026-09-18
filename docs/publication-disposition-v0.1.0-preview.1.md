@@ -126,3 +126,24 @@ Task 2 is complete because every finding is classified and required remediation
 has an explicit bounded plan. Task 3 may create and seek approval for the
 publication tracking issue. This does not start Task 3 and does not authorize
 any later lifecycle or publication action.
+
+## F-05 remediation completion — 2026-09-18
+
+The separately bounded Task-9 remediation added root `THIRD_PARTY_NOTICES`.
+It identifies `golang.org/x/sys v0.38.0` and clearly delimits verbatim copies
+of the cached upstream `LICENSE` and `PATENTS` bytes. This records technical
+notice evidence only; it does not provide legal clearance or change the
+original F-05 finding/table status.
+
+The current release-preparation integration is merge commit
+`181fa986865d1f5a7d255db445bb70504b2d7753`, tree
+`befc256d7b3c504f1472e2db4ff29ebb7d23e63d`, with parents
+`1a431c576b277496152a3781c421d412663064e2` and
+`6531661033d0be3fc56236fe83dc155dc7de080a`; no conflicts were observed.
+The current Linux archive contract is exactly `gce`, `git-change-evidence`,
+`LICENSE`, and `THIRD_PARTY_NOTICES`; the external set remains exactly six
+unsigned assets. Final assets must be rebuilt from the final tagged commit.
+
+This completion record does not create a tag, release, upload, package,
+distribution channel, or public-visibility change, and does not authorize any
+of them.
