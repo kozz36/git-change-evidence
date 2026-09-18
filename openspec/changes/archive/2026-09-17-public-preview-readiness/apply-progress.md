@@ -133,7 +133,7 @@ The focused RED command failed as expected for absent production helpers; focuse
 ## PR 3 surgical verifier correction: README consumer-guide link
 
 - Finding: `README.md` still described `docs/agent-consumers.md` as a future guide even though the authorized consumer guide exists at `docs/consumer-integration-guide.md`.
-- Correction: replaced only that placeholder with a current Markdown link to [the Consumer Integration Guide](../../../docs/consumer-integration-guide.md).
+- Correction: replaced only that placeholder with a current Markdown link to [the Consumer Integration Guide](../../../../docs/consumer-integration-guide.md).
 - Checks passed: `git diff --check`; all local Markdown-link targets in `README.md` and `docs/consumer-integration-guide.md`; and canonical/legacy census command consistency across current guidance.
 - Revised PR3 LOC: 196 additions plus 7 deletions = 203 changed lines, within the 400-line budget.
 - Residual status: the README guide-path inconsistency is resolved. `openspec/config.yaml` retains stale CI/license deferrals and remains outside this correction's authorization.
