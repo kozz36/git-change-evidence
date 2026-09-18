@@ -84,6 +84,22 @@ contain selected files captured at different instants; each emitted file hash,
 byte length, inventory identity, and match span still bind to the exact bytes
 supplied to the extractor.
 
+## Candidate meaning and limits
+
+Each match is a syntax-only textual observation from the supplied bytes and the
+exact receiver/selector query. Candidates can include exact spellings in
+shadowed contexts and ambiguous indexed-value shapes. Repeated or legacy
+occurrences are observations, not invariant classifications.
+
+The census does not establish package, method, import, type, alias, shadow,
+dependency, or semantic identity. Completeness applies only to the validated
+supplied inventory and the exact syntactic query; it does not claim completeness
+for a repository, package, or semantic call relation.
+
+The input limits bound selected files, bytes, and emitted matches. They do not
+provide parser heap, stack, time, or process isolation. Census evidence grants
+no approval, gating, merge, deploy, or release authority.
+
 ## JSON output
 
 A successful invocation writes exactly one JSON document and a newline. Output
