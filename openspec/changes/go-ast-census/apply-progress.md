@@ -132,3 +132,20 @@ The authoritative rubric selected the `go-source-or-test` strict-TDD row by all-
 
 - This is the one native `go-ast-census-residual-c3` correction work unit, bounded at 250 gross changed lines. Its review boundary excludes frozen product, configuration, external tests, specifications, documentation, and installed skills; independent verification remains a separately authorized future phase and is not claimed here.
 - Design deviations: none. Native settlement must bind a distinct correction evidence revision to failed evidence `sha256:67973625eb60816fa3489713054e359914e3391dcb083a39e2b072914d7a8a97`.
+
+## Post-verification documentary correction — canonical Task-4 FAIL F1
+
+- Scope: this docs-only correction changes `docs/census.md` and this progress record only. It does not alter Go behavior, tests, configuration, specifications, task state, verification reports, or historical evidence.
+- GAC-008-S01 wording now states that candidates are syntax-only textual observations; shadowed exact spellings and ambiguous indexed-value shapes may be included; and repeated or legacy occurrences are observations rather than invariant classifications.
+- The consumer documentation now explicitly disclaims package, method, import, type, alias, shadow, dependency, and semantic identity; limits completeness to the validated supplied inventory and exact syntactic query; and clarifies that input limits do not provide parser heap, stack, time, or process isolation.
+- It also retains the evidence-only boundary: census evidence grants no approval, gating, merge, deploy, or release authority.
+
+### TDD and verification plan
+
+- Strict TDD: N/A — this is a documentation-only correction with no executable behavior or test surface.
+- Wording/manual check: parent will read the `Candidate meaning and limits` section against GAC-008-S01 and confirm that it uses non-guarantee language without changing the documented CLI contract.
+- Markdown/diff checks: parent will run `git diff --check` and inspect `git diff -- docs/census.md openspec/changes/go-ast-census/apply-progress.md` for scope, Markdown structure, and preservation of historical evidence.
+- Configured full gate (parent): `go test ./...`.
+- Configured race gate (parent): `go test -race ./...`.
+- Configured check-only format gate (parent): `test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"`.
+- No configured gate is claimed as run by this documentary correction; parent verification remains pending.
