@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -219,12 +218,13 @@ func TestAcquireBlobRejectsObjectOverByteCapBeforeContentRead(t *testing.T) {
 	assertBlob(t, got, commit, object, "100644", evidence.GitFile, "blob", "four")
 	got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 3})
 	assertBlobFailure(t, got, err, BlobOversized)
-	contentReadsBeforeMaxUint64 := contentReads
-	declared = []byte(strconv.FormatUint(math.MaxUint64, 10) + "\n")
+	contentReadsBeforePlatformUintMax := contentReads
+	platformUintMax := uint64(^uint(0))
+	declared = []byte(strconv.FormatUint(platformUintMax, 10) + "\n")
 	got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 4})
 	assertBlobFailure(t, got, err, BlobOversized)
-	if contentReads != contentReadsBeforeMaxUint64 {
-		t.Fatalf("content reads after MaxUint64 declaration = %d; want %d", contentReads, contentReadsBeforeMaxUint64)
+	if contentReads != contentReadsBeforePlatformUintMax {
+		t.Fatalf("content reads after platform-width unsigned maximum declaration = %d; want %d", contentReads, contentReadsBeforePlatformUintMax)
 	}
 	for _, declared = range [][]byte{[]byte("+4\n"), []byte("-4\n"), []byte(" 4\n"), []byte("4 \n"), []byte("4\n4\n"), []byte("04\n"), []byte("4"), []byte("18446744073709551616\n")} {
 		got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 4})
