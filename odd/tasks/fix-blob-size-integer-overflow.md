@@ -7,9 +7,9 @@
 
 ## Tasks
 
-- [ ] Regression/TDD: add the `math.MaxUint64` declaration case to prove `BlobOversized` and no additional blob-content read.
-- [ ] Minimal production fix: reject declared unsigned sizes above `MaxAcquiredBlobBytes` or the request byte cap before conversion to `int`.
-- [ ] Verification/evidence: run the required focused and repository checks and record the observed results.
+- [x] Regression/TDD: add the `math.MaxUint64` declaration case to prove `BlobOversized` and no additional blob-content read. **Evidence:** implementation commit `b374aacdd0915d18763f12500f2feb1ac061b5be`, tree `93c944caf517c26f3e45c053869f41f5772d72b1`; focused RED was `blob acquisition: racing_object; want oversized`, then focused GREEN passed after the production correction.
+- [x] Minimal production fix: reject declared unsigned sizes above `MaxAcquiredBlobBytes` or the request byte cap before conversion to `int`. **Evidence:** implementation commit `b374aacdd0915d18763f12500f2feb1ac061b5be`, tree `93c944caf517c26f3e45c053869f41f5772d72b1`; the guard runs before conversion and content read.
+- [ ] Independent verification and delivery: independently verify the committed candidate, review and merge it through an issue-linked PR, and require CodeQL alert #1 to resolve from merged code without dismissal before repeating the publication gates.
 
 ## TDD evidence
 
