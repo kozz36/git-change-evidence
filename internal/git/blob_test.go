@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -217,6 +218,14 @@ func TestAcquireBlobRejectsObjectOverByteCapBeforeContentRead(t *testing.T) {
 	assertBlob(t, got, commit, object, "100644", evidence.GitFile, "blob", "four")
 	got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 3})
 	assertBlobFailure(t, got, err, BlobOversized)
+	contentReadsBeforePlatformUintMax := contentReads
+	platformUintMax := uint64(^uint(0))
+	declared = []byte(strconv.FormatUint(platformUintMax, 10) + "\n")
+	got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 4})
+	assertBlobFailure(t, got, err, BlobOversized)
+	if contentReads != contentReadsBeforePlatformUintMax {
+		t.Fatalf("content reads after platform-width unsigned maximum declaration = %d; want %d", contentReads, contentReadsBeforePlatformUintMax)
+	}
 	for _, declared = range [][]byte{[]byte("+4\n"), []byte("-4\n"), []byte(" 4\n"), []byte("4 \n"), []byte("4\n4\n"), []byte("04\n"), []byte("4"), []byte("18446744073709551616\n")} {
 		got, err = AcquireBlob(context.Background(), runner, request, BlobBounds{ByteCap: 4})
 		assertBlobFailure(t, got, err, BlobRacing)

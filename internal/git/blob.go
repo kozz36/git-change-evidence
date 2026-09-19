@@ -96,10 +96,10 @@ func acquireBlob(ctx context.Context, runner Runner, request BlobRequest, bounds
 	if err != nil {
 		return Blob{}, blobFailure(BlobRacing)
 	}
-	size := int(size64)
-	if size > bounds.ByteCap {
+	if size64 > uint64(MaxAcquiredBlobBytes) || size64 > uint64(bounds.ByteCap) {
 		return Blob{}, blobFailure(BlobOversized)
 	}
+	size := int(size64)
 	content, err := runner(ctx, request.Repository, bounds.ByteCap, "cat-file", "blob", string(entry.object))
 	if err != nil || len(content) != size || !blobCommitExists(ctx, runner, request.Repository, commit) || !blobExists(ctx, runner, request.Repository, entry.object) {
 		return Blob{}, blobCommandFailure(ctx, BlobRacing)
