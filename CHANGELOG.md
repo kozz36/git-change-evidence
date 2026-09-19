@@ -27,6 +27,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   tasks and `post-preview-neutral-capabilities` remains an active, proposal-only
   change with zero tasks and next recommended step `spec`.
 
+### Fixed
+
+- Rejected oversized unsigned Git blob declarations before integer conversion or blob-content reads.
+
 ### Limitations
 
 - The Go AST census is syntax-only over explicitly supplied Go file bytes; it
