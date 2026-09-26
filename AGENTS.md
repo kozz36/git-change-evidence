@@ -34,3 +34,7 @@ Use **Functional Core / Imperative Shell** with **Hexagonal Architecture** adapt
 ## Deferred Decisions
 
 Concrete configuration-file syntax, broad distribution, packaging, signing/provenance, and release automation remain deferred. CNSIC W1/W2 at merge `a0fc7b26ff8a0e0a61baa586b32c46841611c806` remains the immutable predecessor oracle; do not copy CNSIC-specific rules into the neutral core.
+
+## Repo-local skills
+
+- `gce-evidence`: For explicit requests to consume, validate, reproduce, regenerate, or technically interpret GCE evidence, read `skills/gce-evidence/SKILL.md`. Technical evidence only; no delivery authority. Repository-local guidance, not automatic installation.
