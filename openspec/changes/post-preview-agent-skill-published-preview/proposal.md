@@ -6,7 +6,7 @@ Give agents consuming GCE evidence a concise, reusable runtime skill for choosin
 
 The parent-confirmed release record and this change's [exploration](exploration.md) establish that [v0.1.0-preview.1](https://github.com/kozz36/git-change-evidence/releases/tag/v0.1.0-preview.1) was published at **2026-09-19T07:09:00Z**, with `isDraft:false`, `isPrerelease:true`, target commit `939785dfe122d82022df54929d8f4578b56373fd`, and **six assets**. Issue #129 describes it as externally verified. This phase does not claim a new independent release verification. Local planned/unpublished wording in `AGENTS.md`, README, and configuration is stale status context, not a reason to reopen publication.
 
-This is a clean change. `openspec/changes/post-preview-agent-skill/` remains intact as a historical failed attempt; its conclusions are not authority for this proposal.
+This is a clean change. The failed draft at `openspec/changes/post-preview-agent-skill/` exists in the original authoring worktree, not in the reviewed Git tree; this PR does not add, edit, or delete that path, and its conclusions are not authority for this proposal.
 
 ## Scope
 
@@ -104,7 +104,7 @@ Use existing co-located root, CLI, and `census` tests as behavioral anchors, wit
 
 | Risk | Likelihood | Mitigation |
 | --- | --- | --- |
-| Stale preview text or failed artifacts contaminate new guidance | High | Use confirmed publication facts and primary contracts; preserve but do not adopt failed conclusions. |
+| Stale preview text or failed artifacts contaminate new guidance | High | Use confirmed publication facts and primary contracts; do not adopt failed conclusions. |
 | Overbroad activation or evidence interpreted as delivery authority | Medium | Explicit positive/negative/mixed scenarios and invariant no-authority output. |
 | Duplicated guidance drifts from CLI/API contracts | Medium | Local authoritative references, compatibility examples, and narrowly scoped fixtures. |
 | Repo-local registration is mistaken for automatic installation | Medium | Include the required root skill registration while distinguishing local discovery from automatic activation, packaging, and external registry publication. |
@@ -113,7 +113,7 @@ Use existing co-located root, CLI, and `census` tests as behavioral anchors, wit
 
 ## Rollback plan
 
-If later skill guidance proves misleading, remove or revert only the new skill/support files, the additive root `AGENTS.md` registration, and any newly added consumer-guide link. Preserve all pre-existing `AGENTS.md` bytes and unrelated edits. No runtime, evidence migration, or release rollback is required. Preserve this change's audit trail, the historical failed attempt, and all published preview objects. This proposal phase writes only `proposal.md`.
+If later skill guidance proves misleading, remove or revert only the new skill/support files, the additive root `AGENTS.md` registration, and any newly added consumer-guide link. Preserve all pre-existing `AGENTS.md` bytes and unrelated edits. No runtime, evidence migration, or release rollback is required. Preserve this change's audit trail and all published preview objects; do not rewrite the failed draft in its original authoring worktree. This proposal phase writes only `proposal.md`.
 
 ## Dependencies and remaining decisions
 
@@ -130,4 +130,4 @@ If later skill guidance proves misleading, remove or revert only the new skill/s
 - [ ] Evidence preservation, zero-match limits, exits, partial failures, exact reproduction, and transparent recovery are covered without delivery verdicts.
 - [ ] Local references and fixtures are checked, and validation claims distinguish static checks from executable and agent-evaluation evidence.
 - [ ] Skill metadata does not imply packaging, new public compatibility policy, or modification of the published preview.
-- [ ] Published release facts remain correct, historical failed artifacts remain intact, and multilingual work remains separate.
+- [ ] Published release facts remain correct, this change does not add, edit, or delete the prior failed draft, and multilingual work remains separate.
