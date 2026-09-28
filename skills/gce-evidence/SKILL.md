@@ -29,7 +29,7 @@ Use for explicit requests to consume, validate, reproduce, regenerate, or techni
 
 ## Execution Steps
 
-1. Identify the requested evidence family, exact scope, and authorized surface. Prefer `gce census go-ast`; retain `git-change-evidence census-go-ast` throughout pre-v1. The public root Go API and public `census` subpackage remain supported. Check availability; do not install or build without authorization.
+1. Identify the requested evidence family, exact scope, and authorized surface. For one source/new-file carveout pair, use the existing `gce <base-ref> <source-file> <new-file>` positional route ([consumer workflow](references/consumer-workflow.md)); its counts cannot establish whole-table parity. For census prefer `gce census go-ast`; retain `git-change-evidence census-go-ast` throughout pre-v1. The public root Go API and public `census` subpackage remain supported. Check availability; do not install or build without authorization.
 2. Load the family-specific contracts in [consumer workflow](references/consumer-workflow.md). Capture raw observations and validate canonical bytes, digests, and provenance against the declared contract.
 3. If reproduction is not requested, report `not attempted`. If requested, require exact original inputs and compatible behavior; compare bytes and applicable digests, or report `unavailable` when originals or antecedents are missing. Label authorized changed-input acquisition `new evidence`, not reproduction.
 4. Interpret scoped technical findings and disclose failure, limitations, and any authorized recovery.
