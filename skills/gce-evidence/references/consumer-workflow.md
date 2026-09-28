@@ -6,6 +6,7 @@ Use **consume → validate → reproduce → interpret**. This is checkout-local
 
 | Surface | Contract and inputs |
 | --- | --- |
+| CLI positional carveout | `gce <base-ref> <source-file> <new-file>` (or `git-change-evidence` as the executable name) measures exactly one source/new-file pair. Check executable availability before use; do not install or build without authorization. Resolve and retain immutable base and HEAD commit IDs: the CLI reads the source at the base and HEAD, and the new file at the same resolved HEAD. Capture argv, stdout, stderr, and exit status separately. Successful stdout is `moved=<n> new=<n> additions=<n>` with final LF: `moved` counts matched lines from source deletions in the new file, `new` counts remaining new-file lines, and `additions` is their sum. These normalized-line technical counts do not establish SD-7 whole-table parity, approval, or delivery authority. Disclose failures and missing inputs; never convert a partial or nonzero result into success. See [positional implementation](../../../cmd/git-change-evidence/main.go). |
 | CLI Go AST census | Prefer `gce census go-ast --source-root <absolute-root> --receiver <identifier> --selector <identifier> -- <explicit-relative-go-paths...>`; `git-change-evidence census-go-ast` is equivalent throughout pre-v1. Require each flag once, `--`, and at least one selected relative `.go` path; no implicit root, Git revision, shell expansion, discovery, or invented CLI limit flags. Check local executable availability before use. See [census command](../../../docs/census.md) and [census spec](../../../openspec/specs/go-ast-census/spec.md). |
 | Public Go API | Use `github.com/kozz36/git-change-evidence` family-specific constructors/decoders, and `ValidateReportV1ResultProvenance(report, binding)` for applicable retained Report bindings ([root contract](../../../contract.go)). The public `github.com/kozz36/git-change-evidence/census` `GoASTV1(inventory, files, query, limits)` accepts complete matching raw path/content records, valid inventory/query, and positive limits ([query API](../../../census/query.go)); a valid explicitly empty inventory is allowed by API, unlike CLI selection. Not every family has a CLI assembler. |
 
@@ -16,6 +17,7 @@ Retain original canonical document bytes through final LF, applicable digest and
 | Evidence | Reproduction requirement |
 | --- | --- |
 | Census | Original captured source bytes and raw selected paths, query, effective limits, compatible extractor behavior/identity; compare output bytes and applicable digests. File hashes alone cannot restore lost bytes. A later reread is not automatically identical. |
+| Positional carveout | Exact original source blob at the immutable base, source and new-file blobs at the immutable HEAD, compatible executable behavior, and original argv; compare observed streams/status and counts. A moving base ref or later HEAD is not the original pair. |
 | Revision-bound | Exact immutable base/head IDs, canonical antecedents and their digests, and supported API inputs; compare regenerated canonical bytes/digests. Moving refs or a convenient checkout are not substitutes. |
 | Originals missing or changed | Reproduction cannot be established. An authorized correction/reacquisition with changed inputs produces **new evidence**, even if counts match. |
 
@@ -25,6 +27,7 @@ Census candidates are exact textual syntax matches, including shadowed spellings
 
 | Observation | Technical response |
 | --- | --- |
+| Positional carveout failure | Retain separate argv/stdout/stderr/status and the original immutable revisions where available. Report the CLI diagnostic (invalid input, content unavailable, resource bound exceeded, invalid UTF-8, interruption, or git object race) without importing census exit-code meanings; seek authorized correction or new acquisition. |
 | Census exit 0 | Validate the complete single JSON document with final LF and empty stderr; zero matches is valid. |
 | Census exit 2 | Invalid input (including parse/path errors); retain diagnostic, request transparent correction. |
 | Census exit 3 | Content unavailable (missing, symlinked, nonregular, non-Linux), or output-write failure; exit alone does not prove missing source. Do not bypass Linux confinement. |
