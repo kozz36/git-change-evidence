@@ -26,6 +26,7 @@ const previewVersion = "v0.1.0-preview.1"
 const (
 	rootHelp    = "Usage: git-change-evidence <base-ref> <source-file> <new-file>\n\nCommands:\n  census go-ast    Run the canonical Go AST census.\n  census-go-ast   Run the retained pre-v1 compatibility census.\n  project         Project canonical evidence.\n  publish         Store evidence locally.\n  --version       Print the source-build version.\n"
 	censusHelp  = "Usage: gce census go-ast --source-root <absolute-path> --receiver <identifier> --selector <identifier> -- <paths...>\n\nCanonical: gce census go-ast\nLegacy compatibility: git-change-evidence census-go-ast\n"
+	projectHelp = "Usage: git-change-evidence project <canonical-json|human-text>\n\nFormats:\n  canonical-json    Project canonical evidence as JSON.\n  human-text        Project canonical evidence as text.\n"
 	versionText = "git-change-evidence " + previewVersion + " (source/dev build; not release provenance)\n"
 )
 
@@ -66,6 +67,8 @@ func discoveryText(args []string) (string, bool) {
 	switch {
 	case len(args) == 1 && args[0] == "--help":
 		return rootHelp, true
+	case len(args) == 2 && args[0] == "project" && args[1] == "--help":
+		return projectHelp, true
 	case len(args) == 2 && args[0] == "census" && args[1] == "--help":
 		return censusHelp, true
 	case len(args) == 3 && args[0] == "census" && args[1] == "go-ast" && args[2] == "--help":
