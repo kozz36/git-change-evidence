@@ -463,6 +463,34 @@ func TestCanonicalCensusMalformedArgsDoNotFallThrough(t *testing.T) {
 	}
 }
 
+func TestDiscoveryProjectHelpDispatchIsSideEffectFree(t *testing.T) {
+	const want = "Usage: git-change-evidence project <canonical-json|human-text>\n\nFormats:\n  canonical-json    Project canonical evidence as JSON.\n  human-text        Project canonical evidence as text.\n"
+	args := []string{"project", "--help"}
+	for _, dispatch := range []string{"runCommand", "runCLI"} {
+		t.Run(dispatch, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			cwdCalls, runnerCalls, publisherCalls := 0, 0, 0
+			runner := func(context.Context, string, int, ...string) ([]byte, error) {
+				runnerCalls++
+				return nil, errors.New("git must not run")
+			}
+			publish := func(context.Context, string, evidence.Evidence) (publicationadapter.Result, error) {
+				publisherCalls++
+				return publicationadapter.Result{}, errors.New("publisher must not run")
+			}
+			var code int
+			if dispatch == "runCommand" {
+				code = runCommand(context.Background(), args, panicReader{}, &stdout, &stderr, func() (string, error) { cwdCalls++; return "repository", nil }, runner, standardLimits(), publish)
+			} else {
+				code = runCLI(context.Background(), "repository", args, panicReader{}, &stdout, &stderr, runner, standardLimits(), publish)
+			}
+			if code != 0 || stdout.String() != want || stderr.Len() != 0 || cwdCalls != 0 || runnerCalls != 0 || publisherCalls != 0 {
+				t.Fatalf("exit, stdout, stderr, cwd, runner, publisher = %d, %q, %q, %d, %d, %d", code, stdout.String(), stderr.String(), cwdCalls, runnerCalls, publisherCalls)
+			}
+		})
+	}
+}
+
 func TestDiscoveryIsExactAndSideEffectFree(t *testing.T) {
 	for _, test := range []struct {
 		args []string
@@ -525,7 +553,7 @@ func TestDiscoveryWriteFailuresAreUnavailable(t *testing.T) {
 }
 
 func TestDiscoveryTextRequiresExactArguments(t *testing.T) {
-	for _, args := range [][]string{{"--help", "extra"}, {"census", "--help", "extra"}, {"census", "go-ast", "--help", "extra"}, {"--", "--help"}, {"--version=preview"}} {
+	for _, args := range [][]string{{"--help", "extra"}, {"project", "-h"}, {"project", "--help", "extra"}, {"census", "--help", "extra"}, {"census", "go-ast", "--help", "extra"}, {"--", "--help"}, {"--version=preview"}} {
 		if text, found := discoveryText(args); found || text != "" {
 			t.Fatalf("args %q unexpectedly discovered %q", args, text)
 		}
