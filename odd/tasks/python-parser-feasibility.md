@@ -6,8 +6,8 @@ Recovery mirror: Engram `odd/python-parser-feasibility/tasks` in the CNSIC-bound
 
 ## Scope and route
 
-- F1 — Pin one Gopapy candidate revision and build an isolated probe with `.py`/`.pyi`, exact call-shape, byte-span and atomic-error fixtures. Route: delegated writer (multi-file trigger); native strict TDD RED → GREEN → TRIANGULATE → REFACTOR. Characterization complete; span and Go-baseline axes fail. Commit: pending at task write; see `docs/python-parser-feasibility.md`.
-- F2 — Execute bounded resource, supply-chain and standalone `CGO_ENABLED=0` checks; publish reproducible pass/fail/unknown evidence. Route: delegated writer plus focused verification (external and multi-file triggers). Pending.
+- F1 — Pin one Gopapy candidate revision and build an isolated probe with `.py`/`.pyi`, exact call-shape, byte-span and atomic-error fixtures. Route: delegated writer (multi-file trigger); native strict TDD RED → GREEN → TRIANGULATE → REFACTOR. Characterization complete; span and Go-baseline axes fail. Commit: `4f63a3f`; see `docs/python-parser-feasibility.md`.
+- F2 — Execute bounded resource, supply-chain and standalone `CGO_ENABLED=0` checks; publish reproducible pass/fail/unknown evidence. Route: delegated writer plus focused verification (external and multi-file triggers). Characterization complete; 10,000-match timeout and unproved hard resource controls recorded. Commit: recorded in handoff; see `docs/python-parser-feasibility.md`.
 - F3 — Independent diff/evidence review, PR and owner-authorized merge of the evidence work unit only. Route: read-only reviewer and parent delivery. Pending.
 
 Forecast: 350–500 authored changed lines, subject to measurement before delivery; avoid broadening into the production census. One work-unit commit per completed implementation task, with focused tests and documentation beside behavior. Do not check off an axis without observed evidence. A failed parser axis remains a reported failure, not a loosened requirement.
