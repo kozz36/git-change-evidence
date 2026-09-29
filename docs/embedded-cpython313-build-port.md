@@ -80,4 +80,6 @@ The `CGO_ENABLED=0` Go **1.25.10** binary is statically linked, **38,237,673 byt
 | Startup and heap | **MEASURED once**; concurrency, adversarial size/depth and hard cancellation bounds **UNKNOWN**. |
 | Capability isolation and supply-chain provenance | **UNKNOWN**; sockets/subprocess disabled in the recipe and Config{} denies host access, but final imports and isolation have not been audited. Local generated assets lack release attestations; CPython-derived bytes require PSF notices if distributed. |
 
+**Independent audit:** a separate read-only Pi session matched frozen HEAD `c45ee4d`, patch/log/WASM/bridge/stdlib/binary and red/mutation hashes against scratch, and inspected the smoke code. Its readback could not prove exit status or elapsed time from a log alone; those are observations of the bounded parent command. It did not rerun the build or certify the remaining axes.
+
 **Decision: candidate generation and smoke PASS, parser suitability UNKNOWN.** No dependency choice, census implementation, CNSIC pilot or delivery authority follows. The unproven axes require separate approval and independent tests before adoption.
