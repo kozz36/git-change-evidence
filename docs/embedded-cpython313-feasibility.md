@@ -15,9 +15,24 @@ The recipe is a **modified external scratch checkout**, not a dependency of GCE.
 
 ### Reproduce the first stop
 
-In fresh scratch **outside GCE**, check out the two exact commits above into `python-wasm/` and its `cpython/` directory; do not run `git submodule update`, which would restore upstream 3.14. In `python-wasm/wasmify.json`, apply exactly these changes (the last line removes stale 3.14 phase markers):
+In fresh scratch **outside GCE**, fetch the exact build recipe commit and CPython tag, verify the peeled commit, then work from `python-wasm/`. Do not run `git submodule update`, which would restore upstream 3.14:
 
-```python
+```sh
+scratch=$(mktemp -d)
+git init -q "$scratch/python-wasm"
+git -C "$scratch/python-wasm" remote add origin https://github.com/goccy/python-wasm.git
+git -C "$scratch/python-wasm" fetch --depth=1 --filter=blob:none origin f6b10c6adc09e4334f748147a54be46bbddbea4a
+git -C "$scratch/python-wasm" checkout --detach FETCH_HEAD
+git clone --filter=blob:none --depth=1 --branch v3.13.13 \
+  https://github.com/python/cpython.git "$scratch/python-wasm/cpython"
+test "$(git -C "$scratch/python-wasm/cpython" rev-parse HEAD)" = 01104ce1beb3135c2e0c01ec835b994c1f55a1c0
+cd "$scratch/python-wasm"
+```
+
+Apply exactly these changes to `wasmify.json` (the last line removes stale 3.14 phase markers):
+
+```sh
+python3 - <<'PY'
 import json
 from pathlib import Path
 p = Path('wasmify.json')
@@ -31,6 +46,8 @@ c['bridge']['HostSockets'] = False
 c['bridge']['HostSubprocess'] = False
 c.pop('phases', None)
 p.write_text(json.dumps(c, indent=2) + '\n')
+PY
+sha256sum wasmify.json  # expect b4d928a37d791ffafb2fb171acdb35f99c5e30140731822160860abd600a4304
 ```
 
 The local command used `--network none` after pulling the pinned image, a four-CPU affinity and an 8 GiB container cap to avoid competing with host workloads:
@@ -42,7 +59,7 @@ docker run --rm --network none --cpuset-cpus=0-3 --memory=8g \
   bash -c 'make tools && WASMIFY_NON_INTERACTIVE=1 WASMIFY_NO_EMSCRIPTEN_DEFINE=1 WASMIFY_NO_POSIX_COMPAT=1 bash scripts/wasi-configure.sh'
 ```
 
-The **full upstream pipeline** was requested, but `&&` stopped at the configure step above (exit **2**, 2026-09-29 14:49 UTC). The observed output was:
+The original attempt requested the **full upstream pipeline**, but `&&` stopped at this configure step (exit **2**, 2026-09-29 14:49 UTC). The shorter command above reproduces the same first stop. The observed output was:
 
 ```text
 wasmify ensure-tools ./cpython --output-dir .
@@ -54,7 +71,7 @@ wasmify ensure-tools ./cpython --output-dir .
 python3: can't open file '/work/cpython/Tools/wasm/wasi': [Errno 2] No such file or directory
 ```
 
-The full local log stayed **outside the repository** (`build-313-attempt1.log`, SHA-256 `15f0938037718fe63649e9aaddfb9c6578b9805ed848e8413876932f002a752b`). An independent tree inspection confirms CPython 3.13 instead has `Tools/wasm/wasm_build.py` and `Tools/wasm/config.site-wasm32-wasi`; it has no `Tools/wasm/wasi` path. The 3.13 helper also documents `wasm32-wasi`, whereas the borrowed script selects `wasm32-wasip1`. This is **version-specific build orchestration**, not a failed Python syntax test. An adapter port would need a separately budgeted compatibility pass across configure, host triples, patches, bridge/API, and generated stdlib before an end-to-end build can be claimed.
+The full local log stayed **outside the repository** (`build-313-attempt1.log`, SHA-256 `15f0938037718fe63649e9aaddfb9c6578b9805ed848e8413876932f002a752b`). An independent tree inspection confirms CPython 3.13 instead has `Tools/wasm/wasi.py`, `Tools/wasm/wasm_build.py` and `Tools/wasm/config.site-wasm32-wasi`; it has no `Tools/wasm/wasi` path or `Tools/wasm/wasi/config.site-wasm32-wasi`. The 3.13 `wasi.py` **does** default to `wasm32-wasip1`, matching the borrowed script's host triple; the helper path and config-site layout are the proven mismatches. This is **version-specific build orchestration**, not a failed Python syntax test. An adapter port would need a separately budgeted compatibility pass across configure, paths, patches, bridge/API, and generated stdlib before an end-to-end build can be claimed.
 
 ## Contract matrix
 

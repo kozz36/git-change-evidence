@@ -20,7 +20,7 @@ Go changes use RED → GREEN → TRIANGULATE → REFACTOR. Run focused nested-mo
 
 - `GOTOOLCHAIN=go1.25.10 go test ./...`: PASS (six root packages). `gofmt -l` on tracked Go files: empty; `git diff --check`: PASS. No Go files changed, and no nested probe module exists, so no nested tests were run.
 - First pinned build attempt: exit 2, blocked at CPython 3.13's missing `Tools/wasm/wasi`; exact command/log digest and all unknown axes in the report. No static binary was built. The upstream reported 3.14 footprint is not a GCE measurement.
-- T1 evidence commit: pending readback.
-- T3 independent evidence verdict: pending.
+- T1 evidence commit: `83bf51f792fe27d668bfa5e9c7ff5d55f6f934fd` (`test(python): record embedded 3.13 build blocker`).
+- T3 independent audit of frozen report found a false claim about the WASI triple and incomplete repro checkout commands; corrected both. Focused re-audit of those corrections: PASS. Final candidate/delivery decision remains pending.
 
 Issue: https://github.com/kozz36/git-change-evidence/issues/147 (`status:approved`, verified on target). The evidence report's `feasible | infeasible | undetermined` assessment never authorizes adoption or delivery.
