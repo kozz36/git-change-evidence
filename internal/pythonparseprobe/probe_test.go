@@ -89,9 +89,8 @@ func TestAtomicMalformedInput(t *testing.T) {
 func TestUnsupportedSyntaxIsCharacterized(t *testing.T) {
 	// Future-only spelling is not evidence of a 3.14 grammar boundary unless rejected.
 	matches, err := Observe([]File{{Path: "future.py", Source: []byte("def f():\n    defer os.open('x')\n")}}, "os", "open")
-	t.Logf("future-looking defer syntax: matches=%d error=%v", len(matches), err)
-	if err == nil && len(matches) > 0 {
-		t.Log("FAIL AXIS: unsupported syntax produced a candidate")
+	if err == nil || matches != nil || !strings.Contains(err.Error(), "expected newline after statement") {
+		t.Fatalf("expected atomic rejection of defer fixture: matches=%v error=%v", matches, err)
 	}
 }
 
