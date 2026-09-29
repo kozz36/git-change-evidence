@@ -24,6 +24,21 @@ An invalid file with the #178 newline and `os.open('x')` in its body yields one 
 
 The exact-shape fixture returns direct, nested inner, and shadowed `os.open` calls, excluding attribute-only, `os.path.open` and indexed-function forms. A source with `π`, `é`, `猫` and mixed CRLF/LF yields half-open **physical byte** call spans `[11,34)`, `[19,33)`, `[89,101)` and exact slices, including nested calls. These are representative tests, not a versioned census envelope or proof of arbitrary encoding support. The experimental walker has no resource guarantee and must not be reused as production behavior.
 
-## T2: deferred axes
+## T2: bounded supply-chain and standalone observations
 
-Resource worst-case controls, hard memory/time bounds, cancellation behavior, independent supply-chain inspection, and standalone build/run: **UNKNOWN pending T2**. The early grammar failure makes a full resource campaign uneconomic. No root `go.mod`/`go.sum`, production API/CLI, release, or pilot was changed.
+On linux/amd64, run from `internal/gotreesitterprobe`:
+
+```sh
+GOTOOLCHAIN=go1.25.10 go list -m all
+GOTOOLCHAIN=go1.25.10 go list -deps .
+CGO_ENABLED=0 GOTOOLCHAIN=go1.25.10 go test -c -o /tmp/gce-gotreesitterprobe.test .
+file /tmp/gce-gotreesitterprobe.test
+ldd /tmp/gce-gotreesitterprobe.test
+env -i PATH=/nonexistent HOME=/nonexistent /tmp/gce-gotreesitterprobe.test -test.run '^TestPython313Validity$' -test.v
+```
+
+The module graph contains gotreesitter v0.55.1, `golang.org/x/sync v0.11.0`, `gopkg.in/yaml.v3 v3.0.1`, `github.com/kr/pretty v0.1.0`, and `gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127`; the compiled probe dependency list includes gotreesitter core and grammars, their internal packages, and standard library, not the other graph modules. `file` reported statically linked ELF; `ldd` reported `not a dynamic executable`. The isolated test passed with PATH/HOME pointing nowhere (no Python executable available via PATH). This is a **PASS for this host/test binary only**, not a cross-platform reproducible release.
+
+The pinned archive SHA-256 is `8f4612523343296acf146aaf6d4bee1f75d7de27ab866e2370edf07f6a4fe599`; its embedded `grammars/grammar_blobs/python.bin` SHA-256 is `cde4a67dc6af6e1232dbbd1eab8618478d1d73727020e8a8002542390a452d37`, and `grammars/languages.lock` SHA-256 is `34fde4ff60bd77539d8b2afcbeaad41c78f496bfac409df1724b68d6508bb2f6`. The bundled `LICENSE` says MIT, copyright 2026 Oscar Villavicencio (SHA-256 `b174fbe1e1cffafb096528de3e8361c90a0d97e7e3f1a32061aae51e983a7cfc`); `THIRD_PARTY_NOTICES` covers separately vendored grammar material. These are provenance/attribution observations, **not legal clearance** or independent proof of blob-source equivalence.
+
+**UNKNOWN:** parser-enforced worst-case time, hard heap/stack bounds, cancellation/timeout behavior under adversarial legal inputs, breadth/depth/huge-token/match-count workload, exhaustive Python 3.13 or `.pyi` grammar coverage, non-UTF-8 encodings, multi-platform standalone builds. APIs such as `SetParseWorkLimits`, `SetTimeoutMicros`, and `SetCancellationFlag` exist but are **not tested here**. The decisive #178 grammar false success makes a deeper resource campaign uneconomic; no axis is promoted to PASS on the mere existence of an API. No root `go.mod`/`go.sum`, production API/CLI, release, or pilot was changed.

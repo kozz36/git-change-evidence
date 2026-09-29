@@ -7,7 +7,7 @@ Recovery mirror: Engram `odd/gotreesitter-python313-probe/tasks` in the CNSIC-bo
 ## Work units
 
 - [x] T1 — Pin `odvcencio/gotreesitter` v0.55.1 and its Python grammar lock; characterize representative Python 3.13 script and `.pyi` fixtures, especially accepted-invalid examples from tree-sitter-python #178, exact `Name.Attribute`-equivalent call shape, half-open physical byte spans and atomic failure. Route: delegated bounded writer, strict RED → GREEN → TRIANGULATE → REFACTOR. A grammar divergence is a FAIL, not an implicit scope change.
-- [ ] T2 — If useful after the syntax gate, characterize bounded workload, early stops, `CGO_ENABLED=0` binary, license/dependencies; document commands and PASS/FAIL/UNKNOWN. If early disqualification makes deeper axes uneconomic, mark them UNKNOWN rather than manufacturing passes. Route: same single writer, independent verification after code/test changes.
+- [x] T2 — If useful after the syntax gate, characterize bounded workload, early stops, `CGO_ENABLED=0` binary, license/dependencies; document commands and PASS/FAIL/UNKNOWN. If early disqualification makes deeper axes uneconomic, mark them UNKNOWN rather than manufacturing passes. Route: same single writer, independent verification after code/test changes.
 - [ ] T3 — Independent review of the frozen evidence and candidate PR preparation; merge only on the owner's candidate-specific delivery decision. Route: read-only verifier and parent orchestration.
 
 Forecast: approximately 250–400 authored diff lines for an early disqualifier; report when a broader probe risks exceeding this. One conventional work-unit commit per completed implementation task with observed tests and documentation. Do not check off unverified outcomes.
