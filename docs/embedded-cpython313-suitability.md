@@ -159,3 +159,62 @@ timeout 1200 docker run --rm --network none --cpuset-cpus=0-3 --memory=8g --user
 ```
 
 Residual scope: hard native deadlines, worst-case resource bounds, in-flight multi-file cancellation, runtime isolation, exact final WASM imports and signed provenance remain unproven. Config{} still leaves guest memory cap0; that is an unchanged residual, not a limit implemented here. Raw stress scenarios, cancellation measurements and host-audit tables belong to the second slice and remain outside this first cut. No scanned-source execution, deletion, commit or publication was performed by this split.
+
+## S2b — fresh bounded resource observations (#156)
+
+**The scoped checks passed; overall parser suitability remains NOT PROVEN.** The preceding S1/S2a text is preserved as historical evidence, including its then-current absent-driver wording. This slice adds the retained 159-line opt-in `resource_test.go` unchanged, not new parser behavior. The external 24-declaration split manifest is historical mechanical-move evidence, not a fresh mutation run. Standard validation was explicitly selected by the owner; RED/GREEN lifecycle is not active for this pure move. Race and physical mutations were NOT RUN. No adoption, approval, commit or publication authority follows.
+
+Fresh execution was bound to branch `test/embedded-cpython313-resource-delivery`, HEAD `63442cabadd5046e3af8dedb6469ebe57f115df0`. Exact controller commands executed synchronously:
+
+```sh
+sha256sum /data/tmp/gce-s2b-156-writer.UXYxDK1o/verify.sh && test "$(sha256sum /data/tmp/gce-s2b-156-writer.UXYxDK1o/verify.sh | cut -d ' ' -f 1)" = 98ead3622170c767aeb7fd9b9d9a0262d1b3118ae6e42036219f665678b047ba
+bash /data/tmp/gce-s2b-156-writer.UXYxDK1o/verify.sh
+```
+
+Both exited 0. Fresh retained scratch: `/data/tmp/gce-s2b-156-verify.Ed3tZKoc`. Its `logs/*.argv`, `*.stdout`, `*.stderr`, `*.exit` retain separate command vectors, streams and statuses. All seven captured commands exited 0; all stderr streams were empty. Root primary passed six packages; it excludes the nested smoke module. Explicit nested ordinary passed 16 top-level parent tests (1.207s), with three expected skips: output fixture, opt-in stress and child. Targeted output/receipt/cancellation selection passed five tests (0.296s). Explicit stress passed with 13 fresh RESOURCE receipts (5.642s). Check-only formatting and diff checks emitted no output.
+
+The script used installed pinned image `golang@sha256:154bd7001b6eb339e88c964442c0ad6ed5e53f09844cc818a41ce4ecb3ce3b43`, read-only Go 1.25.10/toolchain and source/SDK binds, network none, four CPUs, 8 GiB memory/swap ceiling, read-only container root, host UID, scratch-only caches/TMPDIR/XDG telemetry mode off. Tests used `-mod=readonly -count=1 -p=1 -parallel=1 -timeout=18m`; targeted `-run '^TestResource(OutputCap|Receipt|Cancellation)'`, stress `-run '^TestResourceStress$'`. Each container had a 1200-second outer timeout (TERM, then 10-second kill grace); stress children were serial with 30-second deadlines and a 64 KiB combined output cap. Compiler/outer logs are separate from that child cap. Only trusted host Go test children ran; scanned source was parsed/compiled/walked, never executed. Owner-authorized metadata normalization affected only the copied smoke go.mod: existing transitive `pythonwasm2go v0.4.0` plus two local replacements; no tidy, downloads, generation or original dependency edits.
+
+### Fresh measurements
+
+Elapsed includes child runtime initialization and the measured operation; VmHWM is Linux process high-water RSS in KiB, not guest-only memory. All 13 receipts reported `processRSS VmHWM`; none timed out or had unavailable RSS. Zero cancellation latency on non-cancel cases is the receipt's non-applicable value, not an observed cancellation.
+
+| Case / N | Bytes | Files | Matches | Elapsed ms | VmHWM KiB | Outcome | Cancel-to-return ms |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| depth / 100 | 204 | 1 | 0 | 125.298 | 73732 | success | 0 |
+| depth / 500 | 1004 | 1 | 0 | 146.778 | 73204 | rejection | 0 |
+| broad / 10000 | 20005 | 1 | 0 | 158.779 | 76996 | success | 0 |
+| broad / 100000 | 200005 | 1 | 0 | 462.182 | 224532 | success | 0 |
+| token / 1048576 | 1048581 | 1 | 0 | 134.669 | 84584 | success | 0 |
+| token / 8388608 | 8388613 | 1 | 0 | 235.834 | 245368 | success | 0 |
+| matches / 10000 | 220000 | 1 | 10000 | 338.750 | 144356 | success | 0 |
+| matches / 100000 | 2200000 | 1 | 100000 | 2862.782 | 1376456 | success | 0 |
+| files / 100 | 2200 | 100 | 100 | 123.882 | 71624 | success | 0 |
+| files / 1000 | 22000 | 1000 | 1000 | 154.465 | 71860 | success | 0 |
+| invalid-last / 1 | 29 | 2 | 0 | 144.344 | 83372 | rejection | 0 |
+| cancel-native / 100000 | 200005 | 1 | 0 | 285.081 | 211936 | context cancellation | 165.617 |
+| cancel-walk / 100000 | 200005 | 1 | 0 | 286.129 | 212488 | context cancellation | 24.507 |
+
+The native cancellation scenario calls `ast.parse`, not native `compile` hard preemption. Observed context cancellation does not establish arbitrary C-level parser/compiler interruption or worst-case deadlines. The cancelled batch check uses an already-cancelled context and verifies nil results; it does not establish in-flight multi-file cancellation. `Config{}` is not a memory cap or a DNS-denial guarantee. These finite RSS samples are not production budgets; match aggregation remains unbounded. No new final-import/isolation, license or signed-provenance audit ran: historical unknowns remain unknown.
+
+### Integrity and retained evidence
+
+The exact driver comparison passed. Script before/after byte-manifest comparisons passed for candidate inputs (including original report and frozen parent task), historical SDK/bundle, copied root/smoke/SDK/bundle and Go/gofmt binaries; Git status and HEAD also matched before/after. Original repository modules were unchanged. This report section was appended **after** those tests; all six tested Go files remain unchanged. The report text itself was not rerun through the test script. Existing report prefix SHA-256: `7febb4c8fa3b1c81c272e40aea0594ff05b94e8c2ca0404c9aac47864968befc` (also retained as the scratch root copy).
+
+| Tested smoke file | SHA-256 |
+| --- | --- |
+| main.go | `f1352d83608c1129372201c682985e99914fa889674942a787ab198b6d6f3508` |
+| main_test.go | `599fb8758513dd3b3f00684f08268f6fc37704fbcb492e3a862a3145803a50f8` |
+| spans.go | `3e7e06a13c594ffa26f69b9686e417815deb6182bccd8d8df33a49bfdc70544d` |
+| spans_test.go | `7561c434c699fba2644c9335be2b57919f485eb7af2c673b545349882a9a38e0` |
+| resource_harness_test.go | `697ca3a56a9d7ae4924ee106a081cce9f018b10ea5b928387c3e22fa43bebd0d` |
+| resource_test.go | `09c22b6a011669585ff11a083018f221c1a6f7369adcb9ecaa5e416d02325205` |
+
+| Fresh retained stdout | SHA-256 |
+| --- | --- |
+| logs/root-primary.stdout | `4af70b642a654869cc82747a8d5439d7f6c375af7ae4a41fa13e5748c9645edf` |
+| logs/nested-ordinary.stdout | `16698f9a19c1c1feff8f695c1df94f78c1a7290febb132d467a976d9656b6550` |
+| logs/nested-targeted.stdout | `f735cf9170f61d8327c9b6987e9a340b749e2fe5107a78fd1868ff0336202eac` |
+| logs/nested-stress.stdout | `f687826f9f5916071f0662f46bc8fc65fc037b32dc60a77bc09dbd4e126e36fe` |
+
+These are fresh measurements, not reproduction of historical timing/RSS. Preserved external snapshots and later unpublished A1–S3 evidence were not overwritten or imported. At writer handoff, parent assessment and independent verification were pending. The subsequent independent PASS and its separate samples are recorded in [the active work-unit task](../odd/tasks/embedded-cpython313-suitability.md#active-s2b-delivery-work-unit-156); this documentation update does not change the six tested Go files. Suitability is **NOT PROVEN**.
