@@ -37,7 +37,7 @@ Layout thresholds and the initial file-crossing baseline are authoritative in `o
 ## Phase 2: Neutral W1/W2 (implementation; PRs 2–4)
 
 - [x] 2.1 RED then GREEN closed/versioned contracts, canonical bytes/digest/provenance, authority rejection, and frozen vectors/manifest with origin identities.
-- [ ] 2.2 RED then GREEN immutable Git/inventory: SHA-1/256, hostile paths, rename/binary/symlink/gitlink, missing/racing objects, dirty/index isolation, argv/closed-env/replacement isolation, and no-follow races in real Git.
+- [x] 2.2 RED then GREEN immutable Git/inventory: SHA-1/256, hostile paths, rename/binary/symlink/gitlink, missing/racing objects, dirty/index isolation, argv/closed-env/replacement isolation, and no-follow races in real Git.
 - [ ] 2.3 RED then GREEN injected policy: overlap/invalid/default classification, non-countable data, text totals, non-gating thresholds.
 
 ## Phase 3: Staged Capability (implementation; PRs 5–8)

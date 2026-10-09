@@ -109,3 +109,16 @@ main
 - This is evidence-only and conveys no authority.
 - Planning-only strict TDD and test execution are N/A. No production, tests, or external actions occurred.
 - Task 7 creates no authority for Task 8 or later publication work.
+
+## Task 2.2 — Bounded Git/inventory reconciliation
+- Local commits: `2bc0fb587e476b1d378937822581e843c5f77e5a`, `4362b2aa456311f2118ed9a866b90e119a48f0d0`, `8bc302b8c00f23764326b7e53fb1fcec19809bba`, `a83346e3b6825ea9fc120b71c43628fff3635d95`.
+- Immutable Git/inventory coverage proof, not a behavioral-defect fix: SHA-1/256, hostile paths, committed kinds, missing/racing objects, dirty/index and argv/closed-environment/replacement isolation.
+- Real-Git inventory evidence: exact separate record and unchanged snapshot; static intermediate/final symlink escapes, intermediate/final pre-open replacement, and final post-open replacement.
+- Internal hook is invocation-local; normal acquisition uses nil callbacks. The literal intermediate/final pre/post-open requirement is preserved: intermediate post-open is justified by shared-guard inspection, NOT an executed fixture; final post-open, pre-open replacements, and static escapes were observed. No exhaustive component/timing/format or cross-platform claim.
+- Forwarded independent final review found no severe issue or missing required behavior in its bounded Linux/amd64 interpretation; overseer accepted task 2.2 closure on that bounded proof, overall 4/12, with 2.3 and later unchanged.
+- Forwarded Go 1.25.10/Linux amd64 checks: `go test -count=1 -v ./internal/git ./internal/inventory` — 21 top-level PASS, 30 subtest PASS, 0 skips, 0 failures; ordinary helper return is not independent coverage.
+- `go test ./...` — six packages PASS; `go test -race ./internal/git ./internal/inventory` — both PASS; no whole-suite race or full/race individual skip-count claim.
+- Exact check-only format gate PASS: `test -z "$(find . -path './.git' -prune -o -path './.codegraph' -prune -o -type f -name '*.go' -print0 | xargs -0 -r gofmt -l)"`; `git diff --check` PASS in forwarded verification.
+- Coverage-only TDD exception: initial missing internal signature compile failure was wiring RED only; semantic/historical behavioral RED was not rederived.
+- Optional configured external-diff/textconv fixtures remain unverified. Private evidence: `<private-evidence>/gce-tools-2-2-final-20261009`; no logs copied or tests rerun here.
+- Clone RDD off; technical evidence only, no native delivery authority or publication. No task 2.3 implementation or completion.

@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Verified immutable Git/inventory coverage with real-Git escape and replacement
+  fixtures and an invocation-local post-open hook (nil in normal acquisition);
+  bootstrap task 2.2 reconciled on bounded Linux/amd64 evidence.
+
 - The canonical CLI and machine-readable contract surface, with
   `gce census go-ast` as the canonical pre-v1 census command.
 - Retained compatibility for `git-change-evidence census-go-ast` throughout
