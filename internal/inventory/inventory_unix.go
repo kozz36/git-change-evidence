@@ -11,10 +11,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-func Acquire(request Request) (evidence.UntrackedInventory, error) { return acquire(request, nil) }
+func Acquire(request Request) (evidence.UntrackedInventory, error) { return acquire(request, nil, nil) }
 
-func acquire(request Request, afterStat func(string)) (evidence.UntrackedInventory, error) {
-	root, err := openRoot(request.Root, afterStat)
+func acquire(request Request, afterStat, afterOpen func(string)) (evidence.UntrackedInventory, error) {
+	root, err := openRoot(request.Root, afterStat, afterOpen)
 	if err != nil {
 		return evidence.UntrackedInventory{}, err
 	}
@@ -27,7 +27,7 @@ func acquire(request Request, afterStat func(string)) (evidence.UntrackedInvento
 		if err != nil {
 			return evidence.UntrackedInventory{}, err
 		}
-		if err := inspect(root, parts, afterStat); err != nil {
+		if err := inspect(root, parts, afterStat, afterOpen); err != nil {
 			return evidence.UntrackedInventory{}, err
 		}
 		records = append(records, evidence.UntrackedRecord{Path: path})
@@ -35,7 +35,7 @@ func acquire(request Request, afterStat func(string)) (evidence.UntrackedInvento
 	return evidence.NewUntrackedInventory(records), nil
 }
 
-func openRoot(root string, afterStat func(string)) (int, error) {
+func openRoot(root string, afterStat, afterOpen func(string)) (int, error) {
 	if !strings.HasPrefix(root, "/") {
 		return -1, unavailable(evidence.InventoryInvalidPath)
 	}
@@ -51,7 +51,7 @@ func openRoot(root string, afterStat func(string)) (int, error) {
 			unix.Close(parent)
 			return -1, unavailable(evidence.InventoryInvalidPath)
 		}
-		next, err := checkedOpen(parent, name, true, afterStat)
+		next, err := checkedOpen(parent, name, true, afterStat, afterOpen)
 		unix.Close(parent)
 		if err != nil {
 			return -1, err
@@ -61,7 +61,7 @@ func openRoot(root string, afterStat func(string)) (int, error) {
 	return parent, nil
 }
 
-func inspect(root int, parts []string, afterStat func(string)) error {
+func inspect(root int, parts []string, afterStat, afterOpen func(string)) error {
 	parent, owned := root, -1
 	defer func() {
 		if owned >= 0 {
@@ -69,7 +69,7 @@ func inspect(root int, parts []string, afterStat func(string)) error {
 		}
 	}()
 	for index, name := range parts {
-		next, err := checkedOpen(parent, name, index+1 < len(parts), afterStat)
+		next, err := checkedOpen(parent, name, index+1 < len(parts), afterStat, afterOpen)
 		if err != nil {
 			return err
 		}
@@ -87,7 +87,7 @@ func inspect(root int, parts []string, afterStat func(string)) error {
 	return unavailable(evidence.InventoryInvalidPath)
 }
 
-func checkedOpen(parent int, name string, directory bool, afterStat func(string)) (int, error) {
+func checkedOpen(parent int, name string, directory bool, afterStat, afterOpen func(string)) (int, error) {
 	var before unix.Stat_t
 	if err := unix.Fstatat(parent, name, &before, unix.AT_SYMLINK_NOFOLLOW); err != nil {
 		return -1, failure(err)
@@ -108,6 +108,9 @@ func checkedOpen(parent int, name string, directory bool, afterStat func(string)
 	fd, err := unix.Openat(parent, name, flags, 0)
 	if err != nil {
 		return -1, unavailable(evidence.InventoryRacing)
+	}
+	if afterOpen != nil {
+		afterOpen(name)
 	}
 	var opened, current unix.Stat_t
 	if err := unix.Fstat(fd, &opened); err != nil {
