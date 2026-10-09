@@ -43,6 +43,8 @@ The system MUST serialize equivalent valid documents to identical canonical JSON
 
 Every report MUST retain immutable revision identity plus input-policy, inventory, and accounting provenance. The same immutable revisions and profile MUST produce identical canonical report bytes in independent runs.
 
+Canonical JSON MUST retain the literal caller-supplied Subject without privacy-driven sanitization or rejection; canonical bytes, content digest, schema, and input validation remain unchanged. Canonical evidence may contain sensitive caller data and is NOT claimed sanitized. The emitter is responsible for excluding secrets and handling evidence as sensitive. Subject is caller data, not execution, approval, gating, or delivery authority; retaining it does not imply automatic host-data collection.
+
 #### Scenario: Independent reproducible report
 - GIVEN two independent runs use the same immutable revisions and profile
 - WHEN each assembles a report

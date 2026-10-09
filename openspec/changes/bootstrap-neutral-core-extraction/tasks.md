@@ -43,7 +43,7 @@ Layout thresholds and the initial file-crossing baseline are authoritative in `o
 ## Phase 3: Staged Capability (implementation; PRs 5–8)
 
 - [x] 3.1 RED then GREEN W3 bounded immutable carveout: invalid bound, unavailable, timeout, deterministic match, dirty-tree isolation; positional legacy edge only.
-- [ ] 3.2 RED then GREEN W4 report/projection and diagnostics redaction: names, secrets, environment, paths, command output never leak or imply authority.
+- [x] 3.2 RED then GREEN W4 report/projection and diagnostics redaction: names, secrets, environment, paths, command output never leak or imply authority.
 - [ ] 3.3 RED then GREEN W4 CLI/publication: technical outcomes; destination/interruption/content identity/moving-ref race proofs; atomic exclusive writes.
 - [ ] 3.4 RED then GREEN W5 supplied forecast: valid, missing, divergent, unavailable, threshold; never author, mutate, infer, or gate.
 

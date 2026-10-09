@@ -2,6 +2,7 @@ package changeevidence
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 )
 
@@ -43,6 +44,51 @@ func TestProjectEvidenceHumanText(t *testing.T) {
 		"accounting_sha256: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\n"
 	if !bytes.Equal(got, []byte(want)) {
 		t.Fatalf("ProjectEvidence() = %q, want %q", got, want)
+	}
+}
+
+func TestProjectEvidenceSyntheticSubjectBoundary(t *testing.T) {
+	// Fictional caller data is intentionally preserved in canonical evidence, not human text.
+	sentinels := []string{"SYNTHETIC_CALLER_NAME", "/synthetic/not-a-real-repository", "FAKE_CREDENTIAL_SENTINEL", "FAKE_ENV_VALUE", "SYNTHETIC_COMMAND_OUTPUT"}
+	input := validReportInput()
+	input.Subject = string(bytes.Join([][]byte{[]byte(sentinels[0]), []byte(sentinels[1]), []byte(sentinels[2]), []byte(sentinels[3]), []byte(sentinels[4])}, []byte("\n"))) + "\n\"<synthetic>\""
+	document, err := NewReportV1(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	canonical, err := ProjectEvidence(document, ProjectionCanonicalJSON)
+	if err != nil || !bytes.Equal(canonical, document.CanonicalBytes()) {
+		t.Fatalf("canonical = %q, error = %v; want original bytes", canonical, err)
+	}
+	var decoded struct{ Subject string }
+	if err := json.Unmarshal(canonical, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if decoded.Subject != input.Subject {
+		t.Fatalf("Subject = %q, want %q", decoded.Subject, input.Subject)
+	}
+	roundTrip, err := DecodeCanonical(canonical)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(roundTrip.CanonicalBytes(), canonical) || roundTrip.Digest() != document.Digest() || roundTrip.Provenance() != input.Provenance {
+		t.Fatal("DecodeCanonical changed bytes, digest, or provenance")
+	}
+	baseline := projectableEvidence(t)
+	want, err := ProjectEvidence(baseline, ProjectionHumanText)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Reuse the fixed-label projection oracle; only the Subject-dependent digest differs.
+	want = bytes.Replace(want, []byte(baseline.Digest()), []byte(document.Digest()), 1)
+	human, err := ProjectEvidence(roundTrip, ProjectionHumanText)
+	if err != nil || !bytes.Equal(human, want) {
+		t.Fatalf("human = %q, error = %v; want %q", human, err, want)
+	}
+	for _, sentinel := range sentinels {
+		if bytes.Contains(human, []byte(sentinel)) {
+			t.Fatalf("human output includes synthetic Subject sentinel %q", sentinel)
+		}
 	}
 }
 

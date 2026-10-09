@@ -214,6 +214,50 @@ func TestRunProjectHumanTextAndRepeatedInput(t *testing.T) {
 	}
 }
 
+func TestRunProjectSyntheticSubjectBoundary(t *testing.T) {
+	// All caller details are fictional; no host environment or credentials are read.
+	sentinels := []string{"SYNTHETIC_CALLER_NAME", "/synthetic/not-a-real-repository", "FAKE_CREDENTIAL_SENTINEL", "FAKE_ENV_VALUE", "SYNTHETIC_COMMAND_OUTPUT"}
+	fixture, err := evidence.DecodeCanonical(projectInput(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	document, err := evidence.NewReportV1(evidence.ReportInput{
+		Subject: strings.Join(sentinels, "\n") + "\n\"<synthetic>\"", Provenance: fixture.Provenance(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := document.CanonicalBytes()
+	human, err := evidence.ProjectEvidence(document, evidence.ProjectionHumanText)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		format string
+		want   []byte
+	}{
+		{"canonical-json", input},
+		{"human-text", human},
+	} {
+		t.Run(test.format, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			if code := runProject([]string{test.format}, bytes.NewReader(input), &stdout, &stderr); code != 0 || stderr.Len() != 0 {
+				t.Fatalf("exit, stderr = %d, %q; want zero, empty", code, stderr.String())
+			}
+			if !bytes.Equal(stdout.Bytes(), test.want) {
+				t.Fatalf("stdout = %q, want %q", stdout.Bytes(), test.want)
+			}
+			if test.format == "human-text" {
+				for _, sentinel := range sentinels {
+					if bytes.Contains(stdout.Bytes(), []byte(sentinel)) {
+						t.Fatalf("human output includes synthetic Subject sentinel %q", sentinel)
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestRunProjectRejectsInvalidInputWithoutWritingStdout(t *testing.T) {
 	input := projectInput(t)
 	for _, test := range []struct {

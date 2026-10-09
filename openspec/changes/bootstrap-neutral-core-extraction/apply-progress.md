@@ -140,3 +140,11 @@ main
 - Forwarded Go 1.25.10 Linux/amd64: root 93 top/909 subtests, CLI 33/72, Git 14/23 PASS; all FAIL/SKIP 0; primary six-package suite PASS, not cached; exact check-only format and diff checks PASS.
 - Verifier executed commands, not rerun here; private evidence: `<private-evidence>`. Historical RED not rederived; malformed bound text outside int-typed API; optional exact unavailable stderr not a required gap.
 - Proof limits: no race (unchanged concurrency), cross-platform or exhaustive claim; RDD off, technical evidence only, no delivery authority/publication; no new-behavior CHANGELOG/release entry.
+
+## Task 3.2 — Canonical Subject fidelity and private human projection
+- Only 3.2 checked: 7/12; 3.3 onward unchanged; this latest record supersedes historical remaining-task counts.
+- Jose's explicit `preserve_canonical_subject_fidelity` choice, two-spec clarification `f09adab` and baseline `ca2db5e` govern: canonical Subject bytes/hash/schema/validation unchanged; JSON may contain sensitive caller content, so emitters must avoid secrets and handle evidence as sensitive. Human/diagnostic privacy remains required; no canonical sanitization/privacy guarantee.
+- Two new synthetic boundary tests: 90 additions (46 root, 44 CLI), production 0; direct decoded Subject/canonical bytes/digest/provenance fidelity, exact human omission of all five sentinels, core/CLI dispatch, success and empty application stderr.
+- Forwarded writer GREEN and final functional Go 1.25.10 Linux/amd64: root two top-level PASS (new case + fixed oracle), CLI one top/two subtests PASS, focused FAIL/SKIP 0; six packages uncached PASS; exact format/diff PASS; all five final checks PASS, exit 0.
+- Commands forwarded, not rerun here; private evidence `<private-evidence>`. Coverage-only/passive documentation TDD exception; no semantic/historical RED, no race (no concurrency change), no production-source change.
+- ASSESS medium/runtime Large; RDD off, writer self-verification, no separate architectural review or consumed authority. Technical evidence only, no approval/gating or publication; no new-behavior CHANGELOG/release entry.
