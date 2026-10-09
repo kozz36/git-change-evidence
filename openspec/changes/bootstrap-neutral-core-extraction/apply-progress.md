@@ -122,3 +122,21 @@ main
 - Coverage-only TDD exception: initial missing internal signature compile failure was wiring RED only; semantic/historical behavioral RED was not rederived.
 - Optional configured external-diff/textconv fixtures remain unverified. Private evidence: `<private-evidence>/gce-tools-2-2-final-20261009`; no logs copied or tests rerun here.
 - Clone RDD off; technical evidence only, no native delivery authority or publication. No task 2.3 implementation or completion.
+
+## Task 2.3 — Existing neutral injected-policy reconciliation
+- Reconciled already-implemented neutral policy; no new implementation, defect fix, or semantic change. Only 2.3 checked: local 5/12; later tasks unchanged.
+- Neutral canonical construction: exclusive first-match overlap (raw 4/source 0), injected default `other` (7/1); 24 invalid-policy contract cases, typed `invalid_document` antecedents/no partial validation, constructor zero/fatal result.
+- Non-countable addition 99 ignored in text totals; checked text totals and unavailable/overflow cases verified. Threshold 4 > 3 and ratio 3/4 > 0.5 produce observations only; equality does not exceed.
+- Neutral/compatibility shared vectors are supplementary, not a replacement for neutral construction evidence.
+- Forwarded independent Go 1.25.10/Linux amd64 verification: root 93 top-level + 909 subtests PASS, 0 failures/0 skips; primary `go test ./...` six packages PASS, not cached.
+- Forwarded exact check-only format gate and `git diff --check` PASS; commands executed by verifier, not rerun here. Private evidence: `<private-evidence>`.
+- Historical RED not rederived; documentation-only reconciliation, current semantic change 0; no race run for pure policy. Technical evidence only, no delivery authority or publication.
+
+## Task 3.1 — Existing bounded immutable carveout reconciliation
+- Independent final PASS: existing bounded W3 core, immutable blob acquisition and legacy three-positional CLI verified; no required gap, new implementation or semantic change. Only 3.1 checked: 6/12; later tasks unchanged; this latest record supersedes historical remaining-task counts.
+- Nine invalid typed bounds/zero preparation and side-specific unavailable; seven matcher deadline fixtures yield nil result/fallback; deterministic four ordered matches and immutable result API verified.
+- Committed blob identity/content isolated from dirty/index/divergent worktrees; exact positional output moved=1, new=1, additions=2 and failure exits 2/3/5 verified.
+- CLI deadline nil result/exit 6 executed; stdout suppression guard INSPECTED, not a full deadline-output fixture; no acquisition during deletion-only interval.
+- Forwarded Go 1.25.10 Linux/amd64: root 93 top/909 subtests, CLI 33/72, Git 14/23 PASS; all FAIL/SKIP 0; primary six-package suite PASS, not cached; exact check-only format and diff checks PASS.
+- Verifier executed commands, not rerun here; private evidence: `<private-evidence>`. Historical RED not rederived; malformed bound text outside int-typed API; optional exact unavailable stderr not a required gap.
+- Proof limits: no race (unchanged concurrency), cross-platform or exhaustive claim; RDD off, technical evidence only, no delivery authority/publication; no new-behavior CHANGELOG/release entry.
