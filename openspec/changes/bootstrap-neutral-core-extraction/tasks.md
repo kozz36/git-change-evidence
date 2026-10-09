@@ -38,11 +38,11 @@ Layout thresholds and the initial file-crossing baseline are authoritative in `o
 
 - [x] 2.1 RED then GREEN closed/versioned contracts, canonical bytes/digest/provenance, authority rejection, and frozen vectors/manifest with origin identities.
 - [x] 2.2 RED then GREEN immutable Git/inventory: SHA-1/256, hostile paths, rename/binary/symlink/gitlink, missing/racing objects, dirty/index isolation, argv/closed-env/replacement isolation, and no-follow races in real Git.
-- [ ] 2.3 RED then GREEN injected policy: overlap/invalid/default classification, non-countable data, text totals, non-gating thresholds.
+- [x] 2.3 RED then GREEN injected policy: overlap/invalid/default classification, non-countable data, text totals, non-gating thresholds.
 
 ## Phase 3: Staged Capability (implementation; PRs 5–8)
 
-- [ ] 3.1 RED then GREEN W3 bounded immutable carveout: invalid bound, unavailable, timeout, deterministic match, dirty-tree isolation; positional legacy edge only.
+- [x] 3.1 RED then GREEN W3 bounded immutable carveout: invalid bound, unavailable, timeout, deterministic match, dirty-tree isolation; positional legacy edge only.
 - [ ] 3.2 RED then GREEN W4 report/projection and diagnostics redaction: names, secrets, environment, paths, command output never leak or imply authority.
 - [ ] 3.3 RED then GREEN W4 CLI/publication: technical outcomes; destination/interruption/content identity/moving-ref race proofs; atomic exclusive writes.
 - [ ] 3.4 RED then GREEN W5 supplied forecast: valid, missing, divergent, unavailable, threshold; never author, mutate, infer, or gate.
