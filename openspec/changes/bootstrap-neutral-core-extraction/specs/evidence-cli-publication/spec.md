@@ -22,11 +22,11 @@ The CLI MUST project the same canonical evidence into deterministic machine-read
 
 ### Requirement: Safe report diagnostics
 
-Reports and diagnostics MUST redact or omit sensitive repository paths, command output, credentials, and environment values. They MUST preserve technical usefulness without exposing those values.
+Human-readable report projections and diagnostics MUST redact or omit sensitive repository paths, command output, credentials, and environment values. They MUST preserve technical usefulness without exposing those values and MUST NOT echo sensitive Subject or raw input, error, process, or environment details. This privacy boundary does not sanitize canonical JSON: it retains literal caller-supplied Subject under the canonical report contract. Evidence-only semantics remain unchanged; this clarification changes no formats, transport, export, or publication behavior.
 
 #### Scenario: Sensitive diagnostic input
 - GIVEN an execution failure contains sensitive paths, command output, credentials, or environment values
-- WHEN a report or diagnostic is emitted
+- WHEN a human-readable report projection or diagnostic is emitted
 - THEN the emitted output omits or redacts every sensitive value
 
 ### Requirement: Technical exit semantics
