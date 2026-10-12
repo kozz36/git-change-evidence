@@ -148,3 +148,21 @@ main
 - Forwarded writer GREEN and final functional Go 1.25.10 Linux/amd64: root two top-level PASS (new case + fixed oracle), CLI one top/two subtests PASS, focused FAIL/SKIP 0; six packages uncached PASS; exact format/diff PASS; all five final checks PASS, exit 0.
 - Commands forwarded, not rerun here; private evidence `<private-evidence>`. Coverage-only/passive documentation TDD exception; no semantic/historical RED, no race (no concurrency change), no production-source change.
 - ASSESS medium/runtime Large; RDD off, writer self-verification, no separate architectural review or consumed authority. Technical evidence only, no approval/gating or publication; no new-behavior CHANGELOG/release entry.
+
+## Task 3.3 — First file-threshold crossing and package-boundary review
+- FIRST CROSSING: new `shell/livepublication/publish_test.go` is 186 lines > configured 160; `publish.go` is 69 lines, within 160; whole candidate remains <400 changed lines.
+- Explicit package-boundary technical review: independent `gentle-ai-verify` `mv0vmq0q-x-o0nb` plus parent acceptance; this is not authoritative approval or a delivery verdict.
+- Public opt-in effectful shell package uses a private per-call publisher seam, no global hooks; root core, frozen publisher and CLI remain unchanged.
+- Retain the cohesive 186-line test file rather than split its shared fixture and one bounded behavior: three tests/seven leaves cover synthetic real Git, ref movement/rebuild, failure nonpublication and real filesystem publication.
+- Forwarded final verification: five groups exit 0, seven live leaves, seven full-suite packages, three race packages, format/diff checks; compiled RED seven failures/exit 1 → GREEN seven passes/exit 0.
+- Residual limits: external public compile and new nil/cancellation guards inspected, not executed; fresh `NewReportV1` fixtures do not exercise full inventory/accounting/`FromResult` caller chains; Git/filesystem is not atomic and post-check ref stability is not guaranteed.
+- Documentation-only correction: the explicit caller-root rule exposed the pre-existing retained scenario inconsistency; no runtime fix, canonical Subject/hash/schema/validation change, or task-status update. Go tests not rerun because Go is unchanged.
+
+## Task 3.3 — Verified closure
+- Only 3.3 advanced: 8/12; next canonical unit 3.4 W5 supplied forecast; prior closures and first-crossing record retained.
+- Human-accepted opt-in Go API: local feature `7ef8055e9060d6de4dcfc4b2ffe51291c6d7b66f`, verification `468d5647a999283602ed1edfee215726db77216e`; frozen CLI/publication/core and canonical Subject bytes/hash/schema/validation unchanged.
+- Worker compiled RED seven behavior failures/exit 1 → GREEN seven PASS/exit 0; independent `mv0vmq0q-x-o0nb` executed five final groups, all exit 0: live 3 top/6 sub/7 leaves, publication 5 top, CLI 34 top/74 sub (0 fail/skip), full seven packages, race three, gofmt/diff PASS.
+- Private code evidence: `<private-evidence>` and `<private-evidence>`; independent doc revalidation `mv0vvr8i-z-akw0` PASS, `<private-evidence>`; caller-root/spec correction and config first-crossing record complete.
+- Fresh `NewReportV1` fixtures are not caller inventory/accounting/`FromResult` chain proof; public external usability and new nil/cancel guards INSPECTION only; Git acquisition uses background context.
+- Publication proves the last observed matching pair, not atomic Git/filesystem state, post-check stability or power-loss durability; exact two Go hashes matched before/after/current, not global mutation exclusivity or metadata identity.
+- Actual ASSESS unassessable/untracked; RDD off, runtime Large → High fallback; independent verifier truly executed. Technical evidence only: no native authority, delivery or CNSIC pilot; no repair/enable/proxy approval.

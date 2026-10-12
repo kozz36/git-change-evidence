@@ -55,7 +55,9 @@ The CLI MUST use exits only for technical execution outcomes and MUST assign dis
 
 ### Requirement: Safe exclusive publication
 
-The system MUST revalidate a moving symbolic reference a bounded number of times before publication and MUST NOT publish evidence whose resolved identity no longer matches. Publication destination and artifact identity MUST derive from canonical content and publication MUST be content-addressed, exclusive, and atomic; an existing artifact MUST NOT be overwritten.
+The opt-in Go `shell/livepublication.Publish` API MUST perform at most three complete acquire/build/validate/reacquire attempts against the caller's original repository and refs. It MUST validate canonical evidence and provenance against the acquired base/head IDs before invoking the existing publisher. A changed pair MUST discard all evidence and trigger a complete rebuild; persistent movement MUST return existing typed `SnapshotRacing` without a publisher call or artifact. Invalid or divergent evidence MUST return a typed technical error before publication. The frozen publisher and CLI remain independent of Git.
+
+The accepted snapshot MUST mean the last observed matching pair before publication, not an atomic read of both refs or a Git/filesystem transaction. No post-check ref-stability guarantee, Git metadata locks, or cooperative-writer assumption is provided. The caller supplies the destination; artifact identity derives from canonical content. Existing publication remains content-addressed, exclusive, and atomic at its filesystem boundary; an existing artifact MUST NOT be overwritten.
 
 #### Scenario: Moving reference stabilizes
 - GIVEN a symbolic reference changes before a revalidation attempt then stabilizes within the bound
@@ -69,5 +71,5 @@ The system MUST revalidate a moving symbolic reference a bounded number of times
 
 #### Scenario: Canonical content publication identity
 - GIVEN canonical content is selected for publication
-- WHEN its destination and artifact identity are derived
-- THEN both derive from that canonical content and an existing destination remains unchanged
+- WHEN it is published below the caller-supplied root
+- THEN the caller-supplied publication root is passed unchanged, the relative artifact identity derives from canonical content, and any existing artifact remains unchanged
