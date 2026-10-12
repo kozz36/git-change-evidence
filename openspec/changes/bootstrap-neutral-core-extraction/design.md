@@ -17,6 +17,10 @@ Go 1.25.10 is the target baseline. This PR records the runtime, API/layout, type
 
 Dependencies flow shell/profile/edge → neutral interfaces → core. The public neutral Go package API is at the repository/module root; the CLI is at `cmd/git-change-evidence/`; non-public shell/adapters are under `internal/`. Tests are co-located as `*_test.go`. `pkg/`, a Python-style `src/` plus `tests/` split, and package-level `AGENTS.md` files are prohibited.
 
+The opt-in public `shell/livepublication.Publish(ctx, repo, baseRef, headRef, destination, build)` API owns live Git effects; the frozen publisher and CLI remain Git-independent. A caller-owned Builder receives immutable base/head IDs and constructs complete neutral evidence with captured policy/profile/Subject. Each of at most three complete attempts acquires the original refs, builds and validates canonical evidence and matching provenance, then reacquires those refs. Movement discards the entire evidence and rebuilds; exhaustion returns existing typed `SnapshotRacing` without invoking publication. Only a matching pair reaches the existing content-addressed publisher.
+
+The accepted snapshot is the last observed matching pair before publication: neither pair acquisition nor Git/filesystem publication is a joint transaction, and there is no post-check ref-stability guarantee, metadata lock, or cooperative-writer assumption. Literal Subject can be sensitive; its emitter remains responsible for human diagnostics, not canonical sanitization.
+
 Core configuration inputs are immutable typed Go structs/interfaces. TOML, YAML, JSON, or other configuration decoding belongs only to adapters. A concrete configuration-file syntax remains deferred.
 
 ## Interfaces / Contracts
