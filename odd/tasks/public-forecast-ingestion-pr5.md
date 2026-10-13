@@ -19,7 +19,7 @@ Preserve the four transported technical files exactly at the admitted source bou
 Frozen transport has no meaningful behavioral RED: retain the original tests and run fresh verification, without manufacturing test-first evidence.
 Exact-byte transport, documentation patch application and public-base footprint checks: passed. Official Go 1.25.10 directed, focused, full and race checks: passed. Check-only formatting, whitespace, current-slice privacy and bounded preservation: passed.
 Evidence is scoped to the current slice and observed baselines; preparation capture is qualified, and historical unknowns and unaudited host/cache state remain unchanged.
-Work-unit commit: pending; record its actual identity after creation, before the native review freeze.
+Work-unit commit: `637df1e5b4572bb641efd539cb8208f4d1ea666e` (`feat: add immutable forecast ingestion`). Recorded before the native review freeze; W1 remains open for the later gates.
 
 ## Later gates
 
