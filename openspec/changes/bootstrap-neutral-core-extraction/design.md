@@ -33,6 +33,8 @@ Core configuration inputs are immutable typed Go structs/interfaces. TOML, YAML,
 | Forecast comparison | Validate supplied forecasts but never author, infer, complete, mutate, or overwrite them, including when evidence is unavailable. |
 | Configuration boundary | Adapters decode external configuration and construct immutable typed core inputs. The core neither parses external formats nor chooses a format. |
 
+W5 unit 1 owns typed forecast ingestion and immutable declared binding/metric retention only; no result parameter, numeric inference, JSON, CLI, IO, or schema changes. The approved comparison/availability/delta/optional-threshold contract is specified in forecast-comparison; its implementation belongs to serial unit 2, not this ingestion slice.
+
 ## Transition Plan and Gates
 
 1. **Successor appears:** implementation first appears in standalone `git-change-evidence` during neutral-core extraction; CNSIC W1/W2 remains the oracle.
