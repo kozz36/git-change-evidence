@@ -10,6 +10,11 @@ Compare supplied forecasts to measured evidence while preserving forecast owners
 
 The system MUST validate and ingest a supplied forecast as input to comparison. It MUST NOT author, infer, complete, mutate, or overwrite a forecast, including when evidence is missing or a profile supplies thresholds.
 
+Ingestion uses root typed `IngestForecastV1(ForecastInputV1) (ForecastV1, error)`: declared policy/inventory `DocumentDigest` and coherent `RevisionIdentity`, with closed per-category additions/deletions (lines) and non-countable (entries), all optional `uint64` values. Malformed identity/keys and duplicate keys return `ContractError`; valid MaxUint64 is retained.
+Input and getter slices/pointers are independently copied without sorting or completion. Known zero, explicit unknown, omitted metrics, and nil versus empty slices remain distinct; an empty metric list infers nothing.
+Unit 2 comparison remains future implementation: nil whole forecast is absent; binding mismatch is incompatible without numeric comparison. Observations use only the measured/supplied-key union; a missing measured category is unavailable, not zero. Non-countable >0 makes additions/deletions unavailable but its own count remains known.
+Future deltas use measured-minus-supplied direction and ordered-subtraction uint64 magnitude. Optional per-key absolute thresholds share the metric unit and use strict greater-than; equality is not exceeded, and absent thresholds produce no default observation.
+
 #### Scenario: Valid supplied forecast
 - GIVEN a valid supplied forecast and measured evidence
 - WHEN comparison is requested
