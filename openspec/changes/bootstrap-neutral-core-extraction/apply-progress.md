@@ -166,3 +166,6 @@ main
 - Fresh `NewReportV1` fixtures are not caller inventory/accounting/`FromResult` chain proof; public external usability and new nil/cancel guards INSPECTION only; Git acquisition uses background context.
 - Publication proves the last observed matching pair, not atomic Git/filesystem state, post-check stability or power-loss durability; exact two Go hashes matched before/after/current, not global mutation exclusivity or metadata identity.
 - Actual ASSESS unassessable/untracked; RDD off, runtime Large → High fallback; independent verifier truly executed. Technical evidence only: no native authority, delivery or CNSIC pilot; no repair/enable/proxy approval.
+### Comparison transport
+Production (155 lines) and tests (209 lines) form one cohesive typed comparison boundary.
+Full-span uint64 in both directions is helper-only; mixed partial-line and external-consumer fixtures are absent; fresh verification pending.
