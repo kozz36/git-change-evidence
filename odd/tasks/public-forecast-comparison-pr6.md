@@ -15,7 +15,7 @@ Check-only formatting, whitespace, current-slice privacy and bounded preservatio
 Immutable transport has no meaningful behavioral RED; retain original tests rather than manufacturing test-first evidence.
 Proof limits: full-span uint64 in both directions is helper-only; mixed positive partial-line and external-consumer compile behavior have no dedicated fixtures.
 Native RDD consent/approval and matching-HEAD CI/publication remain pending; a checklist is not delivery authority.
-Work-unit commit: pending; record its actual identity before the native review freeze.
+Work-unit commit: f2bba6da373ada4faa3acec1c4a4b947f4668d77; identity recorded before native review freeze.
 
 ## Log
 L1: "Review the delivered subagent output and continue."
