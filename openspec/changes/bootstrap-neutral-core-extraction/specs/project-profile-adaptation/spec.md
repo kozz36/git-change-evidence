@@ -10,6 +10,8 @@ Adapt project policy and compatibility needs at a one-way edge around a neutral 
 
 The system MUST accept project vocabulary, categories, thresholds, and compatibility requirements through a profile edge. The neutral core MUST NOT depend on, embed, or expose CNSIC-specific vocabulary, review rules, or delivery authority; a profile MUST NOT change neutral contract meaning.
 
+The standalone W2-bounded admission uses the existing canonical Accounting Policy V1 decoder and preserves admitted bytes, digest, and immutable view. Its scope is artifacts `openspec/changes/**`, tests `tests/**`, mechanical one validated literal annotation path, then production without globs at threshold400; other thresholds are0, default is production, and ratios are absent. Unsupported mappings and authority injection return technical errors with no policy document; this does not establish real-Git parity or authorize cutover.
+
 #### Scenario: CNSIC profile translation
 - GIVEN a CNSIC profile supplies its vocabulary and threshold values
 - WHEN neutral evidence is produced

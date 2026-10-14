@@ -21,6 +21,8 @@ The opt-in public `shell/livepublication.Publish(ctx, repo, baseRef, headRef, de
 
 The accepted snapshot is the last observed matching pair before publication: neither pair acquisition nor Git/filesystem publication is a joint transaction, and there is no post-check ref-stability guarantee, metadata lock, or cooperative-writer assumption. Literal Subject can be sensitive; its emitter remains responsible for human diagnostics, not canonical sanitization.
 
+Standalone `internal/cnsicprofile.DecodePolicyV1` admits only the W2-observed ordered policy through the existing canonical neutral decoder; unsupported mappings return fixed technical errors without inference. This is neither a new configuration syntax nor runtime CNSIC integration; frozen synthetic public-chain checks do not establish real-Git parity or consumer cutover.
+
 Core configuration inputs are immutable typed Go structs/interfaces. TOML, YAML, JSON, or other configuration decoding belongs only to adapters. A concrete configuration-file syntax remains deferred.
 
 ## Interfaces / Contracts
