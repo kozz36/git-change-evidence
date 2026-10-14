@@ -169,3 +169,6 @@ main
 ### Comparison transport
 Production (155 lines) and tests (209 lines) form one cohesive typed comparison boundary.
 Full-span uint64 in both directions is helper-only; mixed partial-line and external-consumer fixtures are absent; fresh verification pending.
+### Initial profile transport
+Standalone admission and synthetic frozen-chain tests only; real-Git parity is a later slice.
+Fresh Go 1.25.10 checks and scoped independent admission passed; canonical profile completion and consumer cutover remain unchanged.
