@@ -19,7 +19,7 @@ The implementation keeps Functional Core / Imperative Shell and leaves public ro
 | Unit | Behavior and verification |
 |---|---|
 | Contract | Versioned CLI specification and explicit package/verification boundaries; no executable behavior. |
-| Shared protocol | Fixed profile, typed requests/errors and raw-path validation; focused RED/GREEN, negatives and independent security verification. |
+| Shared protocol | `internal/w1w2/contract`: fixed profile, typed `Request`/`Failure`, `ValidatePath`/`ValidatePaths`; raw-name admission without authorization or filesystem-confinement claims. Tests pin selected constants, raw identities, exact metadata names and path/count boundaries; this unit does not wire CLI operations. |
 | Input | Closed selection/flags/one-stdin/bounded documents; focused public-boundary tests. |
 | Regular acquisition | Descriptor-relative roots/files/types/content/deadline guards; synthetic fixtures and independent security verification. |
 | Link acquisition | Leaf/dangling-link payloads, hardlink accounting and detectable races; separate security verification. |
