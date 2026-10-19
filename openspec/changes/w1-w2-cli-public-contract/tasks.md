@@ -1,5 +1,7 @@
 # Conditional future implementation work
 
+> Historical design record retained below. For the local source implementation and unfinished qualification, see [current progress](apply-progress.md). This is not a release or adoption claim.
+
 **DRAFT · PROPOSED · NOT IMPLEMENTED.** Not apply-ready. The one checked item records the owner's design decision only; every unchecked item is implementation or verification work not yet completed. Local implementation has been separately authorized; publication has not. No test execution, passing result, review disposition, API publication or human implementation approval is asserted. Public implementation scope: [package boundaries and verification plan](apply-progress.md). Private execution tracking is excluded from the public contract. Read [design](design.md) before [requirements](specs/w1-w2-cli/spec.md).
 
 ## Readiness decisions first

@@ -1,5 +1,7 @@
 # Proposed selected-path W1/W2 CLI contract
 
+> Historical design record retained below. For the local source implementation and unfinished qualification, see [current progress](apply-progress.md). This is not a release or adoption claim.
+
 **DRAFT · PROPOSED · NOT IMPLEMENTED.** Decision proposed: add a staged `gce w1w2` shell over existing versioned neutral contracts, with caller-selected paths and tool-owned safe content acquisition. This is technical documentation, not implementation authorization or an availability claim.
 
 ## Selected scope

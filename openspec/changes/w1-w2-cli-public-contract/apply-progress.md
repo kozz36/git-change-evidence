@@ -1,5 +1,23 @@
 # W1/W2 implementation boundaries
 
+## Current local source status
+
+The local source now wires `w1w2 inventory`, `result`, `report` and two-argument
+family help. The original contract-only plan below is retained as history, not
+as the current execution checklist. No distribution, release or consumer adoption is implied.
+
+| Surface | Observed local status |
+|---|---|
+| Input, selected acquisition, bounded Git, composition | Focused tests and scoped independent verification completed; canonical bytes, retained binding, no-fetch/process cancellation and unavailable observations covered. |
+| Root dispatch and help | RED then GREEN; 119 CLI-package test events passed without skips. Both isolated builds and 33 binary differential cases passed, allowing only one root-help entry; three new stage flows also passed. Existing seven Go files retained. |
+| Remaining qualification | Final full/race/format, complete scenario/budget/platform qualification and root-dispatch independent verification are not yet complete. No formal OpenSpec-validator PASS is claimed. |
+
+The revised implementation forecast is 3,000–3,600 authored changed lines including
+tests/docs. It supersedes the original estimate retained below; it is not workload
+calibration. Do not omit tests, compress code or waive proof to fit a forecast.
+
+## Original contract-only boundary review
+
 Local implementation is authorized; this contract work unit introduces no executable CLI behavior. The selected design remains the target, not a claim of implemented support or calibration. See [design](design.md), [requirements](specs/w1-w2-cli/spec.md) and [remaining work](tasks.md).
 
 ## Package-boundary review

@@ -1,5 +1,7 @@
 # Proposed W1/W2 shell design
 
+> Historical design record retained below. For the local source implementation and unfinished qualification, see [current progress](apply-progress.md). This is not a release or adoption claim.
+
 **DRAFT · PROPOSED · NOT IMPLEMENTED.** All command names, request identifiers, diagnostics and new shell behavior below are proposals. Existing public Go APIs are source facts, not a new publication claim. See [proposal](proposal.md), [requirements](specs/w1-w2-cli/spec.md) and [conditional tasks](tasks.md).
 
 ## Grammar and dispatch

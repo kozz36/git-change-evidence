@@ -15,6 +15,7 @@ import (
 	evidence "github.com/kozz36/git-change-evidence"
 	gitadapter "github.com/kozz36/git-change-evidence/internal/git"
 	publicationadapter "github.com/kozz36/git-change-evidence/internal/publication"
+	w1w2cli "github.com/kozz36/git-change-evidence/internal/w1w2/cli"
 )
 
 const exitInvalid, exitAbsent, exitBound, exitUTF8, exitStopped, exitRace, exitConflict = 2, 3, 4, 5, 6, 7, 8
@@ -24,7 +25,7 @@ const projectInputCap int64 = 16 << 20
 const previewVersion = "v0.1.0-preview.1"
 
 const (
-	rootHelp    = "Usage: git-change-evidence <base-ref> <source-file> <new-file>\n\nCommands:\n  census go-ast    Run the canonical Go AST census.\n  census-go-ast   Run the retained pre-v1 compatibility census.\n  project         Project canonical evidence.\n  publish         Store evidence locally.\n  --version       Print the source-build version.\n"
+	rootHelp    = "Usage: git-change-evidence <base-ref> <source-file> <new-file>\n\nCommands:\n  census go-ast    Run the canonical Go AST census.\n  census-go-ast   Run the retained pre-v1 compatibility census.\n  project         Project canonical evidence.\n  publish         Store evidence locally.\n  w1w2           Build selected-path W1/W2 evidence.\n  --version       Print the source-build version.\n"
 	censusHelp  = "Usage: gce census go-ast --source-root <absolute-path> --receiver <identifier> --selector <identifier> -- <paths...>\n\nCanonical: gce census go-ast\nLegacy compatibility: git-change-evidence census-go-ast\n"
 	projectHelp = "Usage: git-change-evidence project <canonical-json|human-text>\n\nFormats:\n  canonical-json    Project canonical evidence as JSON.\n  human-text        Project canonical evidence as text.\n"
 	versionText = "git-change-evidence " + previewVersion + " (source/dev build; not release provenance)\n"
@@ -118,7 +119,7 @@ func runCommand(ctx context.Context, args []string, input io.Reader, stdout, std
 	if isCensusShaped(args) {
 		return runCensus(args, stdout, stderr)
 	}
-	if isProjectShaped(args) || isPublicationShaped(args) {
+	if isW1W2Shaped(args) || isProjectShaped(args) || isPublicationShaped(args) {
 		return runCLI(ctx, "", args, input, stdout, stderr, runner, bound, publish)
 	}
 	repository, err := getwd()
@@ -137,6 +138,9 @@ func isPublicationShaped(args []string) bool {
 func isCensusShaped(args []string) bool {
 	return len(args) > 0 && args[0] == "census-go-ast"
 }
+func isW1W2Shaped(args []string) bool {
+	return len(args) > 0 && args[0] == "w1w2" && len(args) != 3
+}
 func runCLI(ctx context.Context, repository string, args []string, input io.Reader, stdout, stderr io.Writer, runner gitadapter.Runner, bound limits, publish publisher) int {
 	if found, code := writeDiscovery(args, stdout, stderr); found {
 		return code
@@ -144,6 +148,9 @@ func runCLI(ctx context.Context, repository string, args []string, input io.Read
 	args = normalizeCensusArgs(args)
 	if isCensusShaped(args) {
 		return runCensus(args, stdout, stderr)
+	}
+	if isW1W2Shaped(args) {
+		return w1w2cli.Run(ctx, args[1:], input, stdout, stderr)
 	}
 	if isProjectShaped(args) {
 		if len(args) == 2 {
