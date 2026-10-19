@@ -1,8 +1,11 @@
 //go:build linux
 
 // Package acquire reads selected regular files and leaf symlink payloads without discovery or writes.
-// It confines names to captured descriptors, not physical inode provenance, and
-// detects metadata changes without promising an atomic snapshot or every write.
+// It confines names to captured descriptors, not physical inode provenance.
+// Directory bindings compare observed device, inode and mode, not entry metadata.
+// Selected regular files and leaf symlinks retain full metadata stability checks.
+// Reads are not atomic: inode reuse and changes restored between observations
+// are not guaranteed to be detected, nor is every write.
 package acquire
 
 import (
