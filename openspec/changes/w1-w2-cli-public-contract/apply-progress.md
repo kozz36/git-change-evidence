@@ -10,11 +10,48 @@ as the current execution checklist. No distribution, release or consumer adoptio
 |---|---|
 | Input, selected acquisition, bounded Git, composition | Focused tests and scoped independent verification completed; canonical bytes, retained binding, no-fetch/process cancellation and unavailable observations covered. |
 | Root dispatch and help | RED then GREEN; 119 CLI-package test events passed without skips. Both isolated builds and 33 binary differential cases passed, allowing only one root-help entry; three new stage flows also passed. Existing seven Go files retained. |
-| Remaining qualification | Final full/race/format, complete scenario/budget/platform qualification and root-dispatch independent verification are not yet complete. No formal OpenSpec-validator PASS is claimed. |
+| Remaining qualification | Root-dispatch independent checks passed. The added qualification tests have passed focused checks; their independent check and final updated full/race/format run remain pending. No formal OpenSpec-validator PASS is claimed. |
 
-The revised implementation forecast is 3,000–3,600 authored changed lines including
-tests/docs. It supersedes the original estimate retained below; it is not workload
-calibration. Do not omit tests, compress code or waive proof to fit a forecast.
+The revised implementation forecast is at most 3,900 authored changed lines including
+tests/docs, allowing the bounded final qualification supplement. It supersedes the
+original estimates retained below; it is not workload calibration. Do not omit
+tests, compress code or waive proof to fit a forecast.
+
+## Local scenario evidence map
+
+This maps representative executed checks, not exhaustive OS/filesystem or workload
+certification. Final supplement verification remains pending as noted above.
+
+| Scenario | Scoped execution evidence |
+|---|---|
+| R1 Raw paths and safe content | Raw-name guards, descriptor reads, leaf payload tests and canonical selected inventory. |
+| R1 Empty requested selection | Accessible-root empty inventory succeeds; inaccessible-root request fails. |
+| R1 Unsafe or malformed selection | Closed JSON/Base64/path guards, intermediate links and nonregular leaves rejected. |
+| R2 Exact success streams | Versioned constructors compared byte-for-byte, including LF, for all three stages. |
+| R2 Ambiguous stdin or noncanonical input | Multiple stdin selectors rejected; unused input guards and exact canonical decoding. |
+| R2 Output failure | Short/error writers return 9; diagnostic failure cannot turn an error into success. |
+| R3 Change outside inventory | Real committed ranges retain changes outside the selection; worktree edits do not replace them. |
+| R3 Literal refs and unavailable Git evidence | Literal metacharacter ref, immutable resolution, qualified local no-fetch trap and typed failures. |
+| R3 Binding mismatch | Different valid retained policy/inventory antecedents fail with empty stdout. |
+| R4 Observations are data | Zero, exceeded and unavailable ratio observations preserve code 0 and canonical output. |
+| R4 No implicit discovery or effects | Explicit selection and known fixture source/index/ref checks; no completeness or global no-write certificate. |
+| R5 Unsafe, unavailable or bounded acquisition | Guard/error/cancellation mappings and actual unsupported-runtime refusals before input acquisition. |
+| R5 Version separation | Unsupported selection/core versions fail explicitly without decoder fallback. |
+| R5 Detectable acquisition race | Before-open, post-read and captured-link replacement cases fail without partial evidence. |
+| R5 Initial Linux capability boundary | Linux acquisition plus actual js/wasm execution of all three unsupported-platform refusals; Windows is compile-only. |
+| R5 Individual and aggregate budget boundaries | Input/path/content/output cases plus fixed Git 16 MiB/64 MiB/10,000 below/exact/above runner responses. |
+| R5 Cooperative deadline and external termination | Owned Git FIFO rendezvous: actual 30.10 s expiry returns 6; externally killed owned CLI records -9, not a promised family status. |
+| R6 Legacy triple collisions | Ref/stage-help triples retain legacy measurement; discovery/census exceptions stay first. |
+| R6 Differential preservation | 33 baseline binary cases allow only the single root-help entry; independent capture comparison completed. |
+
+Decoded-path total overflow cannot be independently eligible: 128 × 4095 = 524160
+bytes is below 512 KiB. Ordinary Linux symlink payloads cannot reach the 1 MiB
+content cap; regular-content and mixed per-path charging are tested without inventing
+such links. No privileged device fixtures were created; generic nonregular rejection
+is exercised. js/wasm execution is not an all-OS or Linux syscall-filter certificate.
+The fixed Git matrix uses the existing runner seam, not 64 MiB of physical Git traffic.
+Calibration, hard RSS, every-write detection, atomic snapshots, all-alias provenance,
+blocked-I/O wall time and universal forced-termination diagnostics are not certified.
 
 ## Original contract-only boundary review
 
