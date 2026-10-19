@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +16,7 @@ import (
 	evidence "github.com/kozz36/git-change-evidence"
 	gitadapter "github.com/kozz36/git-change-evidence/internal/git"
 	publicationadapter "github.com/kozz36/git-change-evidence/internal/publication"
+	w1w2cli "github.com/kozz36/git-change-evidence/internal/w1w2/cli"
 )
 
 func TestRunCLIDispatchesExactProjectArity(t *testing.T) {
@@ -33,7 +35,7 @@ func TestRunCLIDispatchesExactProjectArity(t *testing.T) {
 }
 
 func TestRunCLIPreservesThreeArgumentSpecialBaseReferences(t *testing.T) {
-	for _, reference := range []string{"project", "publish", "census"} {
+	for _, reference := range []string{"project", "publish", "census", "w1w2"} {
 		t.Run(reference, func(t *testing.T) {
 			fixture := newFixture(map[string]string{"base/source": "keep\nmove", "head/source": "keep", "head/new": "move\nfresh"})
 			fixture.baseAlias = reference
@@ -600,6 +602,122 @@ func TestDiscoveryTextRequiresExactArguments(t *testing.T) {
 	for _, args := range [][]string{{"--help", "extra"}, {"project", "-h"}, {"project", "--help", "extra"}, {"census", "--help", "extra"}, {"census", "go-ast", "--help", "extra"}, {"--", "--help"}, {"--version=preview"}} {
 		if text, found := discoveryText(args); found || text != "" {
 			t.Fatalf("args %q unexpectedly discovered %q", args, text)
+		}
+	}
+}
+
+func dispatchWithoutCWD(t *testing.T, command bool, args []string, input io.Reader) (int, []byte, string) {
+	t.Helper()
+	var out, diagnostic bytes.Buffer
+	var code int
+	if command {
+		code = runCommand(context.Background(), args, input, &out, &diagnostic, func() (string, error) {
+			t.Error("explicit operation consulted cwd")
+			return "", errors.New("cwd unavailable")
+		}, nil, standardLimits(), nil)
+	} else {
+		code = runCLI(context.Background(), "", args, input, &out, &diagnostic, nil, standardLimits(), nil)
+	}
+	return code, out.Bytes(), diagnostic.String()
+}
+
+func TestW1W2StagesDispatchBeforeCWD(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("selected-path operation integration requires Linux")
+	}
+	p, err := evidence.NewAccountingPolicyV1(evidence.PolicyInput{Categories: []evidence.CategoryInput{{Name: "all"}}, Default: "all"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	i, err := evidence.NewInventoryV1(p, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	for _, args := range [][]string{{"init", "-q"}, {"config", "user.email", "test@example.invalid"}, {"config", "user.name", "Fixture"}, {"commit", "--allow-empty", "-qm", "base"}, {"commit", "--allow-empty", "-qm", "head"}} {
+		git(t, root, args...)
+	}
+	snapshot, err := gitadapter.AcquireBounded(context.Background(), gitadapter.Request{Repository: root, Base: "HEAD~1", Head: "HEAD"}, gitadapter.SnapshotBounds{MaxResponseBytes: 16 << 20, MaxTotalBytes: 64 << 20, MaxEntries: 10000})
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := evidence.NewAccountingResultV1(p, i, snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	report, err := evidence.NewReportV1FromResult("committed change evidence", evidence.ResultV1ReportBinding{Policy: p, Inventory: i, Result: result})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, raw := range map[string][]byte{"policy": p.CanonicalBytes(), "inventory": i.CanonicalBytes(), "paths": []byte("{\"schema\":\"git-change-evidence.cli-path-selection/v1\",\"paths_b64\":[]}")} {
+		write(t, root, name, string(raw))
+	}
+	for _, tc := range []struct {
+		name  string
+		args  []string
+		input []byte
+		want  []byte
+	}{
+		{"inventory", []string{"w1w2", "inventory", "--source-root", root, "--policy", "-", "--paths", root + "/paths"}, p.CanonicalBytes(), i.CanonicalBytes()},
+		{"result", []string{"w1w2", "result", "--repo", root, "--base", "HEAD~1", "--head", "HEAD", "--policy", root + "/policy", "--inventory", "-"}, i.CanonicalBytes(), result.CanonicalBytes()},
+		{"report", []string{"w1w2", "report", "--policy", root + "/policy", "--inventory", root + "/inventory", "--result", "-"}, result.CanonicalBytes(), report.CanonicalBytes()},
+	} {
+		for _, command := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/command=%t", tc.name, command), func(t *testing.T) {
+				code, raw, diagnostic := dispatchWithoutCWD(t, command, tc.args, bytes.NewReader(tc.input))
+				if code != 0 || diagnostic != "" || !bytes.Equal(raw, tc.want) {
+					t.Fatalf("code=%d stdout=%q stderr=%q", code, raw, diagnostic)
+				}
+			})
+		}
+	}
+}
+
+func TestW1W2HelpIsAdditiveAndSideEffectFree(t *testing.T) {
+	const addition = "  w1w2           Build selected-path W1/W2 evidence.\n"
+	const previous = "Usage: git-change-evidence <base-ref> <source-file> <new-file>\n\nCommands:\n  census go-ast    Run the canonical Go AST census.\n  census-go-ast   Run the retained pre-v1 compatibility census.\n  project         Project canonical evidence.\n  publish         Store evidence locally.\n  --version       Print the source-build version.\n"
+	if strings.Count(rootHelp, addition) != 1 || strings.Replace(rootHelp, addition, "", 1) != previous {
+		t.Error("root help changed beyond the single advertised entry")
+	}
+	var want, diagnostic bytes.Buffer
+	if code := w1w2cli.Run(context.Background(), []string{"--help"}, panicReader{}, &want, &diagnostic); code != 0 || diagnostic.Len() != 0 {
+		t.Fatal("family discovery fixture failed")
+	}
+	for _, command := range []bool{false, true} {
+		code, raw, diagnostic := dispatchWithoutCWD(t, command, []string{"w1w2", "--help"}, panicReader{})
+		if code != 0 || diagnostic != "" || !bytes.Equal(raw, want.Bytes()) {
+			t.Fatalf("family help: %d %q %q", code, raw, diagnostic)
+		}
+	}
+}
+
+func TestRunCommandPreservesW1W2StageHelpTriple(t *testing.T) {
+	f := newFixture(map[string]string{"base/inventory": "keep\nmove", "head/inventory": "keep", "head/--help": "move\nfresh"})
+	f.baseAlias = "w1w2"
+	var out, diagnostic bytes.Buffer
+	cwdCalls := 0
+	code := runCommand(context.Background(), []string{"w1w2", "inventory", "--help"}, panicReader{}, &out, &diagnostic, func() (string, error) {
+		cwdCalls++
+		return "repository", nil
+	}, f.runner, standardLimits(), nil)
+	if code != 0 || out.String() != "moved=1 new=1 additions=2\n" || diagnostic.Len() != 0 || cwdCalls != 1 {
+		t.Fatalf("legacy triple: %d %q %q cwd=%d", code, out.String(), diagnostic.String(), cwdCalls)
+	}
+}
+
+func TestProjectPublishStillRejectInventoryV1(t *testing.T) {
+	p, err := evidence.NewAccountingPolicyV1(evidence.PolicyInput{Categories: []evidence.CategoryInput{{Name: "all"}}, Default: "all"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	i, err := evidence.NewInventoryV1(p, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, args := range [][]string{{"project", "canonical-json"}, {"publish", t.TempDir()}} {
+		code, raw, diagnostic := dispatchWithoutCWD(t, true, args, bytes.NewReader(i.CanonicalBytes()))
+		if code != 2 || len(raw) != 0 || diagnostic != "invalid input\n" {
+			t.Fatalf("legacy accepted a new document kind: %d %q %q", code, raw, diagnostic)
 		}
 	}
 }
