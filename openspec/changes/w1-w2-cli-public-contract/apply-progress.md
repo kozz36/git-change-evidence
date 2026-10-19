@@ -10,7 +10,7 @@ as the current execution checklist. No distribution, release or consumer adoptio
 |---|---|
 | Input, selected acquisition, bounded Git, composition | Focused tests and scoped independent verification completed; canonical bytes, retained binding, no-fetch/process cancellation and unavailable observations covered. |
 | Root dispatch and help | RED then GREEN; 119 CLI-package test events passed without skips. Both isolated builds and 33 binary differential cases passed, allowing only one root-help entry; three new stage flows also passed. Existing seven Go files retained. |
-| Remaining qualification | Root-dispatch independent checks passed. The added qualification tests have passed focused checks; their independent check and final updated full/race/format run remain pending. No formal OpenSpec-validator PASS is claimed. |
+| Local qualification completed | Scoped independent checks passed, including the 14 new fixed-budget/non-Linux test events. Full and race suites each passed 1,474 test events across 12 packages; one intentional Linux platform skip is covered by actual js/wasm execution. Official formatting passed. The formal OpenSpec validator was unavailable, not run. No distribution or adoption is implied. |
 
 The revised implementation forecast is at most 3,900 authored changed lines including
 tests/docs, allowing the bounded final qualification supplement. It supersedes the
@@ -19,8 +19,8 @@ tests, compress code or waive proof to fit a forecast.
 
 ## Local scenario evidence map
 
-This maps representative executed checks, not exhaustive OS/filesystem or workload
-certification. Final supplement verification remains pending as noted above.
+This maps representative executed checks and completed scoped verification, not
+exhaustive OS/filesystem or workload certification. The exclusions below remain.
 
 | Scenario | Scoped execution evidence |
 |---|---|
