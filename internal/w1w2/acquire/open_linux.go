@@ -36,15 +36,20 @@ func checkedOpen(parent int, name string, directory bool, ops acquisitionOps) (i
 	if directory && kind == unix.S_IFLNK {
 		return -1, opened, fail(2, "unsafe_path")
 	}
-	if directory && kind != unix.S_IFDIR || !directory && kind != unix.S_IFREG {
+	if directory && kind != unix.S_IFDIR || !directory && kind != unix.S_IFREG && kind != unix.S_IFLNK {
 		return -1, opened, fail(3, "input_unavailable")
 	}
 	flags := unix.O_RDONLY | unix.O_NOFOLLOW | unix.O_NONBLOCK | unix.O_CLOEXEC
 	if directory {
 		flags |= unix.O_DIRECTORY
+	} else if kind == unix.S_IFLNK {
+		flags = unix.O_PATH | unix.O_NOFOLLOW | unix.O_CLOEXEC
 	}
 	fd, err := ops.openat(parent, name, flags, 0)
 	if err != nil {
+		if kind == unix.S_IFLNK && err == unix.EINVAL {
+			return -1, opened, fail(3, "unsupported_platform")
+		}
 		if err == unix.ENOENT || err == unix.ELOOP || err == unix.ENOTDIR {
 			return -1, opened, fail(7, "acquisition_race")
 		}

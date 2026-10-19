@@ -67,7 +67,11 @@ func TestRejectedPathsAndTypes(t *testing.T) {
 	for _, p := range []string{"../x", "/x", "x\x00", ".GiT/x", "a//b", "escape/x"} {
 		t.Run(p, func(t *testing.T) { failure(t, root, [][]byte{[]byte(p)}, 2, "unsafe_path") })
 	}
-	for _, p := range []string{"missing", "leaf", "fifo", "."} {
+	gotLeaf, err := acquire.Read(context.Background(), root, [][]byte{[]byte("leaf")})
+	if err != nil || len(gotLeaf) != 1 || string(gotLeaf[0].Content) != "missing" {
+		t.Fatalf("leaf payload: %v %v", gotLeaf, err)
+	}
+	for _, p := range []string{"missing", "fifo", "."} {
 		if p == "." {
 			continue
 		}

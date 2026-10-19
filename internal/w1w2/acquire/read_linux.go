@@ -1,6 +1,6 @@
 //go:build linux
 
-// Package acquire reads explicitly selected regular files without discovery or writes.
+// Package acquire reads selected regular files and leaf symlink payloads without discovery or writes.
 // It confines names to captured descriptors, not physical inode provenance, and
 // detects metadata changes without promising an atomic snapshot or every write.
 package acquire
@@ -18,8 +18,8 @@ import (
 // Runtime capability failures are reported by Read without a pathname fallback.
 func Supported() bool { return true }
 
-// Read returns owned path/content copies for selected regular files only.
-// Leaf symlink payload acquisition is not supported by this regular-file slice.
+// Read returns owned path/content copies for regular files or leaf symlink payloads.
+// Symlink targets are opaque content, never followed; intermediate links are rejected.
 // Errors return no partial evidence; cancellation is cooperative between OS calls.
 func Read(ctx context.Context, root string, paths [][]byte) ([]evidence.InventoryEntryInput, error) {
 	return readWithOps(ctx, root, paths, nativeOps())
@@ -86,6 +86,9 @@ func readSelected(ctx context.Context, root int, path string, remaining int, ops
 	limit := min(contract.MaxFileBytes, remaining)
 	if before.Size < 0 || before.Size > int64(limit) {
 		return nil, fail(4, "resource_limit")
+	}
+	if before.Mode&unix.S_IFMT == unix.S_IFLNK {
+		return readLink(ctx, parent, name, fd, before, limit)
 	}
 	content := make([]byte, 0, int(before.Size))
 	var buf [32768]byte
