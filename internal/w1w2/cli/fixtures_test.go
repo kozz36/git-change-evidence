@@ -68,3 +68,27 @@ func requireFailure(t *testing.T, args []string, code int, diagnostic string) {
 		t.Fatalf("code=%d stdout=%q stderr=%q", got, out, err)
 	}
 }
+
+func unavailableDocuments(t *testing.T) (evidence.PolicyDocumentV1, evidence.InventoryDocumentV1, evidence.ResultDocumentV1) {
+	t.Helper()
+	p, err := evidence.NewAccountingPolicyV1(evidence.PolicyInput{
+		Categories: []evidence.CategoryInput{{Name: "A"}, {Name: "B"}}, Default: "A",
+		Ratios: []evidence.RatioInput{{Category: "A", Reference: "B", Maximum: "0.5"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	i, err := evidence.NewInventoryV1(p, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := evidence.NewAccountingResultV1(p, i, emptySnapshot())
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := evidence.ResultObservationV1{Kind: evidence.ResultRatioObservationV1, Category: "A", Reference: "B", RatioLimit: "0.5"}
+	if observations := result.Observations(); len(observations) != 1 || observations[0] != want {
+		t.Fatalf("expected exactly one unavailable zero-denominator ratio, got %+v", observations)
+	}
+	return p, i, result
+}

@@ -105,3 +105,32 @@ func TestFailedDiagnosticDeliveryStillReturnsFailure(t *testing.T) {
 		t.Fatalf("code=%d stdout=%q", code, stdout.Bytes())
 	}
 }
+
+func TestUnavailableRatioObservationsRemainData(t *testing.T) {
+	p, i, result := unavailableDocuments(t)
+	policyPath, inventoryPath := documentFile(t, p.CanonicalBytes()), documentFile(t, i.CanonicalBytes())
+	args := []string{"result", "--repo", t.TempDir(), "--base", "base", "--head", "head", "--policy", policyPath, "--inventory", inventoryPath}
+	calls := 0
+	source := func(context.Context, gitadapter.Request, gitadapter.SnapshotBounds) (evidence.CommittedSnapshot, error) {
+		calls++
+		return emptySnapshot(), nil
+	}
+	var out, diagnostic bytes.Buffer
+	code := runWithSource(context.Background(), args, unusedInput{}, &out, &diagnostic, source)
+	if code != 0 || calls != 1 || diagnostic.Len() != 0 || !bytes.Equal(out.Bytes(), result.CanonicalBytes()) {
+		t.Fatalf("result: code=%d calls=%d stdout=%q stderr=%q", code, calls, out.Bytes(), diagnostic.String())
+	}
+	binding := evidence.ResultV1ReportBinding{Policy: p, Inventory: i, Result: result}
+	wantReport, err := evidence.NewReportV1FromResult(contract.ReportSubject, binding)
+	if err != nil {
+		t.Fatal(err)
+	}
+	args = []string{"report", "--policy", policyPath, "--inventory", inventoryPath, "--result", documentFile(t, out.Bytes())}
+	reportCode, reportBytes, reportDiagnostic := invoke(t, args)
+	if reportCode != 0 || reportDiagnostic != "" || !bytes.Equal(reportBytes, wantReport.CanonicalBytes()) {
+		t.Fatalf("report: code=%d stdout=%q stderr=%q", reportCode, reportBytes, reportDiagnostic)
+	}
+	if err := evidence.ValidateReportV1ResultProvenance(wantReport, binding); err != nil {
+		t.Fatal(err)
+	}
+}
