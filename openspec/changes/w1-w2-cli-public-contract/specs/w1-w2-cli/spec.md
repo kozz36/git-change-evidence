@@ -1,5 +1,7 @@
 # Proposed W1/W2 CLI requirements
 
+> Historical design record retained below. For the local source implementation and unfinished qualification, see [current progress](../../apply-progress.md). This is not a release or adoption claim.
+
 **DRAFT · PROPOSED · NOT IMPLEMENTED.** These are future requirements, not current behavior or implementation authorization. [Design](../../design.md) supplies proposed grammar, transport, diagnostics and the selected initial Linux resource/threat profile; [tasks](../../tasks.md) supplies conditional work. Existing canonical contracts remain unchanged.
 
 ## ADDED Requirements
