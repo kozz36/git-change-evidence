@@ -12,7 +12,7 @@
 
 ## P1 — Pure neutral contract
 
-- [ ] P1.1 — Test first, then add immutable complete-facts constructor/view/canonical encoding at the public root without changing required fields or semantics of old snapshot/result types. Validate every status/side/path/mode/kind/ID/count constraint. NGE-1,3–5.
+- [x] P1.1 — Immutable complete-facts constructor/view and canonical encoding verified in local units d9fa0175 and1ab381b after T7's byte metric84e616e; existing snapshot/result types unchanged. Strict decoding/association remain P1.2. NGE-1,3–5.
 - [ ] P1.2 — Add strict canonical decoder/negative vectors, copy isolation and digest checks; implement the limited pure range-association check with explicit non-provenance semantics. NGE-5,7.
 
 ## P2 — Bounded acquisition and measurement
@@ -33,6 +33,6 @@
 
 ## Current evidence and route
 
-Documentary preparation is complete; implementation is authorized but no Go behavior is yet claimed. Per-unit execution and local commits are recorded in apply progress. Source map and parent spot check are scoped observations, not full edge-case or consumer compatibility certificates. Synthetic JSON is illustrative, not acquired evidence. The first pure byte-measurement unit has actual focused GREEN, triangulation, full-suite and source-format results in apply progress, including the original failed isolation run and separately authorized passing execution. Document/acquisition/new-CLI integration, differential behavior and consumer parity remain pending. Race checks are N/A for this pure, nonconcurrent unit; passive preparation alone used rubric skip. Historical formal-validator unavailability is retained; no install/retry is requested.
+Documentary preparation is complete; local pure byte measurement, immutable full facts and canonical construction have observed tests and local commits. Decoder/association, bounded acquisition and CLI remain unimplemented. Per-unit execution and local commits are recorded in apply progress. Source map and parent spot check are scoped observations, not full edge-case or consumer compatibility certificates. Synthetic JSON is illustrative, not acquired evidence. The first pure byte-measurement unit has actual focused GREEN, triangulation, full-suite and source-format results in apply progress, including the original failed isolation run and separately authorized passing execution. Document/acquisition/new-CLI integration, differential behavior and consumer parity remain pending. Race checks are N/A for this pure, nonconcurrent unit; passive preparation alone used rubric skip. Historical formal-validator unavailability is retained; no install/retry is requested.
 
 Implementation risk and any required independent verification must be classified from its actual scoped diff. Shared-parser contract regressions and concurrency changes cannot be declared risk-free in advance. Future writers require their own narrow source-edit surfaces and private per-run verification-write scope. Implementation and local work-unit commits are authorized by S5–S6; push, release, dependency pin and adoption remain unauthorized.
