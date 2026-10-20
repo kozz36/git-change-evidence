@@ -20,6 +20,8 @@ func Parse(args []string) (contract.Request, error) {
 	switch args[0] {
 	case "inventory":
 		required = []string{"--source-root", "--policy", "--paths"}
+	case "snapshot":
+		required = []string{"--repo", "--base", "--head"}
 	case "result":
 		required = []string{"--repo", "--base", "--head", "--policy", "--inventory"}
 	case "report":
@@ -44,7 +46,7 @@ func Parse(args []string) (contract.Request, error) {
 		*fields[name] = value
 		delete(allowed, name)
 	}
-	if len(allowed) != 0 || (r.Stage == "inventory" && !filepath.IsAbs(r.SourceRoot)) || (r.Stage == "result" && !filepath.IsAbs(r.Repository)) {
+	if len(allowed) != 0 || (r.Stage == "inventory" && !filepath.IsAbs(r.SourceRoot)) || ((r.Stage == "result" || r.Stage == "snapshot") && !filepath.IsAbs(r.Repository)) {
 		return invalid()
 	}
 	if err := validateSelectors(r); err != nil {

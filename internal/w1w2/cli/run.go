@@ -17,9 +17,11 @@ type snapshotSource func(context.Context, gitadapter.Request, gitadapter.Snapsho
 
 const familyHelp = `Usage:
   gce w1w2 --help
+  gce w1w2 snapshot --repo <absolute-repository> --base <revision> --head <revision>
   gce w1w2 inventory --source-root <absolute-directory> --policy <document> --paths <selection>
   gce w1w2 result --repo <absolute-repository> --base <revision> --head <revision> --policy <document> --inventory <document>
   gce w1w2 report --policy <document> --inventory <document> --result <document>
+Snapshot takes no document selectors and does not read stdin.
 Document selectors are explicit files or one stdin selector (-). Outputs are evidence, not delivery authority.
 `
 
@@ -38,6 +40,10 @@ func nativeSnapshot(ctx context.Context, request gitadapter.Request, bounds gita
 
 // The source is invocation-local; tests use the same complete composition path.
 func runWithSource(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer, source snapshotSource) int {
+	return runWithSources(ctx, args, stdin, stdout, stderr, source, nativeSnapshotFacts)
+}
+
+func runWithSources(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer, source snapshotSource, facts factsSource) int {
 	if len(args) == 1 && args[0] == "--help" {
 		return emit(ctx, "command", []byte(familyHelp), stdout, stderr)
 	}
@@ -54,11 +60,16 @@ func runWithSource(ctx context.Context, args []string, stdin io.Reader, stdout, 
 	}
 	ctx, cancel := context.WithTimeout(ctx, contract.OperationTimeout)
 	defer cancel()
-	docs, err := input.ReadDocuments(ctx, request, stdin)
-	if err != nil {
-		return diagnostic(stage, err, stderr)
+	var raw []byte
+	if request.Stage == "snapshot" {
+		raw, err = composeSnapshot(ctx, request, facts)
+	} else {
+		docs, readErr := input.ReadDocuments(ctx, request, stdin)
+		if readErr != nil {
+			return diagnostic(stage, readErr, stderr)
+		}
+		raw, err = compose(ctx, request, docs, source)
 	}
-	raw, err := compose(ctx, request, docs, source)
 	if err != nil {
 		return diagnostic(stage, err, stderr)
 	}

@@ -28,21 +28,27 @@ See [the census guide](docs/census.md) for executable commands and limits.
 
 ## W1/W2 selected-path evidence (local source)
 
-The local source CLI provides three Linux-only stages over the existing neutral
-V1 contracts. Use caller-controlled local roots and a stable mount namespace;
-selection is not authorization, confidentiality or complete-inventory proof.
-Final qualification is tracked in [implementation progress](openspec/changes/w1-w2-cli-public-contract/apply-progress.md), not implied by this source build.
+The local source CLI provides four Linux-only stages: independent committed
+snapshots and the existing policy/inventory/result/report V1 evidence flow.
+Use caller-controlled local roots and a stable mount namespace; selection is not
+authorization, confidentiality or complete-inventory proof. Qualification is
+tracked in [existing-stage progress](openspec/changes/w1-w2-cli-public-contract/apply-progress.md)
+and [snapshot progress](openspec/changes/w1-w2-neutral-git-facts-export/apply-progress.md),
+not implied by this source build.
 
 ```sh
 ./gce w1w2 --help
+./gce w1w2 snapshot --repo /authorized/repository --base HEAD~1 --head HEAD > snapshot.json
 ./gce w1w2 inventory --source-root /authorized/source --policy policy.json --paths selection.json > inventory.json
 ./gce w1w2 result --repo /authorized/repository --base HEAD~1 --head HEAD --policy policy.json --inventory inventory.json > result.json
 ./gce w1w2 report --policy policy.json --inventory inventory.json --result result.json > report.json
 ```
 
-Supply each required `--name value` pair exactly once. Document selectors are
-explicit files or `-` for stdin; at most one selector may use stdin. Unused stdin
-is not read. The selection request carries raw relative names as canonical Base64:
+Supply each required `--name value` pair exactly once. Snapshot requires only
+an explicit absolute repository and explicit base/head revisions; it accepts no policy, inventory,
+path selection, stdin document or output-file flag. For the other stages, document
+selectors are explicit files or `-` for stdin; at most one selector may use stdin.
+Unused stdin is not read. The selection request carries raw relative names as canonical Base64:
 
 ```json
 {"schema":"git-change-evidence.cli-path-selection/v1","paths_b64":["YS50eHQ="]}
@@ -52,6 +58,13 @@ Inventory reads selected regular files or leaf-link payloads without reading
 symlink targets or discovering other paths. Result uses the full immutable
 committed range, not the inventory selection or worktree. Retain exact policy,
 inventory and result bytes with the emitted report; hashes alone are not binding proof.
+
+Snapshot emits `git-change-evidence.committed-snapshot/v1` for the whole immutable
+range, including raw Base64 paths, status/side identities and separate raw numstat
+and file-byte/NUL/LF metrics. Symlink/gitlink content stays null and is not followed.
+Metrics are not accounting LOC or binary policy. Retain its exact JSON-plus-LF
+bytes separately: matching range membership does not extend Report V1 provenance.
+See the [snapshot contract and shared acquisition limits](openspec/changes/w1-w2-neutral-git-facts-export/design.md).
 
 Success is code `0`, one canonical document including LF on stdout, and empty
 stderr. Failure uses `w1w2 <stage>: <token>` on stderr; codes `2/3/4/6/7/9` denote
