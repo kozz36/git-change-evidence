@@ -127,3 +127,17 @@ The following original observations predate the later constructor/decoder/acquis
 - T12's five-vector backward differential remains an observed historical result, not a positive legacy-input or consumer-parity certificate. Its old raw `/tmp` captures are unavailable and were not reconstructed. T13 leaves its production bytes unchanged; current full suite passed.
 - New positive domain proof alone does not prove unavailable-object behavior. Existing negative/resource/cancellation/association tests ran in the final suite; no additional runtime guarantee, atomicity, accounting provenance, release or adoption claim follows.
 - Local commit and separate owner implementation acceptance remain pending at this receipt. No push, release, dependency pin or consumer adoption is authorized. Risk: none for this test-only unit; new fixture helpers are used only by its new tests.
+
+## T13 observed local commit — owner acceptance pending
+
+- Commit `4b7304358aebe0590c07cf65480ea5c37e9f01ee`,parent `bbac3a45560757b12b27a256d3bdda7374e8a29e`,tree `1701dc954cfd34e00b6ab5b6cfea5e71c2853570`: exact precommit index-tree match,three tested Go blob hashes equal,exit0/stderr0 and then-clean state verified.
+- Final normalized precommit ASSESS:MEDIUM,6 paths/332 authored lines,reviewDue=false—not native approval. Unit254Go-test/78Markdown lines;forecast330 versus332 actual(+2).
+- Slice boundary `bbac3a4..4b730435`,not the cumulative branch(tool warning7914 authored lines/32 commits since main). No whole-branch delivery is authorized; boundary recorded before any next commit.
+- First receipt-edit attempt rejected overlapping arguments before writing; preserved as a control error,not a candidate defect. S23 authorized only coalesced3Markdown receipts and structural checking; no repeated Go tests or duplicate technical commit.
+- These postcommit edits are not bytes of the technical commit. Owner implementation acceptance P4.3 remains pending; no push,release,pin or consumer adoption.
+
+## Owner implementation acceptance — S24
+
+- Human selected `accept_local_snapshot_implementation_p4_3_finalize_documentary_receipt` / «Aceptar implementación y cerrar registro local»: separate acceptance of implementation after the S5–S6 contract. The prompt disclosed technical commit4b730435,1832PASS/12packages/1skip,missing historical captures and unavailable formal validator. These limitations and original failures remain recorded.
+- Authorized finalization is only these three Markdown receipts and one documentary local commit. No Go changes,repeated tests,duplicate technical commit,publishing,pin or consumer adoption. S23 structural check already passed; final documentary readback/check below is not a new functional test.
+- Technical task holds verified commit4b730435/tree1701dc95; the receipt-only successor records acceptance. Its Git result is not claimed until the actual commit/readback returns. Risk:none (passive documentation only).
