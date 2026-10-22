@@ -27,6 +27,12 @@ func same(a, b unix.Stat_t) bool {
 	return a.Dev == b.Dev && a.Ino == b.Ino && a.Mode == b.Mode && a.Size == b.Size && a.Mtim == b.Mtim && a.Ctim == b.Ctim
 }
 
+// sameDirectoryBinding checks observed identity and mode, not directory entries.
+// It is not an inode-generation or atomic-history guarantee.
+func sameDirectoryBinding(a, b unix.Stat_t) bool {
+	return a.Dev == b.Dev && a.Ino == b.Ino && a.Mode == b.Mode
+}
+
 func checkedOpen(parent int, name string, directory bool, ops acquisitionOps) (int, unix.Stat_t, error) {
 	var before, opened, current unix.Stat_t
 	if err := unix.Fstatat(parent, name, &before, unix.AT_SYMLINK_NOFOLLOW); err != nil {
@@ -55,7 +61,11 @@ func checkedOpen(parent int, name string, directory bool, ops acquisitionOps) (i
 		}
 		return -1, opened, unavailable(err)
 	}
-	if unix.Fstat(fd, &opened) != nil || unix.Fstatat(parent, name, &current, unix.AT_SYMLINK_NOFOLLOW) != nil || !same(before, opened) || !same(opened, current) {
+	sameCapture := same
+	if directory {
+		sameCapture = sameDirectoryBinding
+	}
+	if unix.Fstat(fd, &opened) != nil || unix.Fstatat(parent, name, &current, unix.AT_SYMLINK_NOFOLLOW) != nil || !sameCapture(before, opened) || !sameCapture(opened, current) {
 		unix.Close(fd)
 		return -1, opened, fail(7, "acquisition_race")
 	}
