@@ -1,0 +1,38 @@
+# Approved — Neutral-export implementation plan
+
+**S5–S6 authorize isolated implementation, tests, private verification and local work-unit commits.** Only observed completed outcomes are checked below; no push, release, pin or adoption is authorized. Execution is recorded in [apply progress](apply-progress.md). See [proposal](proposal.md), [design](design.md), [requirements](specs/w1-w2-neutral-git-facts-export/spec.md) and [ODD preparation tracker](../../../odd/tasks/neutral-w1-w2-git-facts-export.md).
+
+## P0 — Close the proposed contract before apply
+
+- [x] P0.1 — Owner approved the concrete CLI/schema, status/side constraints, byte basis, token fidelity, association limits and Linux/budget domain under S5–S6. Baseline edeffba/treecda and non-goals retained. NGE-1–8.
+- [ ] P0.2 — Before each unit's first Go write, freeze its positive/negative public-interface vectors and expected stdout/stderr/exits/unchanged-state outcomes; define real SHA-1/SHA-256 and complete side/type/path cases, malformed documents, incomplete output and resource boundaries. Tests are future proof, not existing results. NGE-2–7.
+- [ ] P0.3 — Before each unit, inventory only its approved edit surfaces and root-file/layout threshold crossings; obtain package-boundary review and calibrated category/addend forecasts, then split reviewable work units. No arbitrary new package or budget exception. NGE-8.
+
+**Forecasts are per work unit:** first pure byte-measurement unit is calibrated in apply progress. Remaining units stay BLOCKED/TBD until their exact surfaces/vectors are read and calibrated; that is not permission to invent arithmetic or adopt forecast features.
+
+## P1 — Pure neutral contract
+
+- [ ] P1.1 — Test first, then add immutable complete-facts constructor/view/canonical encoding at the public root without changing required fields or semantics of old snapshot/result types. Validate every status/side/path/mode/kind/ID/count constraint. NGE-1,3–5.
+- [ ] P1.2 — Add strict canonical decoder/negative vectors, copy isolation and digest checks; implement the limited pure range-association check with explicit non-provenance semantics. NGE-5,7.
+
+## P2 — Bounded acquisition and measurement
+
+- [ ] P2.1 — Reuse bounded raw/numstat acquisition through a scoped shell path that preserves old Acquire/AcquireBounded behavior; retain raw tokens and use one invocation-wide budget. NGE-2,3,6.
+- [ ] P2.2 — Add complete bounded immutable file-side reads and explicit byte metrics; no symlink-target/gitlink dereference, implicit fetch, blob payload output, cache infrastructure or silent missing-data substitution. NGE-2–4,6.
+
+## P3 — Additive CLI composition
+
+- [ ] P3.1 — Add the approved stage/parser/help and complete canonical stdout composition while preserving every existing stage and legacy triple; map technical errors and incomplete output exactly. NGE-1,2,6.
+- [ ] P3.2 — Run real-repository and command-level positive/negative vectors, SHA-1/SHA-256, hostile/raw paths, mode/type/link/binary changes and full-range independence; assert every observable outcome, not fixture labels. NGE-2–7.
+
+## P4 — Compatibility and owner acceptance
+
+- [ ] P4.1 — Differentially compare every existing command sharing changed dispatch/parser/helpers against the baseline, including new inputs on sibling commands; allow only explicitly approved additive behavior/help. Keep temporary baseline copies outside committed tests and within an authorized private run directory. NGE-1.
+- [ ] P4.2 — Run focused and full Go tests, repository formatting, and race checks when concurrency is touched; retain exact candidate/commands/streams/exits and disclose every failed/skipped/unavailable check. No new-version or provenance claim from source reading alone. NGE-1–8.
+- [ ] P4.3 — Obtain separate contract/implementation acceptance; leave packaging/distribution/signing/release/pin and each consumer's full parity/transition/adoption outside this plan's authority. NGE-7,8.
+
+## Current evidence and route
+
+Documentary preparation is complete; implementation is authorized but no Go behavior is yet claimed. Per-unit execution and local commits are recorded in apply progress. Source map and parent spot check are scoped observations, not full edge-case or consumer compatibility certificates. Synthetic JSON is illustrative, not acquired evidence. Go acquisition/tests/build/race/format implementation checks and consumer parity are **NOT RUN**; documentation falls under the repository rubric's default skip row. Historical formal-validator unavailability is retained; no install/retry is requested.
+
+Implementation risk and any required independent verification must be classified from its actual scoped diff. Shared-parser contract regressions and concurrency changes cannot be declared risk-free in advance. Future writers require their own narrow source-edit surfaces and private per-run verification-write scope. Implementation and local work-unit commits are authorized by S5–S6; push, release, dependency pin and adoption remain unauthorized.
