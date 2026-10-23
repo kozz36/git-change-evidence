@@ -29,7 +29,7 @@ Resolve explicit refs once to native immutable commits and acquire the **whole r
 
 ## Approved document and API
 
-Approved schema: `git-change-evidence.committed-snapshot/v1`. Constructor/decoder and immutable document views belong at the module root; exact Go identifiers/signatures remain design candidates, not current exports. Use a new full-facts input/view rather than adding required fields or changing semantics of existing public snapshot/result types.
+Approved schema: `git-change-evidence.committed-snapshot/v1`. Constructor/decoder and immutable document views belong at the module root; exact Go identifiers/signatures remain design candidates, not current exports. Use a new full-facts input/view rather than adding required fields or changing semantics of existing public snapshot/result types. Implementation working boundaries are a validated immutable typed-facts value (SnapshotFactsV1/NewSnapshotFactsV1) followed by canonical-document assembly (SnapshotDocumentV1/NewSnapshotV1), not a gratuitous standalone validation export. Equal base/head identities imply an empty complete range under NGE-2; nonempty supplied facts for identical commits are structurally inconsistent.
 
 | Object | Ordered keys and semantics |
 |---|---|
