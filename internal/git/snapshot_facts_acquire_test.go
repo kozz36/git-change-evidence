@@ -110,6 +110,14 @@ func TestAcquireSnapshotMetadataBoundedNativeGit(t *testing.T) {
 	if got.Revisions().Base != base || got.Revisions().Head != run("-C", root, "rev-parse", "HEAD") || len(view) != 1 || view[0].Change.Status != "A" || view[0].Change.Path != "a" || view[0].Numstat.AddedRaw != "1" || view[0].Numstat.DeletedRaw != "0" {
 		t.Fatal("native range or numstat evidence lost")
 	}
+	if err := os.WriteFile(filepath.Join(root, "a"), []byte("dirty index and worktree\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	run("-C", root, "add", "a")
+	facts, err := got.AcquireFacts()
+	if err != nil || len(facts.Entries()) != 1 || facts.Entries()[0].Old != nil || facts.Entries()[0].New == nil || facts.Entries()[0].New.Content == nil || *facts.Entries()[0].New.Content != (evidence.SnapshotContentV1{ByteLength: 2, LogicalLines: 1}) || facts.Entries()[0].New.ObjectID != view[0].Change.NewObject {
+		t.Fatalf("committed side replaced by dirty state: %v %v", facts, err)
+	}
 }
 
 func TestAcquireSnapshotMetadataBoundedInconsistentResponses(t *testing.T) {
